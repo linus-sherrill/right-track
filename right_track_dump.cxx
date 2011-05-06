@@ -32,8 +32,6 @@ int main (int argc, char * argv[])
 
 }
 
-
-
 // Local Variables:
 // mode: c++
 // fill-column: 70
