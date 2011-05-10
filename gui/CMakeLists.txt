@@ -20,8 +20,10 @@ SET (gui_sources
     EventCanvasApp.h                    EventCanvasApp.cpp
 )
 
-
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )
+SET_TARGET_PROPERTIES( right_track_gui PROPERTIES
+  VERSION ${right_track_VERSION}
+)
 
 INCLUDE_DIRECTORIES ( . .. gen_files )
 
@@ -33,3 +35,10 @@ SET_TARGET_PROPERTIES (right_track_gui PROPERTIES
 TARGET_LINK_LIBRARIES ( right_track_gui ${wxWidgets_LIBRARIES} right_track )
 
 
+#
+# install commands
+#
+INSTALL ( TARGETS right_track_gui
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+)

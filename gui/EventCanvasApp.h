@@ -42,6 +42,7 @@ public:
   virtual ~EventCanvasApp();
 
   void XZoom(float factor);
+  void GetTimeBounds( double& start_time, double& end_time);
 
 
 protected:
@@ -55,12 +56,14 @@ protected:
   // display management
   wxSize CalculateVirtualSize();
   int SecondsToXcoord(EventTimestamp_t ts) const;
-  void SetDefaultScaling(int width);
+  double XcoordToSeconds( int xcoord) const;
+
+  void SetDefaultScaling();
+  void ResetView();
 
   // Event handlers
   virtual void OnPaint(wxPaintEvent &event);
   virtual void OnMouseEvent (wxMouseEvent& event);
-
   virtual void OnDraw( wxDC & dc);
 
   DECLARE_EVENT_TABLE();

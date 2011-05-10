@@ -87,6 +87,8 @@ ReadFromFile( const char * file )
 
   ScanEvents();
 
+  // Reset scaling of views.  wxID_RESET
+
   Refresh();
 }
 

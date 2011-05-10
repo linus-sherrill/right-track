@@ -17,6 +17,7 @@
 // Define our custom event table
 BEGIN_EVENT_TABLE (MainFrameApp, MainFrame)
     EVT_UPDATE_UI( wxID_REFRESH, MainFrameApp::OnModelUpdate)
+    EVT_PAINT(                   MainFrameApp::OnPaint)
 END_EVENT_TABLE()
 
 
@@ -70,8 +71,6 @@ FileOpenHandler(wxCommandEvent &event)
                   wxT("Error"), wxICON_ERROR | wxOK);
   }
 
-
-
   // update content in event loop
   Refresh();
 }
@@ -105,7 +104,7 @@ void MainFrameApp::
 ZoomInHandler(wxCommandEvent &event)
 {
   // magnify image - more pixels per second
-  g_EventWindow->XZoom(2.0);
+  g_EventFrame->XZoom(2.0);
 }
 
 
@@ -113,14 +112,14 @@ void MainFrameApp::
 ZoomOutHandler(wxCommandEvent &event)
 {
   // make features smaller - less pix per sec
-  g_EventWindow->XZoom(0.5);
+  g_EventFrame->XZoom(0.5);
 }
 
 
 void MainFrameApp::
 ZoomFillHandler(wxCommandEvent &event)
 {
-  g_EventWindow->XZoom(-1);
+  g_EventFrame->XZoom(-1);
 }
 
 
@@ -159,8 +158,19 @@ OnModelUpdate(wxUpdateUIEvent& event)
   std::cout << "@@@@ OnModelUpdate()\n";
 
   UpdateEventInfo();
+//  UpdateTimeline();
 
-  // Refresh();
+}
+
+
+void MainFrameApp::
+OnPaint(wxPaintEvent& event)
+{
+  std::cout << "@@@@ MainFrameApp::OnPaint()\n";
+  return;
+  UpdateEventInfo();
+  UpdateTimeline();
+
 }
 
 
@@ -184,6 +194,33 @@ UpdateEventInfo()
   val = wxT("Count: ");
   val << pm->m_ei_eventCount;
   this->g_EventCount->SetLabel (val);
-
 }
+
+
+// ----------------------------------------------------------------
+/** Update timeline
+ *
+ * This method updates the time scale at the bottom of the event
+ * display frame. The start and end time are displayed and a rough
+ * scale of the intermeidate time is also attempted.
+ */
+void MainFrameApp::
+UpdateTimeline()
+{
+
+  //
+  // Get start and end time - fill in the bounds fields
+  double start, end;
+  wxString str;
+  this->g_EventFrame->GetTimeBounds( start, end);
+
+  str.clear();
+  str.Format(wxT("%.3f"), start);
+  this->g_StartTime->SetLabel (str);
+
+  str.clear();
+  str.Format(wxT("%1.3f"), end);
+  this->g_EndTime->SetLabel (str);
+}
+
 

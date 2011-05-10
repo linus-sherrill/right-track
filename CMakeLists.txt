@@ -1,4 +1,11 @@
+project ( right_track )
+
 cmake_minimum_required(VERSION 2.8)
+
+set(right_track_VERSION_MAJOR 0)
+set(right_track_VERSION_MINOR 1)
+set(right_track_VERSION_PATCH 4)
+set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
 include ( FindBoost )
 if(Boost_FOUND)
@@ -11,6 +18,7 @@ include(${VXL_CMAKE_DIR}/UseVXL.cmake)
 include_directories( ${VXL_VCL_INCLUDE_DIR} )
 include_directories( ${VXL_CORE_INCLUDE_DIR} )
 
+option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 
 set ( library_sources
       BoundedEvent.h                    BoundedEvent.cxx
@@ -33,11 +41,13 @@ add_subdirectory (gui)
 
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-add_library ( right_track SHARED ${library_sources} )
+ADD_LIBRARY ( right_track ${library_sources} )
+SET_TARGET_PROPERTIES( right_track PROPERTIES
+  VERSION ${right_track_VERSION} SOVERSION ${right_track_VERSION}
+)
 
 target_link_libraries ( right_track
                       vcl vpl vul vsl )
-
 
 #
 # Build test program
@@ -47,6 +57,26 @@ target_link_libraries (test_right_track
                       right_track vcl vpl vul vsl)
 
 
-add_executable (test_read_trace test_read_trace.cxx)
-target_link_libraries (test_read_trace
+add_executable (right_track_dump right_track_dump.cxx)
+target_link_libraries (right_track_dump
                       right_track vcl vpl vul vsl)
+
+#
+# install commands
+#
+set ( install_includes
+    RightTrackDefs.h RightTrackItem.h
+    Event.h BoundedEvent.h DiscreteEvent.h
+    EventContext.h
+    ScopedEvent.h ScopedContext.h
+)
+
+INSTALL ( TARGETS right_track_dump right_track
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+)
+
+INSTALL ( FILES ${install_includes}
+        DESTINATION include/right_track
+)

@@ -42,7 +42,7 @@ void EventManagerAtExitHandler()
  */
 EventManager::
 EventManager()
-  : m_nextId(1),                // initial item number
+  : m_nextId(1),  // initial item number
     m_transport(0)
 {
 
@@ -206,7 +206,7 @@ RegisterEvent(Event * ev)
 
   msg.event_time = CurrentTimestamp();
 
-  m_transport->Write (msg); // needs to be developed more
+  m_transport->Write (msg);
 }
 
 

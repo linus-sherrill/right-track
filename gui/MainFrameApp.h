@@ -41,10 +41,11 @@ public:
 
 protected:
   void UpdateEventInfo();
-
+  void UpdateTimeline();
 
   // Event handlers
   void OnModelUpdate(wxUpdateUIEvent& event);
+  void OnPaint(wxPaintEvent& event);
 
   virtual void FileOpenHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ColorPickerHandler(wxCommandEvent &event); // wxGlade: <event_handler>

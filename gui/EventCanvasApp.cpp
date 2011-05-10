@@ -51,6 +51,20 @@ EventCanvasApp::
 
 
 // ----------------------------------------------------------------
+/** Reset view parameters.
+ *
+ * This method resets all view parameters. We are called when new data
+ * is loaded into the model, amoungst other causes.
+ */
+void EventCanvasApp::
+ResetView()
+{
+  m_pixelsPerSecond = 0;
+  SetDefaultScaling();
+
+}
+
+// ----------------------------------------------------------------
 /** Handle Paint event.
  *
  *
@@ -59,6 +73,7 @@ void EventCanvasApp::
 OnPaint ( wxPaintEvent &event)
 {
   wxPaintDC dc (this);
+  DoPrepareDC (dc);
   DrawEvents (dc);
 }
 
@@ -73,9 +88,10 @@ DrawNow ()
 {
   wxClientDC dc (this);
   DoPrepareDC (dc);
-
   DrawEvents(dc);
 }
+
+
 // ----------------------------------------------------------------
 /** Handle OnDraw event.
  *
@@ -84,7 +100,7 @@ DrawNow ()
 void EventCanvasApp::
 OnDraw( wxDC & dc)
 {
-  std::cout << "@@@@ OnDraw()\n";
+  std::cout << "@@@@ EventCanvasApp::OnDraw()\n";
 }
 
 
@@ -96,8 +112,7 @@ OnDraw( wxDC & dc)
 void EventCanvasApp::
 DrawEvents(wxDC& dc)
 {
-  wxSize sz = this->GetClientSize();
-  SetDefaultScaling(sz.x);
+  SetDefaultScaling();
 
   SetVirtualSize ( CalculateVirtualSize() );
 
@@ -110,14 +125,35 @@ DrawEvents(wxDC& dc)
   GetViewStart (&startX, &startY);
   dc.SetDeviceOrigin (-startX * ppuX, -startY * ppuY );
 
-  int y_coord = m_yIncrement;
+  // Determine actual draw bounds so we don't have to draw all events.
+  // 1) Can force loop to only cover visible events
+  //
+  // Need to draw event names synchronized with scroll pane on name pane.
+  //
+
+  // (startY * ppuY) / m_yIncrement -> start event index
+  // (startY * ppuY) % m_yIncrement -> y_coord
+  // ((startY * ppuY) + clientsize.y) / m_yIncrement -> last event index
+
+  wxSize sz = this->GetClientSize();
+  int start_idx = (startY * ppuY) / m_yIncrement;
+  int end_idx = ((startY * ppuY) + sz.y) / m_yIncrement;
+  // int y_coord = start_idx * m_yIncrement; // in virtual coords
+  std::cout << "start_idx: " << start_idx << "  end_idx: " << end_idx << std::endl;
+
+  //   int y_coord = m_yIncrement;
 
   // for each event in their drawing order
-  BOOST_FOREACH (ItemId_t ev, GetModel()->m_drawOrder)
+  // BOOST_FOREACH (ItemId_t ev, GetModel()->m_drawOrder)
+  for (int ev_idx = start_idx; ev_idx < end_idx; ev_idx++)
   {
-    wxSize sz = this->GetVirtualSize();
+    if (ev_idx >= GetModel()->m_drawOrder.size()) break;
+
+    ItemId_t ev = GetModel()->m_drawOrder[ev_idx];
+    int y_coord = ev_idx * m_yIncrement; // in virtual coords
 
     EventHistory_t * eh = & GetModel()->m_eventMap[ev];
+    std::cout << "ev: " << ev  << "  y_coord: " << y_coord << std::endl;
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
       DrawBoundedEvent (dc, eh, y_coord);
@@ -151,7 +187,6 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
   // draw event name
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
-
   dc.DrawText( eh->EventName(), 2, y_coord);
 
   Model::time_iterator_t it = eh->EventHistory.begin();
@@ -209,7 +244,6 @@ DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
   // draw event name
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
-
   dc.DrawText( eh->EventName(), 2, y_coord);
 
   Model::time_iterator_t it = eh->EventHistory.begin();
@@ -261,7 +295,7 @@ OnMouseEvent ( wxMouseEvent& event)
     int event_idx = (((float) pt.y / m_yIncrement) + 0.5 - 1);
 
     // 2) determine offset time by looking at X coord
-    EventTimestamp_t ots = (pt.x / m_pixelsPerSecond) * 1e6; // usec
+    EventTimestamp_t ots = XcoordToSeconds(pt.x) * 1e6; //  in usec
 
     // 3) locate actual event record based on time
     ItemId_t item_id (-1);
@@ -297,8 +331,11 @@ OnMouseEvent ( wxMouseEvent& event)
  * @param[in] width - \e physical width of the display window.
  */
 void EventCanvasApp::
-SetDefaultScaling( int width)
+SetDefaultScaling()
 {
+  wxSize sz = this->GetClientSize();
+  int width = sz.x;
+
   // reduce width by 25 pixels for draw margins.
   m_defaultPixelsPerSecond = static_cast< double >(width - 25) / GetModel()->EventTimeRange();
 
@@ -342,18 +379,29 @@ SecondsToXcoord(EventTimestamp_t ts) const
 
 
 // ----------------------------------------------------------------
+/** Convert X coordinate to seconds.
+ *
+ *
+ */
+double EventCanvasApp::
+XcoordToSeconds( int xcoord) const
+{
+  return xcoord / m_pixelsPerSecond;
+}
+
+// ----------------------------------------------------------------
 /** Zoom X scaling
  *
  *
  */
 void EventCanvasApp::
-XZoom ( float factor)
+XZoom ( float factor )
 {
   if (factor < 0)
   {
+    // zoom to fit window.
     m_pixelsPerSecond = 0;
-    wxSize sz = this->GetClientSize();
-    SetDefaultScaling(sz.x);
+    SetDefaultScaling();
   }
   else
   {
@@ -366,4 +414,31 @@ XZoom ( float factor)
     }
   }
   Refresh();
+}
+
+
+// ----------------------------------------------------------------
+/** Get time bounds of displayed data.
+ *
+ * This method returns the starting and ending time for the displayed
+ * data.  The times are normalized so the first time in the data set
+ * is zero.
+ *
+ * @param[out] start_time - starting time in seconds
+ * @param[out] end_time - ending time in seconds
+ */
+void EventCanvasApp::
+GetTimeBounds( double& start_time, double& end_time)
+{
+  // Adjust for scrolled position
+  int ppuX, ppuY, startX, startY;
+  GetScrollPixelsPerUnit( &ppuX, &ppuY);
+  GetViewStart (&startX, &startY);
+
+  start_time = XcoordToSeconds(startX * ppuX);
+
+  wxSize sz = this->GetClientSize();
+  end_time = XcoordToSeconds((startX * ppuX) + sz.x);
+
+  // std::cout << "Start: " << start_time << "  end: " << end_time << "\n";
 }

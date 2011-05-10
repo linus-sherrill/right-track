@@ -29,17 +29,17 @@ public:
     ET_BOUNDED_EVENT,
     ET_DISCRETE_EVENT };
 
+  // -- CONSTRUCTORS --
   Event(vcl_string const& name,
         vcl_string group,
         int color);
   virtual ~Event();
 
+  // -- ACCESSORS --
   virtual void Start(::RightTrack::EventData_t val = 0) = 0;
   virtual void End(::RightTrack::EventData_t val = 0) = 0;
 
   virtual EventType_t EventType() const = 0;
-
-
   vcl_string const& EventGroup() const;
   unsigned int EventColor() const;
 
