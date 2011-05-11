@@ -28,6 +28,7 @@ public:
   void Enable(bool v = true) { m_enabled = v; }
   void Draw(wxClientDC& dc, wxRect view);
   void Move (int x_coord); // moves cursor to new location
+  int GetLocation() const { return m_xCoord; }
 
   bool IsSelected ( wxPoint pt); // point in client coords (not virt coords)
 

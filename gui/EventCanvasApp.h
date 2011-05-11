@@ -43,7 +43,6 @@ public:
   void DrawNow();
   void XZoom(float factor);
   double XZoomFactor() const { return m_pixelsPerSecond / m_defaultPixelsPerSecond; }
-  void GetTimeBounds( double& start_time, double& end_time);
   void SetDefaultScaling();
   void ResetView();
   wxRect GetCurrentView();
@@ -57,7 +56,7 @@ protected:
   void DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
   void DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
   void DrawCursors ();
-
+  void NormalizeCursors();
 
   // display management
   wxSize CalculateVirtualSize();
@@ -66,7 +65,10 @@ protected:
 
 
   // Event handlers / overrides
-  virtual void OnMouseEvent (wxMouseEvent& event);
+  virtual void OnMouseLeftUpEvent (wxMouseEvent& event);
+  virtual void OnMouseLeftDownEvent (wxMouseEvent& event);
+  virtual void OnMouseMotionEvent (wxMouseEvent& event);
+
   virtual void OnDraw( wxDC & dc);
 
   DECLARE_EVENT_TABLE();
@@ -80,8 +82,12 @@ private:
 
   int m_yIncrement;
 
+  // Cursor handling fields
   TimeLineCursor m_cursor_1;
   TimeLineCursor m_cursor_2;
+
+  int m_cursorDrag;
+
 
 }; // end class EventCanvasApp
 

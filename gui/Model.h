@@ -20,10 +20,11 @@
 #include <wx/colordlg.h>
 
 
+
 using namespace ::RightTrack;
 using namespace ::RightTrack::Internal;
 
-
+class MainFrameApp;
 //
 // This structure defines a single action in the event stream for both
 // bounded and discrete events
@@ -105,7 +106,7 @@ public:
 
 
   // -- CONSTRUCTORS --
-  Model();  // CTOR
+  Model(MainFrameApp * frame);  // CTOR
   void Reset();
   static Model * Instance();
 
@@ -120,7 +121,7 @@ public:
 
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
-  void Refresh();
+  void ModelUpdate();
 
   // FindEventByTime (ItemId_t id, double ots);
 
@@ -137,6 +138,14 @@ public:
   wxString m_ei_eventName;
   int m_ei_eventCount;
 
+  void SetCursorTimes (double t1, double t2);
+  void GetCursorTimes (double& t1, double& t2);
+
+  void SetTimeBounds (double start, double end);
+  void GetTimeBounds (double& start, double& end);
+
+  void SetEventInfo ( wxString const& name, int count, double data);
+  void GetEventInfo ( wxString& name, int& count, double& data);
 
   // Colors to use
   wxColour m_defaultBaselineColor;
@@ -150,12 +159,25 @@ public:
 private:
   void ScanEvents();
 
-
+  MainFrameApp * m_parentFrame;
   double m_timingOffset; // time of first event
   double m_maxTime;
 
   // Last item number in data base. Used for appending items.
   ItemId_t m_maxItemNumber;
+
+  double m_cursor_1_time;
+  double m_cursor_2_time;
+
+  double m_viewTimeStart;
+  double m_viewTimeEnd;
+
+  // Event click info
+  wxString m_evc_name;
+  int m_evc_count;
+  double m_evc_data;
+
+
 
   static Model * s_instance;
 };

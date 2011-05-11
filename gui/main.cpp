@@ -19,10 +19,8 @@ class RightTrackApp: public wxApp
 public:
   bool OnInit();
 
-  Model* GetModel() { return &m_model; }
 
 private:
-  Model m_model;
 
 };
 
@@ -34,9 +32,12 @@ IMPLEMENT_APP(RightTrackApp)
 
 bool RightTrackApp::OnInit()
 {
-    wxInitAllImageHandlers();
-    MainFrameApp* frame_1 = new MainFrameApp(NULL, wxID_ANY, wxEmptyString);
-    SetTopWindow(frame_1);
-    frame_1->Show();
-    return true;
+  wxInitAllImageHandlers();
+  MainFrameApp* frame_1 = new MainFrameApp(NULL, wxID_ANY, wxEmptyString);
+
+  Model * model_p = new Model (frame_1);
+
+  SetTopWindow(frame_1);
+  frame_1->Show();
+  return true;
 }

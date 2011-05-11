@@ -16,8 +16,8 @@
 
 // Define our custom event table
 BEGIN_EVENT_TABLE (MainFrameApp, MainFrame)
-    EVT_UPDATE_UI( wxID_REFRESH, MainFrameApp::OnModelUpdate)
-    EVT_PAINT(                   MainFrameApp::OnPaint)
+//    EVT_PAINT(                   MainFrameApp::OnPaint)
+    EVT_IDLE (   MainFrameApp::OnIdle)
 END_EVENT_TABLE()
 
 
@@ -37,6 +37,22 @@ MainFrameApp::
 ~MainFrameApp()
 {
 
+}
+
+
+// ----------------------------------------------------------------
+/** Idle time processing
+ *
+ *
+ */
+void MainFrameApp::
+OnIdle(wxIdleEvent& evt)
+{
+  if (m_pendingUpdate)
+  {
+    m_pendingUpdate = false;
+    DoModelUpdate();
+  }
 }
 
 
@@ -163,29 +179,21 @@ AboutHandler(wxCommandEvent &event)
  *
  */
 void MainFrameApp::
-OnModelUpdate(wxUpdateUIEvent& event)
+ModelUpdate()
 {
-  std::cout << "@@@@ OnModelUpdate()\n";
-
-  UpdateEventInfo();
-  UpdateTimeline();
+  m_pendingUpdate = true;
 
 }
-
 
 void MainFrameApp::
-OnPaint(wxPaintEvent& event)
+DoModelUpdate()
 {
-  std::cout << "@@@@ MainFrameApp::OnPaint()\n";
-
-  // g_EventFrame->DrawNow();
-  // DrawNames();
-
-  return;
   UpdateEventInfo();
   UpdateTimeline();
-
+  UpdateCursorTimes();
 }
+
+
 
 
 // ----------------------------------------------------------------
@@ -197,17 +205,16 @@ void MainFrameApp::
 UpdateEventInfo()
 {
   Model * pm = GetModel();
-  wxString val;
+  wxString name;
+  int count;
+  double data;
 
-  val = wxT("Total events: ");
-  val << pm->EventCount();
-  this->g_TotalEventCount->SetLabel(val);
+  pm->GetEventInfo (name, count, data);
 
-  this->g_EventName->SetLabel(pm->m_ei_eventName);
+  this->g_TotalEventCount->SetLabel(wxString::Format(wxT("Total events: %d"), pm->EventCount()) );
+  this->g_EventName->SetLabel(name);
 
-  val = wxT("Count: ");
-  val << pm->m_ei_eventCount;
-  this->g_EventCount->SetLabel (val);
+  this->g_EventCount->SetLabel (wxString::Format(wxT("Count: %d"), count ) );
 }
 
 
@@ -225,18 +232,30 @@ UpdateTimeline()
   //
   // Get start and end time - fill in the bounds fields
   double start, end;
-  wxString str;
-  this->g_EventFrame->GetTimeBounds( start, end);
+  GetModel()->GetTimeBounds( start, end);
 
-  str.clear();
-  str.Format(wxT("%.3f"), start);
-  this->g_StartTime->SetLabel (str);
-
-  str.clear();
-  str.Format(wxT("%1.3f"), end);
-  this->g_EndTime->SetLabel (str);
+  this->g_StartTime->SetLabel (wxString::Format(wxT("%1.3f sec"), start) );
+  this->g_EndTime->SetLabel   (wxString::Format(wxT("%1.3f sec"), end) );
 }
 
+
+// ----------------------------------------------------------------
+/** Update cursor times
+ *
+ *
+ */
+void MainFrameApp::
+UpdateCursorTimes()
+{
+  double c1, c2;
+
+  GetModel()->GetCursorTimes(c1, c2);
+
+  this->g_Curs1Time->SetLabel (wxString::Format( wxT("Cursor 1 @ %1.3f sec"), c1) );
+  this->g_Curs2Time->SetLabel (wxString::Format( wxT("Cursor 2 @ %1.3f sec"), c2) );
+  this->g_CursDtime->SetLabel (wxString::Format( wxT("Cursor diff: %1.3f sec"), c2 - c1) );
+
+}
 
 // ----------------------------------------------------------------
 /** Draw event names in the correct panel.
