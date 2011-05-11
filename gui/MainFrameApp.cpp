@@ -71,6 +71,8 @@ FileOpenHandler(wxCommandEvent &event)
                   wxT("Error"), wxICON_ERROR | wxOK);
   }
 
+  g_EventFrame->ResetView();
+
   // update content in event loop
   Refresh();
 }
@@ -123,6 +125,14 @@ ZoomFillHandler(wxCommandEvent &event)
 }
 
 
+void MainFrameApp::
+CursorMenuHandler(wxCommandEvent &event)
+{
+  bool val = event.IsChecked();
+  g_EventFrame->EnableCursors(val);
+}
+
+
 // ----------------------------------------------------------------
 /** Quit the program.
  *
@@ -143,7 +153,7 @@ QuitHandler(wxCommandEvent &event)
 void MainFrameApp::
 AboutHandler(wxCommandEvent &event)
 {
-// about bod TBD
+// about box TBD
 }
 
 
@@ -158,7 +168,7 @@ OnModelUpdate(wxUpdateUIEvent& event)
   std::cout << "@@@@ OnModelUpdate()\n";
 
   UpdateEventInfo();
-//  UpdateTimeline();
+  UpdateTimeline();
 
 }
 
@@ -167,6 +177,10 @@ void MainFrameApp::
 OnPaint(wxPaintEvent& event)
 {
   std::cout << "@@@@ MainFrameApp::OnPaint()\n";
+
+  // g_EventFrame->DrawNow();
+  // DrawNames();
+
   return;
   UpdateEventInfo();
   UpdateTimeline();
@@ -221,6 +235,39 @@ UpdateTimeline()
   str.clear();
   str.Format(wxT("%1.3f"), end);
   this->g_EndTime->SetLabel (str);
+}
+
+
+// ----------------------------------------------------------------
+/** Draw event names in the correct panel.
+ *
+ *
+ */
+void MainFrameApp::
+DrawNames (wxDC&dc, int start_idx, int end_idx)
+{
+
+  // for each event in their drawing order
+  for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
+  {
+    // Stop at the last element
+    if (ev_idx >= GetModel()->m_drawOrder.size())
+    {
+      break;
+    }
+
+    ItemId_t ev = GetModel()->m_drawOrder[ev_idx];
+    int y_coord = (ev_idx + 1) * 25; // in virtual coords
+
+    EventHistory_t * eh = & GetModel()->m_eventMap[ev];
+
+    // draw event name
+    // Should render in g_EventNames panel
+    wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
+    dc.SetFont (fnt);
+    dc.DrawText( eh->EventName(), 2, y_coord);
+
+  } // end for
 }
 
 

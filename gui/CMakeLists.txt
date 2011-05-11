@@ -18,6 +18,7 @@ SET (gui_sources
     MainFrameApp.h                      MainFrameApp.cpp
     Model.h                             Model.cpp
     EventCanvasApp.h                    EventCanvasApp.cpp
+    TimeLineCursor.h                    TimeLineCursor.cpp
 )
 
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )

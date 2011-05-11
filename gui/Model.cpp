@@ -25,7 +25,7 @@ Model * Model::s_instance(0);
  */
 Model::
 Model()
-  : m_timingOffset(~0),
+  : m_timingOffset(1e300),
     m_maxTime(0)
 {
 
@@ -49,7 +49,7 @@ Instance()
 void Model::
 Reset()
 {
-  m_timingOffset = ~0;
+  m_timingOffset = 1e300;
 
   m_drawOrder.clear();
   m_eventMap.clear();
@@ -99,7 +99,7 @@ ReadFromFile( const char * file )
  * This method returns the length of time covered from the first event
  * to the last event.
  */
-EventTimestamp_t Model::
+double Model::
 EventTimeRange() const
 {
   return  (m_maxTime - m_timingOffset);
@@ -157,7 +157,7 @@ ScanEvents()
 
       for ( ; it != eit; it++)
       {
-        EventTimestamp_t ts = it->event_time;
+        double ts = it->event_time;
 
         if (ts < m_timingOffset)
         {

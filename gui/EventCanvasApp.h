@@ -12,12 +12,11 @@
 
 #include <RightTrackDefs.h>
 #include <Model.h>
+#include <TimeLineCursor.h>
 
-// #include <EventCanvas.h>
 
-//#include <MainFrameApp.h>
 class MainFrameApp;
-//class Model;
+
 struct EventHistory_t;
 
 using namespace RightTrack;
@@ -41,28 +40,32 @@ public:
               long style=wxDEFAULT_FRAME_STYLE);
   virtual ~EventCanvasApp();
 
+  void DrawNow();
   void XZoom(float factor);
+  double XZoomFactor() const { return m_pixelsPerSecond / m_defaultPixelsPerSecond; }
   void GetTimeBounds( double& start_time, double& end_time);
+  void SetDefaultScaling();
+  void ResetView();
+  wxRect GetCurrentView();
+  void EnableCursors (bool enab);
 
 
 protected:
   Model * GetModel() const { return Model::Instance(); }
 
-  void DrawNow();
   void DrawEvents(wxDC& dc);
   void DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
   void DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
+  void DrawCursors ();
+
 
   // display management
   wxSize CalculateVirtualSize();
-  int SecondsToXcoord(EventTimestamp_t ts) const;
+  int SecondsToXcoord(double ts) const;
   double XcoordToSeconds( int xcoord) const;
 
-  void SetDefaultScaling();
-  void ResetView();
 
-  // Event handlers
-  virtual void OnPaint(wxPaintEvent &event);
+  // Event handlers / overrides
   virtual void OnMouseEvent (wxMouseEvent& event);
   virtual void OnDraw( wxDC & dc);
 
@@ -76,6 +79,9 @@ private:
   double m_defaultPixelsPerSecond; // X scaling factor for zoom
 
   int m_yIncrement;
+
+  TimeLineCursor m_cursor_1;
+  TimeLineCursor m_cursor_2;
 
 }; // end class EventCanvasApp
 

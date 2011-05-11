@@ -32,7 +32,7 @@ struct EventHistoryElement_t
 {
   enum { START, END } ev_action;
 
-  EventTimestamp_t event_time;
+  double event_time; // in seconds
   EventPid_t event_pid;
   EventData_t event_data;
 };
@@ -71,7 +71,7 @@ struct EventHistory_t
 //
 struct ContextHistoryElement_t
 {
-  EventTimestamp_t event_time;
+  double event_time;
 
 };
 
@@ -110,8 +110,8 @@ public:
   static Model * Instance();
 
   // -- ACCESSORS --
-  EventTimestamp_t EventTimeRange() const;
-  EventTimestamp_t TimeOffset() const { return m_timingOffset; }
+  double EventTimeRange() const;
+  double TimeOffset() const { return m_timingOffset; }
 
   /**  Number of events in data base.
    */
@@ -122,7 +122,7 @@ public:
   int ReadFromFile( const char * file);
   void Refresh();
 
-  // FindEventByTime (ItemId_t id, EventTimestamp_t ots);
+  // FindEventByTime (ItemId_t id, double ots);
 
   // Event data areas
   vcl_vector <ItemId_t> m_drawOrder;
@@ -151,8 +151,8 @@ private:
   void ScanEvents();
 
 
-  EventTimestamp_t m_timingOffset; // time of first event
-  EventTimestamp_t m_maxTime;
+  double m_timingOffset; // time of first event
+  double m_maxTime;
 
   // Last item number in data base. Used for appending items.
   ItemId_t m_maxItemNumber;

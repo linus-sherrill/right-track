@@ -9,7 +9,6 @@
 
 
 #include <wx/dcclient.h>
-
 #include <Model.h>
 
 #include <boost/foreach.hpp>
@@ -19,7 +18,6 @@
 // Define our custom event table
 BEGIN_EVENT_TABLE (EventCanvasApp, wxScrolledWindow )
     EVT_MOUSE_EVENTS(              EventCanvasApp::OnMouseEvent)
-    EVT_PAINT(                     EventCanvasApp::OnPaint)
 END_EVENT_TABLE()
 
 
@@ -60,21 +58,10 @@ void EventCanvasApp::
 ResetView()
 {
   m_pixelsPerSecond = 0;
+
   SetDefaultScaling();
 
-}
-
-// ----------------------------------------------------------------
-/** Handle Paint event.
- *
- *
- */
-void EventCanvasApp::
-OnPaint ( wxPaintEvent &event)
-{
-  wxPaintDC dc (this);
-  DoPrepareDC (dc);
-  DrawEvents (dc);
+  DrawNow();
 }
 
 
@@ -87,8 +74,10 @@ void EventCanvasApp::
 DrawNow ()
 {
   wxClientDC dc (this);
-  DoPrepareDC (dc);
+  DoPrepareDC(dc);
   DrawEvents(dc);
+
+  DrawCursors();
 }
 
 
@@ -100,14 +89,17 @@ DrawNow ()
 void EventCanvasApp::
 OnDraw( wxDC & dc)
 {
-  std::cout << "@@@@ EventCanvasApp::OnDraw()\n";
+  //+ std::cout << "@@@@ EventCanvasApp::OnDraw()\n";
+  DrawEvents(dc);
+  DrawCursors();
 }
 
 
 // ----------------------------------------------------------------
 /** Draw all events in listed order.
  *
- *
+ * Draw all events into content area. The drawing area origin has been
+ * modified to take into account the scrolled position.
  */
 void EventCanvasApp::
 DrawEvents(wxDC& dc)
@@ -119,41 +111,27 @@ DrawEvents(wxDC& dc)
   // Erase canvas
   dc.Clear();
 
-  // Adjust for scrolled position
-  int ppuX, ppuY, startX, startY;
-  GetScrollPixelsPerUnit( &ppuX, &ppuY);
-  GetViewStart (&startX, &startY);
-  dc.SetDeviceOrigin (-startX * ppuX, -startY * ppuY );
+  wxRect view = GetCurrentView(); // current view in virtual coords
 
-  // Determine actual draw bounds so we don't have to draw all events.
-  // 1) Can force loop to only cover visible events
-  //
-  // Need to draw event names synchronized with scroll pane on name pane.
-  //
+  int start_idx = view.GetTop() / m_yIncrement;
+  int end_idx = view.GetBottom() / m_yIncrement;
 
-  // (startY * ppuY) / m_yIncrement -> start event index
-  // (startY * ppuY) % m_yIncrement -> y_coord
-  // ((startY * ppuY) + clientsize.y) / m_yIncrement -> last event index
-
-  wxSize sz = this->GetClientSize();
-  int start_idx = (startY * ppuY) / m_yIncrement;
-  int end_idx = ((startY * ppuY) + sz.y) / m_yIncrement;
-  // int y_coord = start_idx * m_yIncrement; // in virtual coords
-  std::cout << "start_idx: " << start_idx << "  end_idx: " << end_idx << std::endl;
-
-  //   int y_coord = m_yIncrement;
+  // backup one row to make sure thare are no partial row rendering.
+  if (start_idx > 0) start_idx--;
 
   // for each event in their drawing order
-  // BOOST_FOREACH (ItemId_t ev, GetModel()->m_drawOrder)
-  for (int ev_idx = start_idx; ev_idx < end_idx; ev_idx++)
+  for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
   {
-    if (ev_idx >= GetModel()->m_drawOrder.size()) break;
+    // Stop at the last element
+    if (ev_idx >= GetModel()->m_drawOrder.size())
+    {
+      break;
+    }
 
     ItemId_t ev = GetModel()->m_drawOrder[ev_idx];
-    int y_coord = ev_idx * m_yIncrement; // in virtual coords
+    int y_coord = (ev_idx + 1) * m_yIncrement; // in virtual coords
 
     EventHistory_t * eh = & GetModel()->m_eventMap[ev];
-    std::cout << "ev: " << ev  << "  y_coord: " << y_coord << std::endl;
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
       DrawBoundedEvent (dc, eh, y_coord);
@@ -167,32 +145,77 @@ DrawEvents(wxDC& dc)
     y_coord += m_yIncrement;
   } // end foreach
 
+  // DrawNames(start_idx, ev_idx-1);
 }
 
 
 // ----------------------------------------------------------------
 /** Draw bounded events.
  *
+ * Draw a single bounded event history at specified Y location.
  *
+ * @param[in] dc - drawing context
+ * @param[in] eh - event history to draw
+ * @param[in] y_coord - y coordinate to use for drawing
  */
 void EventCanvasApp::
 DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 {
-  wxSize sz = this->GetVirtualSize();
+  wxRect view = GetCurrentView(); // current view in virtual coords
 
   // Draw base line at y_coord
   dc.SetPen( eh->eventBaselinePen );
-  dc.DrawLine (0, y_coord, sz.x, y_coord);
+  dc.DrawLine (0, y_coord, view.GetWidth(), y_coord);
 
   // draw event name
+  // Should render in g_EventNames panel
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
 
-  Model::time_iterator_t it = eh->EventHistory.begin();
+  Model::time_iterator_t it;
+  Model::time_iterator_t bit = eh->EventHistory.begin();
   Model::time_iterator_t eit = eh->EventHistory.end();
 
-  for ( ; it != eit; it++)
+  // Don't optimize this way if zoom factor is less than some zoom
+  // factor because the time to do the optimization must be less than
+  // the full draw time for the optimization to be of value.
+  if (XZoomFactor() >= 2)
+  {
+    Model::time_iterator_t obit = eh->EventHistory.begin();
+    Model::time_iterator_t oeit = eh->EventHistory.end();
+
+    int l = view.GetLeft();
+    int r = view.GetRight();
+
+    for (it = bit; it != eit; it++)
+    {
+      if (it->ev_action == EventHistoryElement_t::END)
+      {
+        int x_coord = SecondsToXcoord (it->event_time);
+        if ( (l >= 0) && (x_coord >= l) )
+        {
+          if (it != bit)
+          {
+            obit = it--; // set begin iterator
+          }
+          l = -1; // switch to next state
+        }
+        else if ( x_coord > r )
+        {
+          oeit = it; // set end interator
+          break;
+        }
+      } // end END element
+    } // end for
+
+    // copy optimized iterators
+    bit = obit;
+    eit = oeit;
+  } // end if zoom factor (optimization)
+
+  // draw the event history.
+  for (it = bit; it != eit; it++)
   {
     int x_event_start;
     int x_coord = SecondsToXcoord (it->event_time);
@@ -235,24 +258,59 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 void EventCanvasApp::
 DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 {
-  wxSize sz = this->GetVirtualSize();
+  wxRect view = GetCurrentView(); // current view in virtual coords
 
   // Draw base line at y_coord
   dc.SetPen( eh->eventBaselinePen );
-  dc.DrawLine (0, y_coord, sz.x, y_coord);
+  dc.DrawLine (0, y_coord, view.GetWidth(), y_coord);
 
   // draw event name
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
 
-  Model::time_iterator_t it = eh->EventHistory.begin();
+  Model::time_iterator_t it;
+  Model::time_iterator_t bit = eh->EventHistory.begin();
   Model::time_iterator_t eit = eh->EventHistory.end();
 
   dc.SetPen( eh->eventMarkerPen );
   dc.SetBrush (eh->startMarkerBrush );
 
-  for ( ; it != eit; it++)
+  // Don't optimize this way if zoom factor is less than some zoom
+  // factor because the time to do the optimization must be less than
+  // the full draw time for the optimization to be of value.
+  if (XZoomFactor() >= 2)
+  {
+    Model::time_iterator_t obit = eh->EventHistory.begin();
+    Model::time_iterator_t oeit = eh->EventHistory.end();
+
+    int l = view.GetLeft();
+    int r = view.GetRight();
+
+    for (it = bit; it != eit; it++)
+    {
+      int x_coord = SecondsToXcoord (it->event_time);
+      if ( (l >= 0) && (x_coord >= l) )
+      {
+        if (it != bit)
+        {
+          obit = it; // set begin iterator
+        }
+        l = -1; // switch to next state
+      }
+      else if ( x_coord > r )
+      {
+        oeit = it; // set end interator
+        break;
+      }
+    } // end for
+
+    // copy optimized iterators
+    bit = obit;
+    eit = oeit;
+  } // end if zoom factor (optimization)
+
+  for (it = bit; it != eit; it++)
   {
     int x_coord = SecondsToXcoord (it->event_time);
 
@@ -269,6 +327,46 @@ DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 
 
 // ----------------------------------------------------------------
+/** Enable display of cursors.
+ *
+ *
+ */
+void EventCanvasApp::
+EnableCursors(bool enab)
+{
+  wxSize sz = GetClientSize();
+  m_cursor_1.Move(25);
+  m_cursor_2.Move(sz.x - 25);
+
+  m_cursor_1.Enable(enab);
+  m_cursor_2.Enable(enab);
+
+  DrawNow(); // update display
+
+}
+
+
+// ----------------------------------------------------------------
+/** Draw cursor.
+ *
+ * This method draws the cursor at the specified location.
+ *
+ * It's almost like we need a cursor object to assist in detecting
+ * mouse click and drag.
+ */
+void EventCanvasApp::
+DrawCursors ()
+{
+  wxClientDC dc (this);
+
+  wxRect rect = GetCurrentView();
+
+  m_cursor_1.Draw( dc, rect);
+  m_cursor_2.Draw( dc, rect);
+}
+
+
+// ----------------------------------------------------------------
 /** Handle mouse events
  *
  *
@@ -278,6 +376,21 @@ OnMouseEvent ( wxMouseEvent& event)
 {
   wxPoint pt (event.GetPosition() );
   Model * p_model = GetModel();
+
+  // look for left down on cursor
+  if (event.LeftDown())
+  {
+    if (m_cursor_1.IsSelected(pt))
+    {
+      std::cout << "Cursor 1 hit\n";
+    }
+    else if (m_cursor_2.IsSelected(pt))
+    {
+      std::cout << "Cursor 1 hit\n";
+    }
+
+    return;
+  }
 
   if (event.LeftUp())
   {
@@ -295,7 +408,7 @@ OnMouseEvent ( wxMouseEvent& event)
     int event_idx = (((float) pt.y / m_yIncrement) + 0.5 - 1);
 
     // 2) determine offset time by looking at X coord
-    EventTimestamp_t ots = XcoordToSeconds(pt.x) * 1e6; //  in usec
+    double ots = XcoordToSeconds(pt.x);
 
     // 3) locate actual event record based on time
     ItemId_t item_id (-1);
@@ -327,8 +440,6 @@ OnMouseEvent ( wxMouseEvent& event)
  *
  * The default scaling may need to be recalculated of the window is
  * resized.
- *
- * @param[in] width - \e physical width of the display window.
  */
 void EventCanvasApp::
 SetDefaultScaling()
@@ -340,7 +451,7 @@ SetDefaultScaling()
   m_defaultPixelsPerSecond = static_cast< double >(width - 25) / GetModel()->EventTimeRange();
 
   // only update once
-  if (0 == m_pixelsPerSecond)
+  if ( m_pixelsPerSecond <= 0)
   {
     m_pixelsPerSecond = m_defaultPixelsPerSecond;
   }
@@ -371,10 +482,13 @@ CalculateVirtualSize()
  *
  */
 int EventCanvasApp::
-SecondsToXcoord(EventTimestamp_t ts) const
+SecondsToXcoord(double ts) const
 {
   // Add margin of 15 to conversion;
-  return (ts - GetModel()->TimeOffset()) * m_pixelsPerSecond + 15;
+  int x_coord ((ts - GetModel()->TimeOffset()) * m_pixelsPerSecond + 15 );
+
+  //+ std::cout << "SecondsToXcoord: " << ts << " -> " << x_coord << std::endl;
+  return x_coord;
 }
 
 
@@ -430,15 +544,33 @@ XZoom ( float factor )
 void EventCanvasApp::
 GetTimeBounds( double& start_time, double& end_time)
 {
+  wxRect rect = GetCurrentView();
+
+  start_time = XcoordToSeconds(rect.GetLeft());
+  end_time = XcoordToSeconds(rect.GetRight());
+
+  // std::cout << "Start: " << start_time << "  end: " << end_time << "\n";
+}
+
+
+// ----------------------------------------------------------------
+/** Get coordinates of current view.
+ *
+ * This method returns the virtual coordinates and size of the current
+ * view of the Event Canvas based on scroller settings.
+ *
+ * x, y, width, height
+ */
+wxRect EventCanvasApp::
+GetCurrentView()
+{
   // Adjust for scrolled position
   int ppuX, ppuY, startX, startY;
   GetScrollPixelsPerUnit( &ppuX, &ppuY);
   GetViewStart (&startX, &startY);
 
-  start_time = XcoordToSeconds(startX * ppuX);
-
+  wxPoint origin(startX * ppuX, startY * ppuY);
   wxSize sz = this->GetClientSize();
-  end_time = XcoordToSeconds((startX * ppuX) + sz.x);
 
-  // std::cout << "Start: " << start_time << "  end: " << end_time << "\n";
+  return wxRect (origin, sz);
 }

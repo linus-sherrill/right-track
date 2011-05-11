@@ -37,6 +37,7 @@ public:
   virtual ~MainFrameApp();
 
   Model * GetModel() const { return Model::Instance(); }
+  void DrawNames (wxDC& dc, int start_idx, int end_idx);
 
 
 protected:
@@ -54,6 +55,7 @@ protected:
   virtual void ZoomInHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomOutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomFillHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
 
   DECLARE_EVENT_TABLE();
 
