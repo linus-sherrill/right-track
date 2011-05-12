@@ -1,12 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-
 FIND_PACKAGE ( wxWidgets REQUIRED net gl core base )
 INCLUDE ( ${wxWidgets_USE_FILE} )
-
-INCLUDE ( FindBoost )
-if(Boost_FOUND)
-   include_directories(${Boost_INCLUDE_DIRS})
-endif()
 
 SET (gui_sources
     gen_files/EventViewFrame.h          gen_files/EventViewFrame.cpp
