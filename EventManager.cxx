@@ -75,7 +75,6 @@ EventManager::
  *
  *
  */
-EventManager::
 EventManager * EventManager::
 Instance()
 {
