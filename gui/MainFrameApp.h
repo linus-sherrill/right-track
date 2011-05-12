@@ -37,14 +37,21 @@ public:
   virtual ~MainFrameApp();
 
   Model * GetModel() const { return Model::Instance(); }
+  void DrawNames (wxDC& dc, int start_idx, int end_idx);
+
+  void ModelUpdate();
 
 
 protected:
+  void DoModelUpdate();
   void UpdateEventInfo();
-
+  void UpdateTimeline();
+  void UpdateCursorTimes();
 
   // Event handlers
-  void OnModelUpdate(wxUpdateUIEvent& event);
+  void OnPaint(wxPaintEvent& event);
+  void OnIdle(wxIdleEvent& evt);
+
 
   virtual void FileOpenHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ColorPickerHandler(wxCommandEvent &event); // wxGlade: <event_handler>
@@ -53,12 +60,13 @@ protected:
   virtual void ZoomInHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomOutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomFillHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
 
   DECLARE_EVENT_TABLE();
 
 
 private:
-
+  bool m_pendingUpdate;
 
 }; // end class MainFrameApp
 

@@ -260,6 +260,13 @@ ReadEvents(vcl_string const& resource,
       break;
     }
 
+    if (! bstream)
+    {
+      // error
+      vcl_cerr << "Error reading input\n";
+      break;
+    }
+
   } // end while
 }
 

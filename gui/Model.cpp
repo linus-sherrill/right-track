@@ -7,6 +7,8 @@
 
 #include <Model.h>
 
+#include <MainFrameApp.h>
+
 #include <wx/wx.h>
 #include <wx/app.h>
 
@@ -24,8 +26,9 @@ Model * Model::s_instance(0);
  *
  */
 Model::
-Model()
-  : m_timingOffset(~0),
+Model(MainFrameApp * frame)
+  : m_parentFrame(frame),
+    m_timingOffset(1e300),
     m_maxTime(0)
 {
 
@@ -49,7 +52,7 @@ Instance()
 void Model::
 Reset()
 {
-  m_timingOffset = ~0;
+  m_timingOffset = 1e300;
 
   m_drawOrder.clear();
   m_eventMap.clear();
@@ -87,7 +90,9 @@ ReadFromFile( const char * file )
 
   ScanEvents();
 
-  Refresh();
+  // Reset scaling of views.  wxID_RESET
+
+  ModelUpdate();
 }
 
 
@@ -97,7 +102,7 @@ ReadFromFile( const char * file )
  * This method returns the length of time covered from the first event
  * to the last event.
  */
-EventTimestamp_t Model::
+double Model::
 EventTimeRange() const
 {
   return  (m_maxTime - m_timingOffset);
@@ -155,7 +160,7 @@ ScanEvents()
 
       for ( ; it != eit; it++)
       {
-        EventTimestamp_t ts = it->event_time;
+        double ts = it->event_time;
 
         if (ts < m_timingOffset)
         {
@@ -174,12 +179,71 @@ ScanEvents()
 
 
 // ----------------------------------------------------------------
+/** Get/set cursor times
+ *
+ *
+ */
+void Model::
+SetCursorTimes (double t1, double t2)
+{
+  m_cursor_1_time = t1;
+  m_cursor_2_time = t2;
+
+  ModelUpdate();
+}
+
+
+void Model::
+GetCursorTimes (double& t1, double& t2)
+{
+  t1 = m_cursor_1_time;
+  t2 = m_cursor_2_time;
+}
+
+
+void Model::
+SetTimeBounds (double start, double end)
+{
+  m_viewTimeStart = start;
+  m_viewTimeEnd = end;
+
+  ModelUpdate();
+}
+
+void Model::
+GetTimeBounds (double& start, double& end)
+{
+  start = m_viewTimeStart;
+  end = m_viewTimeEnd;
+}
+
+
+void Model::
+SetEventInfo ( wxString const& name, int count, double data)
+{
+  m_evc_name = name;
+  m_evc_count = count;
+  m_evc_data = data;
+
+  ModelUpdate();
+}
+
+void Model::
+GetEventInfo ( wxString& name, int& count, double& data)
+{
+  name = m_evc_name;
+  count= m_evc_count;
+  data = m_evc_data;
+}
+
+
+// ----------------------------------------------------------------
 /** Send message to windows when something changed.
  *
  *
  */
 void Model::
-Refresh()
+ModelUpdate()
 {
-  wxTheApp->GetTopWindow()->Refresh();
+  m_parentFrame->ModelUpdate();
 }
