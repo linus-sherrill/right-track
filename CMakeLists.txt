@@ -37,7 +37,10 @@ set ( library_sources
       ScopedContext.h
       ScopedEvent.h )
 
-add_subdirectory (gui)
+option(GUI_ENABLED "Enable the gui" ON)
+if (GUI_ENABLED)
+    add_subdirectory (gui)
+endif()
 
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 
