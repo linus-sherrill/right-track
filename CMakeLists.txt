@@ -7,7 +7,7 @@ set(right_track_VERSION_MINOR 1)
 set(right_track_VERSION_PATCH 4)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
-include ( FindBoost )
+find_package ( Boost )
 if(Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
 endif()
