@@ -251,8 +251,8 @@ UpdateCursorTimes()
 
   GetModel()->GetCursorTimes(c1, c2);
 
-  this->g_Curs1Time->SetLabel (wxString::Format( wxT("Cursor 1 @ %1.3f sec"), c1) );
-  this->g_Curs2Time->SetLabel (wxString::Format( wxT("Cursor 2 @ %1.3f sec"), c2) );
+  this->g_Curs1Time->SetLabel (wxString::Format( wxT("Cursor 1: %1.3f sec"), c1) );
+  this->g_Curs2Time->SetLabel (wxString::Format( wxT("Cursor 2: %1.3f sec"), c2) );
   this->g_CursDtime->SetLabel (wxString::Format( wxT("Cursor diff: %1.3f sec"), c2 - c1) );
 
 }

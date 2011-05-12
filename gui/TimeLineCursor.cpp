@@ -45,7 +45,7 @@ Draw(wxClientDC& dc, wxRect view)
   }
 
   // Start with a red line
-  dc.SetPen( wxPen( wxColor( 250, 0, 0), 1, wxSOLID ) );
+  dc.SetPen( wxPen( wxColor( 250, 0, 0), 2, wxSOLID ) );
   dc.DrawLine( m_xCoord, view.GetTop(), m_xCoord, view.GetBottom() );
 
   // draw grab rect.

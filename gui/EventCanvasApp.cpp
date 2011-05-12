@@ -39,6 +39,10 @@ EventCanvasApp::EventCanvasApp(wxWindow* parent,
   m_defaultPixelsPerSecond(0)
 {
   m_yIncrement = 25;
+
+  m_cursor_1.Move(25);
+  m_cursor_2.Move(150);
+
 }
 
 
@@ -333,8 +337,6 @@ void EventCanvasApp::
 EnableCursors(bool enab)
 {
   wxSize sz = GetClientSize();
-  m_cursor_1.Move(25);
-  m_cursor_2.Move(sz.x - 25);
 
   m_cursor_1.Enable(enab);
   m_cursor_2.Enable(enab);
@@ -361,6 +363,10 @@ DrawCursors ()
 
   m_cursor_1.Draw( dc, rect);
   m_cursor_2.Draw( dc, rect);
+
+  double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
+  double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
+  GetModel()->SetCursorTimes(ct_1, ct_2);
 }
 
 
@@ -381,10 +387,6 @@ NormalizeCursors()
     m_cursor_1.Move(x2);
     m_cursor_2.Move(x1);
   }
-
-  x1 = m_cursor_1.GetLocation();
-  x2 = m_cursor_2.GetLocation();
-  GetModel()->SetCursorTimes( x1, x2 );
 }
 
 
@@ -398,6 +400,13 @@ OnMouseLeftDownEvent ( wxMouseEvent& event)
 {
   wxPoint pt (event.GetPosition() );
   Model * p_model = GetModel();
+
+  // Need to convert Content area coords to virtual coords
+  int ppuX, ppuY, startX, startY;
+  GetScrollPixelsPerUnit( &ppuX, &ppuY);
+  GetViewStart (&startX, &startY);
+  pt.x += startX * ppuX;
+  pt.y += startY * ppuY;
 
   m_cursorDrag = 0;
 
@@ -425,6 +434,13 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
   wxPoint pt (event.GetPosition() );
   Model * p_model = GetModel();
 
+  // Need to convert Content area coords to virtual coords
+  int ppuX, ppuY, startX, startY;
+  GetScrollPixelsPerUnit( &ppuX, &ppuY);
+  GetViewStart (&startX, &startY);
+  pt.x += startX * ppuX;
+  pt.y += startY * ppuY;
+
   std::cout << "Mouse left up event at ["
             << pt.x << ", " << pt.y << "]\n";
 
@@ -450,13 +466,6 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
     Refresh();
     return;
   }
-
-  // Need to convert Content area coords to virtual coords
-  int ppuX, ppuY, startX, startY;
-  GetScrollPixelsPerUnit( &ppuX, &ppuY);
-  GetViewStart (&startX, &startY);
-  pt.x += startX * ppuX;
-  pt.y += startY * ppuY;
 
   // 1) determine which event by looking at Y coord
   int event_idx = (((float) pt.y / m_yIncrement) + 0.5 - 1);
