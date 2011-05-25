@@ -60,7 +60,7 @@ Start( ::RightTrack::EventData_t val )
   // See if the event is still running
   if (m_started)
   {
-
+    // TBD
   }
 
   Manager()->StartEvent( this, val );
