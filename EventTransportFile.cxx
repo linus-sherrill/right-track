@@ -268,6 +268,8 @@ ReadEvents(vcl_string const& resource,
     }
 
   } // end while
+
+  return (status);
 }
 
 

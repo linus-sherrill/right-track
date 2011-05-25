@@ -43,15 +43,10 @@ public:
   bool OpenFile (vcl_string name);
 
 
-protected:
-
-
-
 private:
   // support for writing
   vcl_ofstream * m_outStream;
   vsl_b_ostream * m_bstream;
-
 
 }; // end class EventTransportFile
 
