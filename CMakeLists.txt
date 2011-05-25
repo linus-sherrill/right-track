@@ -7,7 +7,7 @@ set(right_track_VERSION_MINOR 1)
 set(right_track_VERSION_PATCH 4)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
-include ( FindBoost )
+find_package ( Boost )
 if(Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
 endif()
@@ -37,7 +37,10 @@ set ( library_sources
       ScopedContext.h
       ScopedEvent.h )
 
-add_subdirectory (gui)
+option(GUI_ENABLED "Enable the gui" ON)
+if (GUI_ENABLED)
+    add_subdirectory (gui)
+endif()
 
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
 
