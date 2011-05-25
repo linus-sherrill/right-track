@@ -270,7 +270,7 @@ DrawNames (wxDC&dc, int start_idx, int end_idx)
   for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
   {
     // Stop at the last element
-    if (ev_idx >= GetModel()->m_drawOrder.size())
+    if ((unsigned)ev_idx >= GetModel()->m_drawOrder.size())
     {
       break;
     }
