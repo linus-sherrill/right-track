@@ -1,3 +1,9 @@
+#ckwg +4
+# Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+# KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
+# Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+
+
 project ( right_track )
 
 cmake_minimum_required(VERSION 2.8)
@@ -7,7 +13,7 @@ set(right_track_VERSION_MINOR 1)
 set(right_track_VERSION_PATCH 4)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
-find_package ( Boost )
+find_package ( Boost REQUIRED )
 if(Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
 endif()
