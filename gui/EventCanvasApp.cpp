@@ -128,7 +128,7 @@ DrawEvents(wxDC& dc)
   for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
   {
     // Stop at the last element
-    if (ev_idx >= GetModel()->m_drawOrder.size())
+    if ((unsigned)ev_idx >= GetModel()->m_drawOrder.size())
     {
       break;
     }
@@ -399,7 +399,7 @@ void EventCanvasApp::
 OnMouseLeftDownEvent ( wxMouseEvent& event)
 {
   wxPoint pt (event.GetPosition() );
-  Model * p_model = GetModel();
+  // Model * p_model = GetModel();
 
   // Need to convert Content area coords to virtual coords
   int ppuX, ppuY, startX, startY;
@@ -475,7 +475,7 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
 
   // 3) locate actual event record based on time
   ItemId_t item_id (-1);
-  if ( (event_idx >= 0) && (event_idx < p_model->m_drawOrder.size()) )
+  if ( (event_idx >= 0) && ((unsigned)event_idx < p_model->m_drawOrder.size()) )
   {
     item_id = p_model->m_drawOrder[event_idx];
   }
@@ -504,8 +504,8 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
 void EventCanvasApp::
 OnMouseMotionEvent ( wxMouseEvent& event)
 {
-  wxPoint pt (event.GetPosition() );
-  Model * p_model = GetModel();
+  // wxPoint pt (event.GetPosition() );
+  // Model * p_model = GetModel();
 
   // Test to see if we are moving an event.
   if (m_cursorDrag > 0)

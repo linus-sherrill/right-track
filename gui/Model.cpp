@@ -93,6 +93,8 @@ ReadFromFile( const char * file )
   // Reset scaling of views.  wxID_RESET
 
   ModelUpdate();
+
+  return (status);
 }
 
 
