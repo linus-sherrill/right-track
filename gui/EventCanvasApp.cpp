@@ -7,7 +7,6 @@
 
 #include <EventCanvasApp.h>
 
-
 #include <wx/dcclient.h>
 #include <Model.h>
 
@@ -80,6 +79,7 @@ DrawNow ()
 {
   wxClientDC dc (this);
   DoPrepareDC(dc);
+
   DrawEvents(dc);
 
   DrawCursors();
@@ -94,6 +94,9 @@ DrawNow ()
 void EventCanvasApp::
 OnDraw( wxDC & dc)
 {
+  // Erase canvas
+  dc.Clear();
+
   DrawEvents(dc);
   DrawCursors();
 }
@@ -115,9 +118,6 @@ DrawEvents(wxDC& dc)
   wxRect view = GetCurrentView(); // current view in virtual coords
   GetModel()->SetTimeBounds (XcoordToSeconds(view.GetLeft()), XcoordToSeconds(view.GetRight()) );
 
-  // Erase canvas
-  dc.Clear();
-
   int start_idx = view.GetTop() / m_yIncrement;
   int end_idx = view.GetBottom() / m_yIncrement;
 
@@ -136,6 +136,23 @@ DrawEvents(wxDC& dc)
     ItemId_t ev = GetModel()->m_drawOrder[ev_idx];
     int y_coord = (ev_idx + 1) * m_yIncrement; // in virtual coords
 
+    // Handle selected event
+    if (GetModel()->IsEventSelected(ev))
+    {
+      // Draw light background for this event at y_coord +/- 12 pixels
+      //
+      dc.SetPen (wxPen (GetModel()->m_selectColor, 1, wxSOLID) );
+      dc.SetBrush (wxBrush (GetModel()->m_selectColor, wxSOLID) );
+    }
+    else
+    {
+      // Use default color
+      wxColour col = dc.GetBackground().GetColour();
+      dc.SetPen (wxPen (col, 1, wxSOLID) );
+      dc.SetBrush (dc.GetBackground() );
+    }
+    dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
+
     EventHistory_t * eh = & GetModel()->m_eventMap[ev];
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
@@ -150,7 +167,6 @@ DrawEvents(wxDC& dc)
     y_coord += m_yIncrement;
   } // end foreach
 
-  // DrawNames(start_idx, ev_idx-1);
 }
 
 
@@ -170,13 +186,14 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 
   // Draw base line at y_coord
   dc.SetPen( eh->eventBaselinePen );
-  dc.DrawLine (0, y_coord, view.GetWidth(), y_coord);
+  dc.DrawLine (view.x, y_coord, view.x + view.GetWidth(), y_coord);
 
   // draw event name
   // Should render in g_EventNames panel
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
-  dc.DrawText( eh->EventName(), 2, y_coord);
+  dc.DrawText( eh->EventName(), view.x + 2, y_coord);
+
 
   Model::time_iterator_t it;
   Model::time_iterator_t bit = eh->EventHistory.begin();
@@ -200,12 +217,13 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
         int x_coord = SecondsToXcoord (it->event_time);
         if ( (l >= 0) && (x_coord >= l) )
         {
-          obit = -- it; // set begin iterator
+          obit = --it; // set begin iterator
           l = -1; // switch to next state
         }
         else if ( x_coord > r )
         {
           oeit = it; // set end interator
+          if (it != eit) oeit++;
           break;
         }
       } // end END element
@@ -233,6 +251,9 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 
       x_event_start = x_coord;
       break;
+
+// @todo problem here when the evens spans more than the view.
+// There is no line if the end event is not in view.
 
     case EventHistoryElement_t::END:
       // draw line from x_event_start to x_coord
@@ -264,7 +285,7 @@ DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 
   // Draw base line at y_coord
   dc.SetPen( eh->eventBaselinePen );
-  dc.DrawLine (0, y_coord, view.GetWidth(), y_coord);
+  dc.DrawLine (view.x, y_coord, view.x + view.GetWidth(), y_coord);
 
   // draw event name
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
@@ -373,7 +394,8 @@ DrawCursors ()
 // ----------------------------------------------------------------
 /** Normalize cursors.
  *
- * This method normalizes the cursors so that cursor 1 is always less than cursor 2.
+ * This method normalizes the cursors so that cursor 1 is always less
+ * than cursor 2.
  */
 void EventCanvasApp::
 NormalizeCursors()
@@ -478,7 +500,12 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
   if ( (event_idx >= 0) && ((unsigned)event_idx < p_model->m_drawOrder.size()) )
   {
     item_id = p_model->m_drawOrder[event_idx];
+    // Set selected item id in model
+    p_model->SelectEvent (item_id);
   }
+
+  // 3-a) locate the specific event based on 'ots' if there is one
+  // TBD - call method in Model to locate the event.
 
   // 4) display event data by filling in Model.
   std::cout << "event idx: " << event_idx
@@ -493,7 +520,6 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
 
   GetModel()->SetEventInfo (eh->EventName(), p_model->m_ei_eventCount, 0);
 }
-
 
 
 // ----------------------------------------------------------------

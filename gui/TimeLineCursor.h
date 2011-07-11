@@ -16,7 +16,7 @@
  * This class represents a single cursor placed at a specific X
  * coordinate.
  *
- * since we are drawn last over all other view content, we can not
+ * Since we are drawn last over all other view content, we can not
  * erase ourselves.
  */
 class TimeLineCursor
