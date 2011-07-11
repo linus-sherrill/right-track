@@ -104,6 +104,10 @@ public:
   typedef vcl_vector < ContextHistoryElement_t > context_history_t;
   typedef context_history_t::iterator pp_iterator_t;
 
+  enum { // bit mask
+    UPDATE_EVENTS = 1,
+    UPDATE_INFO = 2,
+  };
 
   // -- CONSTRUCTORS --
   Model(MainFrameApp * frame);  // CTOR
@@ -121,7 +125,7 @@ public:
 
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
-  void ModelUpdate();
+  void ModelUpdate(unsigned code);
 
   // FindEventByTime (ItemId_t id, double ots);
 
@@ -147,12 +151,19 @@ public:
   void SetEventInfo ( wxString const& name, int count, double data);
   void GetEventInfo ( wxString& name, int& count, double& data);
 
+  void SelectEvent (ItemId_t event);
+  bool IsEventSelected (ItemId_t event) const;
+
+//   bool GetEventInfoByTime (EventHistory_t const& eh, double time_offset, EventInfo_t * out_info);
+// Ned to define EventInfo_t structure
+
   // Colors to use
   wxColour m_defaultBaselineColor;
   wxColour m_defaultLineColor;
   wxColour m_defaultEventColor;
   wxColour m_startEventColor;
   wxColour m_endEventColor;
+  wxColour m_selectColor;
 
   wxColourData m_persistentColourData;
 
@@ -177,7 +188,7 @@ private:
   int m_evc_count;
   double m_evc_data;
 
-
+  ItemId_t m_selectedEvent;
 
   static Model * s_instance;
 };

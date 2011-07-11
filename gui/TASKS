@@ -1,0 +1,42 @@
+---- To Do ----
+
+Draw names in left side panel. Panel contents must match larger drawing pane.
+
+Highlight even when clicked on. Make name bold and make a brighter
+background (light yellow).
+
+Enable re-ordering events. There are icons on toolbar to handle this,
+but it is not implemented in the code. Add button to move event to
+bottom of list, button for top of list.
+
+Devise a way of hiding one or more event time lines. This could be a
+checkbox, but then there would need to be a way of getting it back.
+
+Clicking on event should display some stuff in right pane.
+         - event name (based on y-coord)
+         - event info (based on x-coord)
+            - event start, stop time and duration
+            - associated data
+
+Allow annotation of data set. This is a big feature.
+    - Establish a separate data file (and internal structures) to hold
+      user modifications and display state.
+    - Allow user colouring of individual events.
+    - Allow user to add annotations to events. Mark event as having annotation.
+
+Allow loading multiple data sets into one viewer. Add menu item to
+clear all events.
+
+Add an overview window/thumbnail that shows the whole event space with
+a gray outline of what is being viewed. For bonus points, allow view
+ractangle to be dragged to change the view.
+
+BUG - events that extend beyond the window border are not drawn correctly.
+
+BUG - horizontal scrolling does not refresh screen correctly.
+
+BUG - cursors can disappear when panel is scrolled.
+
+---- Done ----
+
+BUG - event base line does not draw correctly when zoomed/h-scrolled

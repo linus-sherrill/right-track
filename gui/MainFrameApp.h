@@ -39,11 +39,11 @@ public:
   Model * GetModel() const { return Model::Instance(); }
   void DrawNames (wxDC& dc, int start_idx, int end_idx);
 
-  void ModelUpdate();
+  void ModelUpdate(unsigned code);
 
 
 protected:
-  void DoModelUpdate();
+  void DoModelUpdate(unsigned code);
   void UpdateEventInfo();
   void UpdateTimeline();
   void UpdateCursorTimes();
@@ -66,7 +66,7 @@ protected:
 
 
 private:
-  bool m_pendingUpdate;
+  unsigned m_pendingUpdate;
 
 }; // end class MainFrameApp
 

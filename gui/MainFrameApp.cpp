@@ -48,10 +48,11 @@ MainFrameApp::
 void MainFrameApp::
 OnIdle(wxIdleEvent& evt)
 {
-  if (m_pendingUpdate)
+  if (m_pendingUpdate != 0)
   {
-    m_pendingUpdate = false;
-    DoModelUpdate();
+    DoModelUpdate(m_pendingUpdate);
+
+    m_pendingUpdate = 0;
   }
 }
 
@@ -122,7 +123,7 @@ void MainFrameApp::
 ZoomInHandler(wxCommandEvent &event)
 {
   // magnify image - more pixels per second
-  g_EventFrame->XZoom(2.0);
+  g_EventFrame->XZoom(1.5);
 }
 
 
@@ -130,7 +131,7 @@ void MainFrameApp::
 ZoomOutHandler(wxCommandEvent &event)
 {
   // make features smaller - less pix per sec
-  g_EventFrame->XZoom(0.5);
+  g_EventFrame->XZoom(1.0/1.5);
 }
 
 
@@ -179,18 +180,26 @@ AboutHandler(wxCommandEvent &event)
  *
  */
 void MainFrameApp::
-ModelUpdate()
+ModelUpdate(unsigned code)
 {
-  m_pendingUpdate = true;
+  m_pendingUpdate |= code;
 
 }
 
 void MainFrameApp::
-DoModelUpdate()
+DoModelUpdate(unsigned code)
 {
-  UpdateEventInfo();
-  UpdateTimeline();
-  UpdateCursorTimes();
+  if (code & Model::UPDATE_INFO)
+  {
+    UpdateEventInfo();
+    UpdateTimeline();
+    UpdateCursorTimes();
+  }
+
+  if (code & Model::UPDATE_EVENTS)
+  {
+    g_EventFrame->DrawNow();
+  }
 }
 
 
@@ -254,7 +263,6 @@ UpdateCursorTimes()
   this->g_Curs1Time->SetLabel (wxString::Format( wxT("Cursor 1: %1.3f sec"), c1) );
   this->g_Curs2Time->SetLabel (wxString::Format( wxT("Cursor 2: %1.3f sec"), c2) );
   this->g_CursDtime->SetLabel (wxString::Format( wxT("Cursor diff: %1.3f sec"), c2 - c1) );
-
 }
 
 // ----------------------------------------------------------------

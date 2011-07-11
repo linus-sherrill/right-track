@@ -65,6 +65,9 @@ Reset()
   m_startEventColor = wxColor ( 10, 167, 6 ); // green
   m_endEventColor = wxColor ( 229, 22, 22 ); // red
 
+  m_selectColor = wxColor (222, 207, 15);
+
+  m_selectedEvent = -1;
 }
 
 
@@ -92,7 +95,7 @@ ReadFromFile( const char * file )
 
   // Reset scaling of views.  wxID_RESET
 
-  ModelUpdate();
+  ModelUpdate(UPDATE_INFO);
 
   return (status);
 }
@@ -191,7 +194,7 @@ SetCursorTimes (double t1, double t2)
   m_cursor_1_time = t1;
   m_cursor_2_time = t2;
 
-  ModelUpdate();
+  ModelUpdate(UPDATE_INFO);
 }
 
 
@@ -209,7 +212,7 @@ SetTimeBounds (double start, double end)
   m_viewTimeStart = start;
   m_viewTimeEnd = end;
 
-  ModelUpdate();
+  ModelUpdate(UPDATE_INFO);
 }
 
 void Model::
@@ -227,7 +230,7 @@ SetEventInfo ( wxString const& name, int count, double data)
   m_evc_count = count;
   m_evc_data = data;
 
-  ModelUpdate();
+  ModelUpdate(UPDATE_INFO);
 }
 
 void Model::
@@ -239,13 +242,31 @@ GetEventInfo ( wxString& name, int& count, double& data)
 }
 
 
+void Model::
+SelectEvent (ItemId_t event)
+{
+  m_selectedEvent = event;
+
+  // Need to redraw events but this is not doing it.
+  ModelUpdate(UPDATE_EVENTS);
+}
+
+
+bool Model::
+IsEventSelected (ItemId_t event) const
+{
+  return (m_selectedEvent == event);
+}
+
+
+
 // ----------------------------------------------------------------
 /** Send message to windows when something changed.
  *
  *
  */
 void Model::
-ModelUpdate()
+ModelUpdate(unsigned code)
 {
-  m_parentFrame->ModelUpdate();
+  m_parentFrame->ModelUpdate(code);
 }

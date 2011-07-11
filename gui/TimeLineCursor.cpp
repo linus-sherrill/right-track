@@ -32,7 +32,8 @@ TimeLineCursor::
 // ----------------------------------------------------------------
 /** Draw cursor in DC.
  *
- *
+ * @param[in] dc - drawing contect
+ * @param[in] view - current window view of the full event sapce
  */
 void TimeLineCursor::
 Draw(wxClientDC& dc, wxRect view)
@@ -46,10 +47,10 @@ Draw(wxClientDC& dc, wxRect view)
 
   // Start with a red line
   dc.SetPen( wxPen( wxColor( 250, 0, 0), 2, wxSOLID ) );
-  dc.DrawLine( m_xCoord, view.GetTop(), m_xCoord, view.GetBottom() );
+  dc.DrawLine( m_xCoord + view.x, view.GetTop(), m_xCoord + view.x, view.GetBottom() );
 
   // draw grab rect.
-  dc.DrawRectangle( m_xCoord-2, view.GetBottom(), 5, -5 );
+//  dc.DrawRectangle( m_xCoord-2, view.GetBottom(), 5, -5 );
 }
 
 
