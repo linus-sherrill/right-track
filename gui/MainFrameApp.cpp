@@ -12,6 +12,7 @@
 #include <wx/msgdlg.h>
 #include <wx/dcclient.h>
 #include <wx/pen.h>
+#include <wx/treectrl.h>
 
 
 // Define our custom event table
@@ -193,11 +194,18 @@ DoModelUpdate(unsigned code)
   {
     UpdateEventInfo();
     UpdateTimeline();
-    UpdateCursorTimes();
   }
 
   if (code & Model::UPDATE_EVENTS)
   {
+    g_EventFrame->DrawNow();
+  }
+
+  if (code & Model::UPDATE_CURSOR)
+  {
+    // Update cursor objects with model data
+    g_EventFrame->ResetCursorToModel();
+    UpdateCursorTimes(); // Update display fields
     g_EventFrame->DrawNow();
   }
 }
@@ -260,10 +268,100 @@ UpdateCursorTimes()
 
   GetModel()->GetCursorTimes(c1, c2);
 
-  this->g_Curs1Time->SetLabel (wxString::Format( wxT("Cursor 1: %1.3f sec"), c1) );
-  this->g_Curs2Time->SetLabel (wxString::Format( wxT("Cursor 2: %1.3f sec"), c2) );
+  this->g_Curs1Time->SetValue (wxString::Format( wxT("%1.3f"), c1) );
+  this->g_Curs2Time->SetValue (wxString::Format( wxT("%1.3f"), c2) );
   this->g_CursDtime->SetLabel (wxString::Format( wxT("Cursor diff: %1.3f sec"), c2 - c1) );
 }
+
+
+void MainFrameApp::Curs1Set(wxCommandEvent &event)
+{
+  // take value from control and send to model
+  // update cursor position
+  wxString val = this->g_Curs1Time->GetValue ();
+  double c1, c2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  val.ToDouble(&c1);
+  pm->SetCursorTimes(c1, c2);
+}
+
+
+void MainFrameApp::Curs1Down(wxSpinEvent &event)
+{
+  // decrement value in model
+  // update model
+  double c1, c2;
+  double b1, b2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  pm->GetTimeBounds( b1, b2);
+  c1 -= (b2 - b1) / 40.0;
+  pm->SetCursorTimes(c1, c2);
+}
+
+
+void MainFrameApp::Curs1Up(wxSpinEvent &event)
+{
+  // decrement value in model
+  // update model
+  double c1, c2;
+  double b1, b2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  pm->GetTimeBounds( b1, b2);
+  c1 += (b2 - b1) / 40.0;
+
+  pm->SetCursorTimes(c1, c2);
+}
+
+
+void MainFrameApp::Curs2Set(wxCommandEvent &event)
+{
+  // take value from control and send to model
+  // update cursor position
+  wxString val = this->g_Curs2Time->GetValue ();
+  double c1, c2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  val.ToDouble(&c2);
+  pm->SetCursorTimes(c1, c2);
+}
+
+
+void MainFrameApp::Curs2Down(wxSpinEvent &event)
+{
+  // decrement value in model
+  // update model
+  double c1, c2;
+  double b1, b2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  pm->GetTimeBounds( b1, b2);
+  c2 -= (b2 - b1) / 40.0;
+  pm->SetCursorTimes(c1, c2);
+}
+
+
+void MainFrameApp::Curs2Up(wxSpinEvent &event)
+{
+  // decrement value in model
+  // update model
+  double c1, c2;
+  double b1, b2;
+  Model * pm = GetModel();
+
+  pm->GetCursorTimes(c1, c2);
+  pm->GetTimeBounds( b1, b2);
+  c2 += (b2 - b1) / 40.0;
+  pm->SetCursorTimes(c1, c2);
+}
+
 
 // ----------------------------------------------------------------
 /** Draw event names in the correct panel.
@@ -271,9 +369,37 @@ UpdateCursorTimes()
  *
  */
 void MainFrameApp::
-DrawNames (wxDC&dc, int start_idx, int end_idx)
+DrawNames ()
 {
+  class AppTreeData
+    : public wxTreeItemData
+  {
 
+
+  };
+
+
+  wxTreeItemId root_id = g_EventList->AddRoot(wxT("Events"), 0, 0,
+                                              new AppTreeData() );
+
+//
+// The goal for this tree ctrl is to allow drag to reorder tracks, and
+// the ability to make groups (or display groups as defined in the
+// input data). Also the ability to hide events that are of no
+// interest.
+//
+
+/*
+  Model::event_iterator_t ix;
+  for (ix = m_eventMap.begin(); ix != m_eventMap.end(); ix++)
+  {
+    EventHistory_t * eh = &(ix->second);
+
+
+
+  } // end for
+*/
+/*
   // for each event in their drawing order
   for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
   {
@@ -295,6 +421,27 @@ DrawNames (wxDC&dc, int start_idx, int end_idx)
     dc.DrawText( eh->EventName(), 2, y_coord);
 
   } // end for
+*/
+
 }
 
 
+
+
+// ----------------------------------------------------------------
+/** Move currently selected event up one line.
+ *
+ *
+ */
+void MainFrameApp::
+handle_move_up(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventUp();
+}
+
+
+void MainFrameApp::
+handle_move_down(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventDown();
+}

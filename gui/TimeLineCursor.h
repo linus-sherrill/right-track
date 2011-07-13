@@ -14,7 +14,7 @@
 /** Time Line Cursor
  *
  * This class represents a single cursor placed at a specific X
- * coordinate.
+ * coordinate in the whole event space.
  *
  * Since we are drawn last over all other view content, we can not
  * erase ourselves.

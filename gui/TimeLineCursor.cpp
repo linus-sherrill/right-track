@@ -32,7 +32,7 @@ TimeLineCursor::
 // ----------------------------------------------------------------
 /** Draw cursor in DC.
  *
- * @param[in] dc - drawing contect
+ * @param[in] dc - drawing contect (visible portion only)
  * @param[in] view - current window view of the full event sapce
  */
 void TimeLineCursor::
@@ -40,14 +40,15 @@ Draw(wxClientDC& dc, wxRect view)
 {
   // Check to see if cursor is visible. It is really an error if not
   // visible. Otherwise, what's the point.
-  if ( ! m_enabled || (m_xCoord <= view.GetLeft()) || (m_xCoord >= view.GetRight()) )
+  if ( ! m_enabled || (m_xCoord < view.GetLeft()) || (m_xCoord > view.GetRight()) )
   {
     return;
   }
 
   // Start with a red line
   dc.SetPen( wxPen( wxColor( 250, 0, 0), 2, wxSOLID ) );
-  dc.DrawLine( m_xCoord + view.x, view.GetTop(), m_xCoord + view.x, view.GetBottom() );
+  dc.DrawLine( m_xCoord - view.GetLeft(), 0,
+               m_xCoord - view.GetLeft(), view.GetBottom() );
 
   // draw grab rect.
 //  dc.DrawRectangle( m_xCoord-2, view.GetBottom(), 5, -5 );
@@ -63,7 +64,7 @@ void TimeLineCursor::
 Move (int x_coord)
 {
   m_xCoord = x_coord;
-
+  std::cout << "cursor set to " << x_coord << "\n"; //+ TEMP
   // It would be nice to redraw cursor here, but we don't have enough
   // info.
 
