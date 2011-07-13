@@ -47,6 +47,7 @@ public:
   void ResetView();
   wxRect GetCurrentView();
   void EnableCursors (bool enab);
+  void ResetCursorToModel();
 
 
 protected:

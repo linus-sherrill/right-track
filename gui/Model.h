@@ -36,6 +36,8 @@ struct EventHistoryElement_t
   double event_time; // in seconds
   EventPid_t event_pid;
   EventData_t event_data;
+
+  vcl_string userComment;
 };
 
 
@@ -64,6 +66,9 @@ struct EventHistory_t
 
 
   vcl_vector < EventHistoryElement_t > EventHistory;
+
+  bool m_enabled;
+  vcl_string userComment;
 };
 
 
@@ -107,6 +112,7 @@ public:
   enum { // bit mask
     UPDATE_EVENTS = 1,
     UPDATE_INFO = 2,
+    UPDATE_CURSOR = 4
   };
 
   // -- CONSTRUCTORS --
@@ -126,6 +132,9 @@ public:
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
   void ModelUpdate(unsigned code);
+
+  void MoveSelectedEventUp();
+  void MoveSelectedEventDown();
 
   // FindEventByTime (ItemId_t id, double ots);
 
@@ -153,6 +162,8 @@ public:
 
   void SelectEvent (ItemId_t event);
   bool IsEventSelected (ItemId_t event) const;
+  ItemId_t GetSelectedEvent() const;
+
 
 //   bool GetEventInfoByTime (EventHistory_t const& eh, double time_offset, EventInfo_t * out_info);
 // Ned to define EventInfo_t structure

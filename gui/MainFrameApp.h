@@ -37,7 +37,7 @@ public:
   virtual ~MainFrameApp();
 
   Model * GetModel() const { return Model::Instance(); }
-  void DrawNames (wxDC& dc, int start_idx, int end_idx);
+  void DrawNames ();
 
   void ModelUpdate(unsigned code);
 
@@ -61,6 +61,16 @@ protected:
   virtual void ZoomOutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomFillHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+
+  virtual void handle_move_up(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void handle_move_down(wxCommandEvent &event); // wxGlade: <event_handler>
+
+  virtual void Curs1Set(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void Curs1Down(wxSpinEvent &event); // wxGlade: <event_handler>
+  virtual void Curs1Up(wxSpinEvent &event); // wxGlade: <event_handler>
+  virtual void Curs2Set(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void Curs2Down(wxSpinEvent &event); // wxGlade: <event_handler>
+  virtual void Curs2Up(wxSpinEvent &event); // wxGlade: <event_handler>
 
   DECLARE_EVENT_TABLE();
 

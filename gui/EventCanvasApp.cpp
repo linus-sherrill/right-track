@@ -41,7 +41,6 @@ EventCanvasApp::EventCanvasApp(wxWindow* parent,
 
   m_cursor_1.Move(25);
   m_cursor_2.Move(150);
-
 }
 
 
@@ -62,10 +61,38 @@ void EventCanvasApp::
 ResetView()
 {
   m_pixelsPerSecond = 0;
-
   SetDefaultScaling();
 
+  m_yIncrement = 25;
+
+  m_cursor_1.Move(25);
+  m_cursor_2.Move(150);
+
+  double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
+  double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
+  GetModel()->SetCursorTimes(ct_1, ct_2);
+
   DrawNow();
+}
+
+
+// ----------------------------------------------------------------
+/** Reset cursot based on model data.
+ *
+ *
+ */
+void EventCanvasApp::
+ResetCursorToModel()
+{
+  double ct_1;
+  double ct_2;
+  GetModel()->GetCursorTimes (ct_1, ct_2);
+
+  int x_coord = ct_1  * m_pixelsPerSecond + 15;
+  m_cursor_1.Move (x_coord);
+
+  x_coord = ct_2  * m_pixelsPerSecond + 15 ;
+  m_cursor_2.Move (x_coord);
 }
 
 
@@ -79,9 +106,7 @@ DrawNow ()
 {
   wxClientDC dc (this);
   DoPrepareDC(dc);
-
   DrawEvents(dc);
-
   DrawCursors();
 }
 
@@ -384,10 +409,6 @@ DrawCursors ()
 
   m_cursor_1.Draw( dc, rect);
   m_cursor_2.Draw( dc, rect);
-
-  double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
-  double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
-  GetModel()->SetCursorTimes(ct_1, ct_2);
 }
 
 
@@ -637,6 +658,10 @@ XZoom ( float factor )
       m_pixelsPerSecond = m_defaultPixelsPerSecond;
     }
   }
+
+  // update cursor x-coord based on zoom
+  ResetCursorToModel();
+
   Refresh();
 }
 

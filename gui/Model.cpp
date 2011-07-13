@@ -129,6 +129,8 @@ ScanEvents()
   {
     EventHistory_t * eh = &(ix->second);
 
+    eh->m_enabled = true; // all start enabled
+
     // Setup general colors
     eh->eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxSOLID );
 
@@ -194,7 +196,7 @@ SetCursorTimes (double t1, double t2)
   m_cursor_1_time = t1;
   m_cursor_2_time = t2;
 
-  ModelUpdate(UPDATE_INFO);
+  ModelUpdate(UPDATE_CURSOR);
 }
 
 
@@ -247,7 +249,7 @@ SelectEvent (ItemId_t event)
 {
   m_selectedEvent = event;
 
-  // Need to redraw events but this is not doing it.
+  // Need to redraw events
   ModelUpdate(UPDATE_EVENTS);
 }
 
@@ -259,6 +261,12 @@ IsEventSelected (ItemId_t event) const
 }
 
 
+ItemId_t Model::
+GetSelectedEvent() const
+{
+  return m_selectedEvent;
+}
+
 
 // ----------------------------------------------------------------
 /** Send message to windows when something changed.
@@ -269,4 +277,78 @@ void Model::
 ModelUpdate(unsigned code)
 {
   m_parentFrame->ModelUpdate(code);
+}
+
+
+// ----------------------------------------------------------------
+/** Move currently selected event up one row.
+ *
+ *
+ */
+void Model::
+MoveSelectedEventUp()
+{
+  ItemId_t item = GetSelectedEvent();
+  if (item < 0)
+  {
+    return; // no selected event
+  }
+
+  // Scan the drawing order vector
+
+  // Start loop at 1 since if the desired element is at index 0, it
+  // can not be moved higher, so don't even try.
+  size_t limit = m_drawOrder.size();
+  for (size_t i = 1; i < limit; ++i)
+  {
+    if (m_drawOrder[i] == item)
+    {
+      // swap [i] and [i-1]
+      ItemId_t temp = m_drawOrder[i];
+      m_drawOrder[i] = m_drawOrder[i-1];
+      m_drawOrder[i-1] = temp;
+
+      // Need to redraw events
+      ModelUpdate(UPDATE_EVENTS);
+
+      break;
+    }
+  } // end for
+}
+
+
+// ----------------------------------------------------------------
+/** Move currently selected event down one row.
+ *
+ *
+ */
+void Model::
+MoveSelectedEventDown()
+{
+  ItemId_t item = GetSelectedEvent();
+  if (item < 0)
+  {
+    return; // no selected event
+  }
+
+  // Scan the drawing order vector
+
+  // End loop at next to the last element, since if the one we are
+  // looking for is there, it can not be moved.
+  size_t limit = m_drawOrder.size() -1;
+  for (size_t i = 1; i < limit; ++i)
+  {
+    if (m_drawOrder[i] == item)
+    {
+      // swap [i] and [i+1]
+      ItemId_t temp = m_drawOrder[i];
+      m_drawOrder[i] = m_drawOrder[i+1];
+      m_drawOrder[i+1] = temp;
+
+      // Need to redraw events
+      ModelUpdate(UPDATE_EVENTS);
+
+      break;
+    }
+  } // end for
 }
