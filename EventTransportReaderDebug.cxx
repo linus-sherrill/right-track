@@ -21,7 +21,7 @@ NewEvent(EventDefinition const& msg)
   vcl_cout << "Event definition: "
            << "  name: \"" << msg.event_name << "\""
            << "  id: " << msg.event_id
-           << "  time: " << msg.event_time
+           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  type: " << msg.event_type
            << "  group: " << msg.event_group
            << "  color: " << msg.event_color
@@ -36,7 +36,7 @@ NewEvent(EventStart const& msg)
 {
   vcl_cout << "Event start: "
            << "  id: " << msg.event_id
-           << "  time: " << msg.event_time
+           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  pid: " << msg.event_pid
            << "  data: " << msg.event_data
            << vcl_endl;
@@ -50,7 +50,7 @@ NewEvent(EventEnd const& msg)
 {
   vcl_cout << "Event end: "
            << "  id: " << msg.event_id
-           << "  time: " << msg.event_time
+           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  pid: " << msg.event_pid
            << "  data: " << msg.event_data
            << vcl_endl;

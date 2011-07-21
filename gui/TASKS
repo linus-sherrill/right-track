@@ -29,14 +29,20 @@ clear all events.
 
 Add an overview window/thumbnail that shows the whole event space with
 a gray outline of what is being viewed. For bonus points, allow view
-ractangle to be dragged to change the view.
+rectangle to be dragged to change the view.
 
-BUG - events that extend beyond the window border are not drawn correctly.
+Resources have a hardcoded path. Should be relative. Or use .rc file, or compile in.
+
+Display statistics on a specific event. Num events, min, max, average,
+std. Also would be nice to display a event lentgh histogram.
 
 BUG - horizontal scrolling does not refresh screen correctly.
 
-BUG - cursors can disappear when panel is scrolled.
 
 ---- Done ----
 
 BUG - event base line does not draw correctly when zoomed/h-scrolled
+
+BUG - cursors can disappear when panel is scrolled.
+
+BUG - events that extend beyond the window border are not drawn correctly.

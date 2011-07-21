@@ -155,7 +155,7 @@ CurrentTimestamp()
 
   vul_get_timestamp( secs, msecs);
 
-  EventTimestamp_t retval = ((secs * 1000) + msecs) * 1000;
+  EventTimestamp_t retval(secs, msecs * 1000);
   return retval;
 }
 

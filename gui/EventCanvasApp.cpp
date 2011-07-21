@@ -88,11 +88,36 @@ ResetCursorToModel()
   double ct_2;
   GetModel()->GetCursorTimes (ct_1, ct_2);
 
+  std::cout << "Time from model: " << ct_1 << ", " << ct_2  //TEMP
+            << "  Pixels per sec: " << m_pixelsPerSecond << "\n";
+
   int x_coord = ct_1  * m_pixelsPerSecond + 15;
   m_cursor_1.Move (x_coord);
 
   x_coord = ct_2  * m_pixelsPerSecond + 15 ;
   m_cursor_2.Move (x_coord);
+}
+
+
+// ----------------------------------------------------------------
+/** Reset cursors to be in the display window.
+ *
+ *
+ */
+void EventCanvasApp::
+ResetCursors()
+{
+  wxRect rect = GetCurrentView();
+
+  int x = rect.x + (rect.GetWidth() * 0.3);
+  m_cursor_1.Move(x);
+
+  x = rect.x + (rect.GetWidth() * 0.6);
+  m_cursor_2.Move(x);
+
+  double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
+  double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
+  GetModel()->SetCursorTimes(ct_1, ct_2);
 }
 
 
@@ -272,13 +297,10 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
       dc.SetPen( eh->startMarkerPen );
       dc.SetBrush (eh->startMarkerBrush );
 
-      dc.DrawRectangle ( x_coord, y_coord, 3, -10);
+      dc.DrawRectangle ( x_coord -1, y_coord, 3, -10);
 
       x_event_start = x_coord;
       break;
-
-// @todo problem here when the evens spans more than the view.
-// There is no line if the end event is not in view.
 
     case EventHistoryElement_t::END:
       // draw line from x_event_start to x_coord
@@ -289,7 +311,7 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
       dc.SetPen( eh->endMarkerPen );
       dc.SetBrush (eh->endMarkerBrush );
 
-      dc.DrawRectangle ( x_coord, y_coord, 3, 10);
+      dc.DrawRectangle ( x_coord -1, y_coord, 3, 10);
       break;
     } // end switch
 
@@ -532,14 +554,78 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
   std::cout << "event idx: " << event_idx
             << "  offset time: " << ots
             << "  item id: " << item_id
+            << "  pixels per second: " << m_pixelsPerSecond
+            << "  time offset: " <<  GetModel()->TimeOffset()
             << std::endl;
+
   EventHistory_t * eh = & p_model->m_eventMap[item_id];
+
+  BoundedEventStatistics stats;
+
+  CalculateEventStats (eh, &stats);
   p_model->m_ei_eventCount = eh->EventHistory.size();
+
+  //
+  // look through <eh> for end event just greater than (ots + time_offset)
+  //
+
 
   std::cout << "Event name: " << eh->ev_def.event_name
             << "  count: " << p_model->m_ei_eventCount << std::endl;
 
-  GetModel()->SetEventInfo (eh->EventName(), p_model->m_ei_eventCount, 0);
+  GetModel()->SetEventInfo (stats);
+}
+
+
+// ----------------------------------------------------------------
+/** Calculate event statistics.
+ *
+ *
+ */
+bool EventCanvasApp::
+CalculateEventStats ( EventHistory_t * eh, BoundedEventStatistics * stats)
+{
+  stats->m_name = eh->EventName();
+
+  // Must be a bounded event
+  if (eh->EventType() != Event::ET_BOUNDED_EVENT)
+  {
+    stats->m_count = eh->EventHistory.size();
+    return false;
+  }
+
+  EventHistory_t::const_iterator_t ix = eh->EventHistory.begin();
+  EventHistory_t::const_iterator_t ex = eh->EventHistory.end();
+
+  stats->m_minDuration = 1e300;
+  stats->m_maxDuration = 0.0;
+  double last_start = ix->event_time;
+  double sum (0);
+  double sum_sq (0);
+  double count (0);
+
+  for (; ix != ex; ix++)
+  {
+    if (ix->ev_action == EventHistoryElement_t::END)
+    {
+      double duration = ix->event_time - last_start;
+      if (stats->m_maxDuration < duration) stats->m_maxDuration = duration;
+      if (stats->m_minDuration > duration) stats->m_minDuration = duration;
+      sum += duration;
+      sum_sq += (duration * duration);
+      count ++;
+    }
+    else if (ix->ev_action == EventHistoryElement_t::START)
+    {
+      last_start = ix->event_time;
+    }
+  } // end for
+
+  stats->m_count = static_cast< int >(count);
+  stats->m_avgDuration = sum / count;
+  stats->m_stdDuration = sqrt((sum_sq - (sum * stats->m_avgDuration)) / (count - 1) );
+
+  return true;
 }
 
 
@@ -631,7 +717,9 @@ SecondsToXcoord(double ts) const
 double EventCanvasApp::
 XcoordToSeconds( int xcoord) const
 {
-  return xcoord / m_pixelsPerSecond;
+  double sec = (double) (xcoord - 15) / m_pixelsPerSecond;
+  if (sec < 0) sec = 0;
+  return sec;
 }
 
 // ----------------------------------------------------------------

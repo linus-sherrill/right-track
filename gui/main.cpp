@@ -24,18 +24,14 @@ private:
 
 };
 
-
-
 IMPLEMENT_APP(RightTrackApp)
-
-
 
 bool RightTrackApp::OnInit()
 {
   wxInitAllImageHandlers();
   MainFrameApp* frame_1 = new MainFrameApp(NULL, wxID_ANY, wxEmptyString);
 
-  Model * model_p = new Model (frame_1);
+  new Model (frame_1); // instantiate the global model
 
   SetTopWindow(frame_1);
   frame_1->Show();

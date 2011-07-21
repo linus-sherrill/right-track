@@ -6,7 +6,7 @@
 
 
 #ifndef _RIGHT_TRACK_EVENTDEFS_H_
-#define _RIGHT_TRACK__EVENTDEFS_H_
+#define _RIGHT_TRACK_EVENTDEFS_H_
 
 #include <stdint.h>
 
@@ -14,18 +14,25 @@ namespace RightTrack {
 
 typedef double EventData_t;
 
-  namespace Internal {
+namespace Internal {
 
-typedef uint64_t EventTimestamp_t;
+struct EventTimestamp_t
+{
+  EventTimestamp_t () : secs(0), usecs(0) { }
+  EventTimestamp_t (uint64_t s, uint32_t u) : secs(s), usecs(u) { }
+
+  uint64_t secs;
+  uint32_t usecs;
+};
+
 typedef uint32_t ItemId_t;
 typedef uint32_t EventPid_t;
 
 
-
 }
 }
 
-#endif /* _RIGHT_TRACK__EVENTDEFS_H_ */
+#endif /* _RIGHT_TRACK_EVENTDEFS_H_ */
 
 // Local Variables:
 // mode: c++
