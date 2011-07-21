@@ -203,14 +203,14 @@ DrawEvents(wxDC& dc)
     }
     dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
 
-    EventHistory_t * eh = & GetModel()->m_eventMap[ev];
+    EventDef::handle_t eh = GetModel()->m_eventMap[ev];
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
-      DrawBoundedEvent (dc, eh, y_coord);
+      DrawBoundedEvent (dc, eh->GetBoundedEvent(), y_coord);
     }
     else
     {
-      DrawDiscreteEvent (dc, eh, y_coord);
+      DrawDiscreteEvent (dc, eh->GetDiscreteEvent(), y_coord);
     }
 
     // Increment to next drawing line
@@ -230,53 +230,56 @@ DrawEvents(wxDC& dc)
  * @param[in] y_coord - y coordinate to use for drawing
  */
 void EventCanvasApp::
-DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
+DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
 {
   wxRect view = GetCurrentView(); // current view in virtual coords
 
   // Draw base line at y_coord
-  dc.SetPen( eh->eventBaselinePen );
-  dc.DrawLine (view.x, y_coord, view.x + view.GetWidth(), y_coord);
+  dc.SetPen(eh->m_eventBaselinePen);
+  dc.DrawLine(view.x, y_coord, view.x + view.GetWidth(), y_coord);
 
   // draw event name
   // Should render in g_EventNames panel
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
-  dc.SetFont (fnt);
-  dc.DrawText( eh->EventName(), view.x + 2, y_coord);
+  dc.SetFont(fnt);
+  dc.DrawText(eh->EventName(), view.x + 2, y_coord);
 
 
-  Model::time_iterator_t it;
-  Model::time_iterator_t bit = eh->EventHistory.begin();
-  Model::time_iterator_t eit = eh->EventHistory.end();
+  BoundedEventDef::iterator_t it;
+  BoundedEventDef::iterator_t bit = eh->m_list.begin();
+  BoundedEventDef::iterator_t eit = eh->m_list.end();
 
   // Don't optimize this way if zoom factor is less than some zoom
   // factor because the time to do the optimization must be less than
   // the full draw time for the optimization to be of value.
   if (XZoomFactor() >= 2)
   {
-    Model::time_iterator_t obit = eh->EventHistory.begin();
-    Model::time_iterator_t oeit = eh->EventHistory.end();
+    BoundedEventDef::iterator_t obit = eh->m_list.begin();
+    BoundedEventDef::iterator_t oeit = eh->m_list.end();
 
     int l = view.GetLeft();
     int r = view.GetRight();
 
     for (it = bit; it != eit; it++)
     {
-      if (it->ev_action == EventHistoryElement_t::END)
+      if ( ( l >= 0 ) // first state and either endpoint is in the window
+           && (( SecondsToXcoord(it->m_startTime) >= l )
+               || ( SecondsToXcoord(it->m_endTime) >= l ))
+        )
       {
-        int x_coord = SecondsToXcoord (it->event_time);
-        if ( (l >= 0) && (x_coord >= l) )
+        obit = it; // set begin iterator
+        if (it != bit) obit--;
+        l = -1; // switch to next state
+      }
+      else if ( SecondsToXcoord(it->m_endTime) > r )
+      {
+        oeit = it; // set end interator
+        if (it != eit)
         {
-          obit = --it; // set begin iterator
-          l = -1; // switch to next state
+          oeit++;
         }
-        else if ( x_coord > r )
-        {
-          oeit = it; // set end interator
-          if (it != eit) oeit++;
-          break;
-        }
-      } // end END element
+        break;
+      }
     } // end for
 
     // copy optimized iterators
@@ -287,34 +290,22 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
   // draw the event history.
   for (it = bit; it != eit; it++)
   {
-    int x_event_start;
-    int x_coord = SecondsToXcoord (it->event_time);
+    int x_coord_start = SecondsToXcoord(it->m_startTime);
+    int x_coord_end = SecondsToXcoord(it->m_endTime);
 
-    switch (it->ev_action)
-    {
-    case EventHistoryElement_t::START:
-      // draw starting marker
-      dc.SetPen( eh->startMarkerPen );
-      dc.SetBrush (eh->startMarkerBrush );
+    // draw starting marker
+    dc.SetPen(it->m_startMarkerPen);
+    dc.SetBrush(it->m_startMarkerBrush);
+    dc.DrawRectangle(x_coord_start - 1, y_coord, 3, -10);
 
-      dc.DrawRectangle ( x_coord -1, y_coord, 3, -10);
+    // draw line from x_event_start to x_coord
+    dc.SetPen(it->m_eventDurationPen);
+    dc.DrawLine(x_coord_start, y_coord, x_coord_end + 1, y_coord);
 
-      x_event_start = x_coord;
-      break;
-
-    case EventHistoryElement_t::END:
-      // draw line from x_event_start to x_coord
-      dc.SetPen( eh->eventDurationPen );
-      dc.DrawLine (x_event_start, y_coord, x_coord, y_coord );
-
-      // draw endmarker at x_coord
-      dc.SetPen( eh->endMarkerPen );
-      dc.SetBrush (eh->endMarkerBrush );
-
-      dc.DrawRectangle ( x_coord -1, y_coord, 3, 10);
-      break;
-    } // end switch
-
+    // draw endmarker at x_coord
+    dc.SetPen(it->m_endMarkerPen);
+    dc.SetBrush(it->m_endMarkerBrush);
+    dc.DrawRectangle(x_coord_end - 1, y_coord, 3, 10);
   } // end for
 
 }
@@ -326,12 +317,12 @@ DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
  *
  */
 void EventCanvasApp::
-DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
+DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
 {
   wxRect view = GetCurrentView(); // current view in virtual coords
 
   // Draw base line at y_coord
-  dc.SetPen( eh->eventBaselinePen );
+  dc.SetPen( eh->m_eventBaselinePen );
   dc.DrawLine (view.x, y_coord, view.x + view.GetWidth(), y_coord);
 
   // draw event name
@@ -339,27 +330,24 @@ DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
 
-  Model::time_iterator_t it;
-  Model::time_iterator_t bit = eh->EventHistory.begin();
-  Model::time_iterator_t eit = eh->EventHistory.end();
-
-  dc.SetPen( eh->eventMarkerPen );
-  dc.SetBrush (eh->startMarkerBrush );
+  DiscreteEventDef::iterator_t it;
+  DiscreteEventDef::iterator_t bit = eh->m_list.begin();
+  DiscreteEventDef::iterator_t eit = eh->m_list.end();
 
   // Don't optimize this way if zoom factor is less than some zoom
   // factor because the time to do the optimization must be less than
   // the full draw time for the optimization to be of value.
   if (XZoomFactor() >= 2)
   {
-    Model::time_iterator_t obit = eh->EventHistory.begin();
-    Model::time_iterator_t oeit = eh->EventHistory.end();
+    DiscreteEventDef::iterator_t obit = eh->m_list.begin();
+    DiscreteEventDef::iterator_t oeit = eh->m_list.end();
 
     int l = view.GetLeft();
     int r = view.GetRight();
 
     for (it = bit; it != eit; it++)
     {
-      int x_coord = SecondsToXcoord (it->event_time);
+      int x_coord = SecondsToXcoord (it->m_eventTime);
       if ( (l >= 0) && (x_coord >= l) )
       {
         if (it != bit)
@@ -382,7 +370,10 @@ DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord)
 
   for (it = bit; it != eit; it++)
   {
-    int x_coord = SecondsToXcoord (it->event_time);
+    int x_coord = SecondsToXcoord (it->m_eventTime);
+
+    dc.SetPen( it->m_eventMarkerPen );
+    dc.SetBrush (it->m_eventMarkerBrush );
 
     // draw event marker
     wxPoint marker[3]; // make triangle marker
@@ -558,74 +549,21 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
             << "  time offset: " <<  GetModel()->TimeOffset()
             << std::endl;
 
-  EventHistory_t * eh = & p_model->m_eventMap[item_id];
-
-  BoundedEventStatistics stats;
-
-  CalculateEventStats (eh, &stats);
-  p_model->m_ei_eventCount = eh->EventHistory.size();
+  EventDef::handle_t eh = p_model->m_eventMap[item_id];
 
   //
   // look through <eh> for end event just greater than (ots + time_offset)
   //
-
-
-  std::cout << "Event name: " << eh->ev_def.event_name
-            << "  count: " << p_model->m_ei_eventCount << std::endl;
-
-  GetModel()->SetEventInfo (stats);
-}
-
-
-// ----------------------------------------------------------------
-/** Calculate event statistics.
- *
- *
- */
-bool EventCanvasApp::
-CalculateEventStats ( EventHistory_t * eh, BoundedEventStatistics * stats)
-{
-  stats->m_name = eh->EventName();
-
-  // Must be a bounded event
-  if (eh->EventType() != Event::ET_BOUNDED_EVENT)
+  BoundedEventDef * bep = eh->GetBoundedEvent();
+  if (bep != 0)
   {
-    stats->m_count = eh->EventHistory.size();
-    return false;
+    BoundedOccurrence const * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
+    if (bop)
+    {
+      std::cout << "Length of occurrence: " << (bop->m_endTime - bop->m_startTime) << std::endl;
+    }
   }
 
-  EventHistory_t::const_iterator_t ix = eh->EventHistory.begin();
-  EventHistory_t::const_iterator_t ex = eh->EventHistory.end();
-
-  stats->m_minDuration = 1e300;
-  stats->m_maxDuration = 0.0;
-  double last_start = ix->event_time;
-  double sum (0);
-  double sum_sq (0);
-  double count (0);
-
-  for (; ix != ex; ix++)
-  {
-    if (ix->ev_action == EventHistoryElement_t::END)
-    {
-      double duration = ix->event_time - last_start;
-      if (stats->m_maxDuration < duration) stats->m_maxDuration = duration;
-      if (stats->m_minDuration > duration) stats->m_minDuration = duration;
-      sum += duration;
-      sum_sq += (duration * duration);
-      count ++;
-    }
-    else if (ix->ev_action == EventHistoryElement_t::START)
-    {
-      last_start = ix->event_time;
-    }
-  } // end for
-
-  stats->m_count = static_cast< int >(count);
-  stats->m_avgDuration = sum / count;
-  stats->m_stdDuration = sqrt((sum_sq - (sum * stats->m_avgDuration)) / (count - 1) );
-
-  return true;
 }
 
 

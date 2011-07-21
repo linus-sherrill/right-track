@@ -50,15 +50,13 @@ public:
   void ResetCursorToModel();
   void ResetCursors();
 
-  bool CalculateEventStats ( EventHistory_t * eh, BoundedEventStatistics * stats);
-
 
 protected:
   Model * GetModel() const { return Model::Instance(); }
 
   void DrawEvents(wxDC& dc);
-  void DrawBoundedEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
-  void DrawDiscreteEvent(wxDC & dc, EventHistory_t * eh, int y_coord);
+  void DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord);
+  void DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord);
   void DrawCursors ();
   void NormalizeCursors();
 

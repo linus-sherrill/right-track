@@ -12,6 +12,7 @@ SET (gui_sources
     Model.h                             Model.cpp
     EventCanvasApp.h                    EventCanvasApp.cpp
     TimeLineCursor.h                    TimeLineCursor.cpp
+    event_database.h                    event_database.cpp
 )
 
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )

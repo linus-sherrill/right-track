@@ -95,7 +95,7 @@ ReadFromFile( const char * file )
 
   // Reset scaling of views.  wxID_RESET
 
-  ModelUpdate(UPDATE_INFO);
+  // ModelUpdate(UPDATE_INFO);
 
   return (status);
 }
@@ -124,64 +124,119 @@ EventTimeRange() const
 void Model::
 ScanEvents()
 {
+  wxPen start_marker_pen = wxPen ( m_startEventColor, 1, wxSOLID );
+  wxBrush start_marker_brush = wxBrush ( m_startEventColor, wxSOLID );
+
+  wxPen end_marker_pen = wxPen ( m_endEventColor, 1, wxSOLID );
+  wxBrush end_marker_brush = wxBrush ( m_endEventColor, wxSOLID );
+
+
   event_iterator_t ix;
   for (ix = m_eventMap.begin(); ix != m_eventMap.end(); ix++)
   {
-    EventHistory_t * eh = &(ix->second);
+    EventDef::handle_t eh = ix->second;
 
     eh->m_enabled = true; // all start enabled
 
+    // look for minimum time to use as our base time offset
+    // Since the events must be defined before they are used, all we have to do
+    // is to look at the eh->m_time
+    if (eh->m_time < m_timingOffset)
+    {
+      m_timingOffset = eh->m_time;
+    }
+
+
     // Setup general colors
-    eh->eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxSOLID );
+    eh->m_eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxSOLID );
 
-    eh->startMarkerPen = wxPen ( m_startEventColor, 1, wxSOLID );
-    eh->startMarkerBrush = wxBrush ( m_startEventColor, wxSOLID );
-
-    eh->endMarkerPen = wxPen ( m_endEventColor, 1, wxSOLID );
-    eh->endMarkerBrush = wxBrush ( m_endEventColor, wxSOLID );
+    wxPen event_duration_pen;
+    wxPen event_marker_pen;
 
     // Check for event specific colours
-    if (eh->ev_def.event_color == -1)
+    if (eh->m_color == -1)
     {
       // Use default colors
-      eh->eventDurationPen = wxPen ( m_defaultEventColor, 2, wxSOLID );
-      eh->eventMarkerPen   = wxPen ( m_defaultEventColor, 1, wxSOLID );
+      event_duration_pen = wxPen ( m_defaultEventColor, 2, wxSOLID );
+      event_marker_pen   = wxPen ( m_defaultEventColor, 1, wxSOLID );
     }
     else
     {
-      int r = (eh->ev_def.event_color >> 24) & 0xff;
-      int g = (eh->ev_def.event_color >> 16) & 0xff;
-      int b = (eh->ev_def.event_color >> 00) & 0xff;
+      int r = (eh->m_color >> 24) & 0xff;
+      int g = (eh->m_color >> 16) & 0xff;
+      int b = (eh->m_color >> 00) & 0xff;
 
       wxColour def_color ( r, g, b );
 
-      eh->eventDurationPen = wxPen ( def_color, 1, wxSOLID );
-      eh->eventMarkerPen   = wxPen ( def_color, 1, wxSOLID );
+      event_duration_pen = wxPen ( def_color, 2, wxSOLID );
+      event_marker_pen   = wxPen ( def_color, 1, wxSOLID );
     }
 
-    //
-    // Scan event list to determine temporal bounds
-    //
-      Model::time_iterator_t it = eh->EventHistory.begin();
-      Model::time_iterator_t eit = eh->EventHistory.end();
+
+    // do specific processing by event type.
+    if (eh->EventType() == Event::ET_DISCRETE_EVENT)
+    {
+      DiscreteEventDef * def = eh->GetDiscreteEvent();
+      DiscreteEventDef::iterator_t it = def->m_list.begin();
+      DiscreteEventDef::iterator_t eit = def->m_list.end();
 
       for ( ; it != eit; it++)
       {
-        double ts = it->event_time;
-
-        if (ts < m_timingOffset)
-        {
-          m_timingOffset = ts;
-        }
+        double ts = it->m_eventTime;
 
         if (ts > m_maxTime)
         {
           m_maxTime = ts;
         }
+
+        it->m_eventMarkerPen = event_marker_pen;
+        it->m_eventMarkerBrush = start_marker_brush;
       } // end for it
 
-  } // end for
+    }
+    else
+    {
+      BoundedEventDef * def = eh->GetBoundedEvent();
+      BoundedEventDef::iterator_t it = def->m_list.begin();
+      BoundedEventDef::iterator_t eit = def->m_list.end();
 
+      def->m_stats.m_minDuration = 1e300;
+      def->m_stats.m_maxDuration = 0.0;
+      double sum (0);
+      double sum_sq (0);
+      double count (0);
+
+      for ( ; it != eit; it++)
+      {
+        double ts = it->m_endTime;
+
+        if (ts > m_maxTime)
+        {
+          m_maxTime = ts;
+        }
+
+        it->m_startMarkerPen = start_marker_pen;
+        it->m_startMarkerBrush = start_marker_brush;
+
+        it->m_eventDurationPen = event_duration_pen;
+
+        it->m_endMarkerPen = end_marker_pen;
+        it->m_endMarkerBrush = end_marker_brush;
+
+        double duration = it->m_endTime - it->m_startTime;
+        if (def->m_stats.m_maxDuration < duration) def->m_stats.m_maxDuration = duration;
+        if (def->m_stats.m_minDuration > duration) def->m_stats.m_minDuration = duration;
+        sum += duration;
+        sum_sq += (duration * duration);
+        count ++;
+      } // end for it
+
+      def->m_stats.m_count = static_cast< int >(count);
+      def->m_stats.m_avgDuration = sum / count;
+      def->m_stats.m_stdDuration = sqrt((sum_sq - (sum * def->m_stats.m_avgDuration)) / (count - 1) );
+    }
+
+  } // end for
 }
 
 
@@ -226,27 +281,12 @@ GetTimeBounds (double& start, double& end)
 
 
 void Model::
-SetEventInfo ( BoundedEventStatistics const& info)
-{
-  m_evc_stats = info;
-
-  ModelUpdate(UPDATE_INFO);
-}
-
-BoundedEventStatistics const& Model::
-GetEventInfo () const
-{
-  return m_evc_stats;
-}
-
-
-void Model::
 SelectEvent (ItemId_t event)
 {
   m_selectedEvent = event;
 
   // Need to redraw events
-  ModelUpdate(UPDATE_EVENTS);
+  ModelUpdate(UPDATE_EVENTS + UPDATE_INFO);
 }
 
 
