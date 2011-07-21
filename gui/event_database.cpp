@@ -77,6 +77,40 @@ FindByTime (double time)
 }
 
 
+// ----------------------------------------------------------------
+/**
+ *
+ *
+ */
+wxString BoundedOccurrence::
+GetInfo()
+{
+    wxString  result;
+
+    result << wxString::Format(wxT("Duration: %f\n"), (m_endTime - m_startTime) );
+    result << wxString::Format(wxT("Start data: %f\n"), m_startData );
+    result << wxString::Format(wxT("End data: %f\n"), m_endData );
+
+    return result;
+}
+
+
+// ----------------------------------------------------------------
+/**
+ *
+ *
+ */
+wxString DiscreteOccurrence::
+GetInfo()
+{
+    wxString  result;
+
+    result << wxString::Format(wxT("Data: %f\n"), m_eventData );
+
+    return result;
+}
+
+
 // ================================================================
 
 wxString DiscreteEventDef::

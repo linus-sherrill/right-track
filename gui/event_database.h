@@ -49,6 +49,7 @@ class BaseOccurrence
 public:
   wxString GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
+  virtual wxString GetInfo() = 0;
 
   EventPid_t m_eventPid;
 
@@ -69,13 +70,13 @@ class BoundedOccurrence
 {
 public:
   bool ContainsTime (double time) const { return (time >= m_startTime) && (time <= m_endTime); }
+  virtual wxString GetInfo();
 
   double m_startTime; // in seconds
   EventData_t m_startData;
 
   double m_endTime; // in seconds
   EventData_t m_endData;
-
 
 
   wxPen m_startMarkerPen;
@@ -97,6 +98,7 @@ class DiscreteOccurrence
   : public BaseOccurrence
 {
 public:
+  virtual wxString GetInfo();
 
   double m_eventTime; // in seconds
   EventData_t m_eventData;
