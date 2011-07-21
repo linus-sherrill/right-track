@@ -226,21 +226,17 @@ GetTimeBounds (double& start, double& end)
 
 
 void Model::
-SetEventInfo ( wxString const& name, int count, double data)
+SetEventInfo ( BoundedEventStatistics const& info)
 {
-  m_evc_name = name;
-  m_evc_count = count;
-  m_evc_data = data;
+  m_evc_stats = info;
 
   ModelUpdate(UPDATE_INFO);
 }
 
-void Model::
-GetEventInfo ( wxString& name, int& count, double& data)
+BoundedEventStatistics const& Model::
+GetEventInfo () const
 {
-  name = m_evc_name;
-  count= m_evc_count;
-  data = m_evc_data;
+  return m_evc_stats;
 }
 
 
@@ -336,7 +332,7 @@ MoveSelectedEventDown()
   // End loop at next to the last element, since if the one we are
   // looking for is there, it can not be moved.
   size_t limit = m_drawOrder.size() -1;
-  for (size_t i = 1; i < limit; ++i)
+  for (size_t i = 0; i < limit; ++i)
   {
     if (m_drawOrder[i] == item)
     {

@@ -61,6 +61,8 @@ protected:
   virtual void ZoomOutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ZoomFillHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void ResetCursorHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void RefreshHandler(wxCommandEvent &event); // wxGlade: <event_handler>
 
   virtual void handle_move_up(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void handle_move_down(wxCommandEvent &event); // wxGlade: <event_handler>

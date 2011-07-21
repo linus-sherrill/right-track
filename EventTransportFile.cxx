@@ -51,7 +51,8 @@ Write(EventDefinition & msg)
   m_bstream->clear_serialisation_records();
   vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_DEFINITION );
   vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
   vsl_b_write( *m_bstream, (int) msg.event_type );
   vsl_b_write( *m_bstream, msg.event_name );
   vsl_b_write( *m_bstream, msg.event_group );
@@ -67,7 +68,8 @@ Write(EventStart & msg)
   m_bstream->clear_serialisation_records();
   vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_START );
   vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
   vsl_b_write( *m_bstream, msg.event_pid );
   vsl_b_write( *m_bstream, msg.event_data );
 
@@ -81,7 +83,8 @@ Write(EventEnd & msg)
   m_bstream->clear_serialisation_records();
   vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_END );
   vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
   vsl_b_write( *m_bstream, msg.event_pid );
   vsl_b_write( *m_bstream, msg.event_data );
 
@@ -107,6 +110,8 @@ Write(ContextPush & msg)
   m_bstream->clear_serialisation_records();
   vsl_b_write( *m_bstream, (int) PAYLOAD_CONTEXT_PUSH );
   vsl_b_write( *m_bstream, msg.context_id );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
 
   return (0);
 }
@@ -118,6 +123,8 @@ Write(ContextPop & msg)
   m_bstream->clear_serialisation_records();
   vsl_b_write( *m_bstream, (int) PAYLOAD_CONTEXT_POP );
   vsl_b_write( *m_bstream, msg.context_id );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
 
   return (0);
 }
@@ -178,7 +185,8 @@ ReadEvents(vcl_string const& resource,
     {
       EventDefinition msg;
       vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
 
       int ev_type; // need to coerce enum
       vsl_b_read (bstream, ev_type);
@@ -197,7 +205,8 @@ ReadEvents(vcl_string const& resource,
       EventStart msg;
 
       vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
       vsl_b_read (bstream, msg.event_pid);
       vsl_b_read (bstream, msg.event_data);
 
@@ -210,7 +219,8 @@ ReadEvents(vcl_string const& resource,
       EventEnd msg;
 
       vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
       vsl_b_read (bstream, msg.event_pid);
       vsl_b_read (bstream, msg.event_data);
 
@@ -234,6 +244,8 @@ ReadEvents(vcl_string const& resource,
       ContextPush msg;
 
       vsl_b_read (bstream, msg.context_id);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
 
       status = reader.NewEvent(msg);
     }
@@ -244,6 +256,8 @@ ReadEvents(vcl_string const& resource,
       ContextPop msg;
 
       vsl_b_read (bstream, msg.context_id);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
 
       status = reader.NewEvent(msg);
     }

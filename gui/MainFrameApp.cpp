@@ -151,6 +151,25 @@ CursorMenuHandler(wxCommandEvent &event)
 }
 
 
+void MainFrameApp::
+ResetCursorHandler(wxCommandEvent &event)
+{
+  g_EventFrame->ResetCursors();
+}
+
+
+// ----------------------------------------------------------------
+/** Refresh view.
+ *
+ *
+ */
+void MainFrameApp::
+RefreshHandler(wxCommandEvent &event)
+{
+  this->Refresh();
+}
+
+
 // ----------------------------------------------------------------
 /** Quit the program.
  *
@@ -204,13 +223,11 @@ DoModelUpdate(unsigned code)
   if (code & Model::UPDATE_CURSOR)
   {
     // Update cursor objects with model data
-    g_EventFrame->ResetCursorToModel();
-    UpdateCursorTimes(); // Update display fields
+    UpdateCursorTimes(); // update time display areas
+    g_EventFrame->ResetCursorToModel(); // move lines to new location
     g_EventFrame->DrawNow();
   }
 }
-
-
 
 
 // ----------------------------------------------------------------
@@ -222,16 +239,21 @@ void MainFrameApp::
 UpdateEventInfo()
 {
   Model * pm = GetModel();
-  wxString name;
-  int count;
-  double data;
+  BoundedEventStatistics stats;
 
-  pm->GetEventInfo (name, count, data);
+  stats = pm->GetEventInfo ();
 
   this->g_TotalEventCount->SetLabel(wxString::Format(wxT("Total events: %d"), pm->EventCount()) );
-  this->g_EventName->SetLabel(name);
 
-  this->g_EventCount->SetLabel (wxString::Format(wxT("Count: %d"), count ) );
+  wxString result;
+  result << wxString::Format(wxT("Name: %s\n"), stats.m_name.c_str());
+  result << wxString::Format(wxT("Event Count: %d\n"), stats.m_count);
+  result << wxString::Format(wxT("Min dur: %f\n"), stats.m_minDuration);
+  result << wxString::Format(wxT("Max dur: %f\n"), stats.m_maxDuration);
+  result << wxString::Format(wxT("Avg dir: %f\n"), stats.m_avgDuration);
+  result << wxString::Format(wxT("std: %f"), stats.m_stdDuration);
+
+  this->g_EventInfo->SetValue (result);
 }
 
 
@@ -251,8 +273,8 @@ UpdateTimeline()
   double start, end;
   GetModel()->GetTimeBounds( start, end);
 
-  this->g_StartTime->SetLabel (wxString::Format(wxT("%1.3f sec"), start) );
-  this->g_EndTime->SetLabel   (wxString::Format(wxT("%1.3f sec"), end) );
+  this->g_StartTime->SetValue (wxString::Format(wxT("%1.3f sec"), start) );
+  this->g_EndTime->SetValue   (wxString::Format(wxT("%1.3f sec"), end) );
 }
 
 
@@ -298,7 +320,7 @@ void MainFrameApp::Curs1Down(wxSpinEvent &event)
 
   pm->GetCursorTimes(c1, c2);
   pm->GetTimeBounds( b1, b2);
-  c1 -= (b2 - b1) / 40.0;
+  c1 -= (b2 - b1) / 100.0;
   pm->SetCursorTimes(c1, c2);
 }
 
@@ -313,7 +335,7 @@ void MainFrameApp::Curs1Up(wxSpinEvent &event)
 
   pm->GetCursorTimes(c1, c2);
   pm->GetTimeBounds( b1, b2);
-  c1 += (b2 - b1) / 40.0;
+  c1 += (b2 - b1) / 100.0;
 
   pm->SetCursorTimes(c1, c2);
 }
@@ -343,7 +365,7 @@ void MainFrameApp::Curs2Down(wxSpinEvent &event)
 
   pm->GetCursorTimes(c1, c2);
   pm->GetTimeBounds( b1, b2);
-  c2 -= (b2 - b1) / 40.0;
+  c2 -= (b2 - b1) / 100.0;
   pm->SetCursorTimes(c1, c2);
 }
 
@@ -358,7 +380,7 @@ void MainFrameApp::Curs2Up(wxSpinEvent &event)
 
   pm->GetCursorTimes(c1, c2);
   pm->GetTimeBounds( b1, b2);
-  c2 += (b2 - b1) / 40.0;
+  c2 += (b2 - b1) / 100.0;
   pm->SetCursorTimes(c1, c2);
 }
 
@@ -381,6 +403,7 @@ DrawNames ()
 
   wxTreeItemId root_id = g_EventList->AddRoot(wxT("Events"), 0, 0,
                                               new AppTreeData() );
+  // Store item id into EventHistory object
 
 //
 // The goal for this tree ctrl is to allow drag to reorder tracks, and

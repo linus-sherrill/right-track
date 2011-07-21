@@ -48,6 +48,9 @@ public:
   wxRect GetCurrentView();
   void EnableCursors (bool enab);
   void ResetCursorToModel();
+  void ResetCursors();
+
+  bool CalculateEventStats ( EventHistory_t * eh, BoundedEventStatistics * stats);
 
 
 protected:

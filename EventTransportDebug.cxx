@@ -42,7 +42,7 @@ Write(EventDefinition & msg)
   (*m_outStream) << "Event definition: "
                  << "  name: " << msg.event_name
                  << "  id: " << msg.event_id
-                 << "  time: " << msg.event_time
+                 << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  type: " << msg.event_type
                  << "  group: " << msg.event_group
                  << "  color: " << msg.event_color
@@ -57,7 +57,7 @@ Write(EventStart & msg)
 {
   (*m_outStream) << "Event start: "
                  << "  id: " << msg.event_id
-                 << "  time: " << msg.event_time
+                 << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
                  << vcl_endl;
 
@@ -70,7 +70,7 @@ Write(EventEnd & msg)
 {
   (*m_outStream) << "Event end: "
                  << "  id: " << msg.event_id
-                 << "  time: " << msg.event_time
+                 << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
                  << vcl_endl;
 

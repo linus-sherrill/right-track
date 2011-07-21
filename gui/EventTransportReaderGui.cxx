@@ -6,6 +6,7 @@
 
 
 #include "EventTransportReaderGui.h"
+#include <iostream>
 
 
 EventTransportReaderGui::
@@ -43,7 +44,7 @@ NewEvent(EventStart const& msg)
 {
   EventHistoryElement_t ev;
   ev.ev_action = EventHistoryElement_t::START;
-  ev.event_time = (double) msg.event_time / 1e6; // convert usec to float seconds
+  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   ev.event_pid = msg.event_pid;
   ev.event_data = msg.event_data;
 
@@ -66,7 +67,7 @@ NewEvent(EventEnd const& msg)
 {
   EventHistoryElement_t ev;
   ev.ev_action = EventHistoryElement_t::END;
-  ev.event_time = (double) msg.event_time / 1e6; // convert usec to float seconds
+  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   ev.event_pid = msg.event_pid;
   ev.event_data = msg.event_data;
 
@@ -99,7 +100,7 @@ int EventTransportReaderGui::
 NewEvent(ContextPush const& msg)
 {
   ContextHistoryElement_t ev;
-  ev.event_time = (double) msg.event_time / 1e6;
+  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
  // TBD
 
   return (0);
@@ -110,7 +111,7 @@ int EventTransportReaderGui::
 NewEvent(ContextPop const& msg)
 {
   ContextHistoryElement_t ev;
-  ev.event_time = (double) msg.event_time / 1e6;
+  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   // TBD
 
   return (0);
