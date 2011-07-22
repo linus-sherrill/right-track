@@ -53,12 +53,25 @@ EventGroup() const
  *
  *
  */
-unsigned int Event::
+int Event::
 EventColor() const
 {
   return this->m_eventColor;
 }
 
+
+void Event::
+EventColor (int rgb)
+{
+  this->m_eventColor = rgb;
+}
+
+
+void Event::
+EventColor (unsigned char r, unsigned char g, unsigned char b)
+{
+  this->m_eventColor = ((((r << 8) | g) << 8) | b);
+}
 
 
 } // end namespace
