@@ -234,6 +234,15 @@ ScanEvents()
       def->m_stats.m_count = static_cast< int >(count);
       def->m_stats.m_avgDuration = sum / count;
       def->m_stats.m_stdDuration = sqrt((sum_sq - (sum * def->m_stats.m_avgDuration)) / (count - 1) );
+
+      if (def->m_list.size() > 1) // need some elementsfor this to work
+      {
+        def->m_stats.m_activePct = (sum / (def->m_list.back().m_endTime - def->m_list.front().m_startTime)) * 100.0;
+      }
+      else
+      {
+        def->m_stats.m_activePct = 0;
+      }
     }
 
   } // end for

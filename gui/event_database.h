@@ -32,6 +32,7 @@ struct BoundedEventStatistics
   double m_maxDuration;
   double m_avgDuration;
   double m_stdDuration;
+  double m_activePct;  // (total run time) / (total elapsed tome)
 };
 
 

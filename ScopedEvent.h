@@ -8,6 +8,7 @@
 #ifndef _RIGHT_TRACK_SCOPED_EVENT_
 #define _RIGHT_TRACK_SCOPED_EVENT_
 
+#include "BoundedEvent.h"
 
 namespace RightTrack {
   namespace Internal {
