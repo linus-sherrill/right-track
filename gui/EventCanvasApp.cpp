@@ -549,18 +549,23 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
             << "  time offset: " <<  GetModel()->TimeOffset()
             << std::endl;
 
-  EventDef::handle_t eh = p_model->m_eventMap[item_id];
-
-  //
-  // look through <eh> for end event just greater than (ots + time_offset)
-  //
-  BoundedEventDef * bep = eh->GetBoundedEvent();
-  if (bep != 0)
+  if (item_id != -1)
   {
-    BoundedOccurrence const * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
-    if (bop)
+    EventDef::handle_t eh = p_model->m_eventMap[item_id];
+
+    //
+    // look through <eh> for end event just greater than (ots + time_offset)
+    //
+    BoundedEventDef * bep = eh->GetBoundedEvent();
+    if (bep != 0)
     {
-      std::cout << "Length of occurrence: " << (bop->m_endTime - bop->m_startTime) << std::endl;
+      BoundedOccurrence const * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
+      if (bop)
+      {
+        std::cout << "Length of occurrence: " << (bop->m_endTime - bop->m_startTime)
+                  << "  pid: " << bop->m_eventPid
+                  << std::endl;
+      }
     }
   }
 
