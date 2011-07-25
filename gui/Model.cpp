@@ -162,9 +162,9 @@ ScanEvents()
     }
     else
     {
-      int r = (eh->m_color >> 24) & 0xff;
-      int g = (eh->m_color >> 16) & 0xff;
-      int b = (eh->m_color >> 00) & 0xff;
+      int r = (eh->m_color >> 16) & 0xff;
+      int g = (eh->m_color >>  8) & 0xff;
+      int b = (eh->m_color >>  0) & 0xff;
 
       wxColour def_color ( r, g, b );
 
