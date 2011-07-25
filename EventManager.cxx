@@ -168,7 +168,8 @@ CurrentTimestamp()
 EventPid_t EventManager::
 GetPid()
 {
-  return vpl_getpid();
+  return pthread_self();
+  // return vpl_getpid();
 }
 
 
