@@ -161,12 +161,14 @@ OnDraw( wxDC & dc)
 void EventCanvasApp::
 DrawEvents(wxDC& dc)
 {
+  Model * pm = GetModel();
+
   SetDefaultScaling();
 
   SetVirtualSize ( CalculateVirtualSize() );
 
   wxRect view = GetCurrentView(); // current view in virtual coords
-  GetModel()->SetTimeBounds (XcoordToSeconds(view.GetLeft()), XcoordToSeconds(view.GetRight()) );
+  pm->SetTimeBounds (XcoordToSeconds(view.GetLeft()), XcoordToSeconds(view.GetRight()) );
 
   int start_idx = view.GetTop() / m_yIncrement;
   int end_idx = view.GetBottom() / m_yIncrement;
@@ -174,25 +176,50 @@ DrawEvents(wxDC& dc)
   // backup one row to make sure thare are no partial row rendering.
   if (start_idx > 0) start_idx--;
 
+  // rows on screen we need to draw
+  int row_count = end_idx - start_idx + 1;
+
+  // row number to draw this event on
+  int y_coord = (start_idx + 1) * m_yIncrement;
+
+  // scan through list of events to find the start_idx'th DISPLAYABLE
+  // element
+  size_t do_idx(0);
+  int count (start_idx);
+  const size_t limit (pm->m_drawOrder.size());
+  for (do_idx = 0; do_idx < limit; do_idx++)
+  {
+    if (pm->IsEventDisplayable (pm->m_drawOrder[do_idx]))
+    {
+      count--;
+      if (count < 0) break;
+    }
+  }
+
   // for each event in their drawing order
-  for (int ev_idx = start_idx; ev_idx <= end_idx; ev_idx++)
+  for ( ; row_count >= 0; do_idx++)
   {
     // Stop at the last element
-    if ((unsigned)ev_idx >= GetModel()->m_drawOrder.size())
+    if (do_idx >= limit)
     {
       break;
     }
 
-    ItemId_t ev = GetModel()->m_drawOrder[ev_idx];
-    int y_coord = (ev_idx + 1) * m_yIncrement; // in virtual coords
+    ItemId_t ev_id = pm->m_drawOrder[do_idx];
+
+    // skip events that are filtered out
+    if ( ! pm->IsEventDisplayable(ev_id))
+    {
+      continue;
+    }
 
     // Handle selected event
-    if (GetModel()->IsEventSelected(ev))
+    if (pm->IsEventSelected(ev_id))
     {
       // Draw light background for this event at y_coord +/- 12 pixels
       //
-      dc.SetPen (wxPen (GetModel()->m_selectColor, 1, wxSOLID) );
-      dc.SetBrush (wxBrush (GetModel()->m_selectColor, wxSOLID) );
+      dc.SetPen (wxPen (pm->m_selectColor, 1, wxSOLID) );
+      dc.SetBrush (wxBrush (pm->m_selectColor, wxSOLID) );
     }
     else
     {
@@ -203,7 +230,7 @@ DrawEvents(wxDC& dc)
     }
     dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
 
-    EventDef::handle_t eh = GetModel()->m_eventMap[ev];
+    EventDef::handle_t eh = pm->m_eventMap[ev_id];
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
       DrawBoundedEvent (dc, eh->GetBoundedEvent(), y_coord);
@@ -215,6 +242,8 @@ DrawEvents(wxDC& dc)
 
     // Increment to next drawing line
     y_coord += m_yIncrement;
+
+    row_count--;
   } // end foreach
 
 }
@@ -524,33 +553,42 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
   }
 
   // 1) determine which event by looking at Y coord
-  int event_idx = (((float) pt.y / m_yIncrement) + 0.5 - 1);
+  int row_idx = ( (int) (((float) pt.y / m_yIncrement) + 0.5) - 1);
 
   // 2) determine offset time by looking at X coord
   double ots = XcoordToSeconds(pt.x);
 
   // 3) locate actual event record based on time
   ItemId_t item_id (-1);
-  if ( (event_idx >= 0) && ((unsigned)event_idx < p_model->m_drawOrder.size()) )
+  const size_t limit (p_model->m_drawOrder.size());
+  if ( (row_idx >= 0) && ((unsigned)row_idx < limit) )
   {
-    item_id = p_model->m_drawOrder[event_idx];
+    // Need to skip elements that are not currently displayed and count
+    // displayable elements
+    int count = row_idx;
+    for (size_t i = 0; (i < limit) && (count >= 0); i++)
+    {
+      item_id = p_model->m_drawOrder[i];
+      if (p_model->IsEventDisplayable (item_id))
+      {
+        count--;
+      }
+    } // end for
+
     // Set selected item id in model
     p_model->SelectEvent (item_id);
-  }
 
-  // 3-a) locate the specific event based on 'ots' if there is one
-  // TBD - call method in Model to locate the event.
+    // 3-a) locate the specific event based on 'ots' if there is one
+    // TBD - call method in Model to locate the event.
 
-  // 4) display event data by filling in Model.
-  std::cout << "event idx: " << event_idx
-            << "  offset time: " << ots
-            << "  item id: " << item_id
-            << "  pixels per second: " << m_pixelsPerSecond
-            << "  time offset: " <<  GetModel()->TimeOffset()
-            << std::endl;
+    // 4) display event data by filling in Model.
+    std::cout << "row idx: " << row_idx
+              << "  offset time: " << ots
+              << "  item id: " << item_id
+              << "  pixels per second: " << m_pixelsPerSecond
+              << "  time offset: " <<  GetModel()->TimeOffset()
+              << std::endl;
 
-  if (item_id != -1)
-  {
     EventDef::handle_t eh = p_model->m_eventMap[item_id];
 
     //
@@ -567,6 +605,10 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
                   << std::endl;
       }
     }
+  }
+  else
+  {
+    std::cout << "No event selected\n";  //+ DEBUG
   }
 
 }
@@ -631,7 +673,7 @@ CalculateVirtualSize()
   wxSize v_sz;
 
   v_sz.x = GetModel()->EventTimeRange() * m_pixelsPerSecond;
-  v_sz.y = (GetModel()->EventCount() + 2) * m_yIncrement;
+  v_sz.y = (GetModel()->DisplayableEventCount() + 2) * m_yIncrement;
 
   return v_sz;
 }

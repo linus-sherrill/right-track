@@ -135,7 +135,7 @@ public:
   virtual DiscreteEventDef * GetDiscreteEvent ();
 
   virtual wxString GetEventInfo() = 0;
-
+  virtual size_t NumOccurrences() const = 0;
 
   wxString GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
@@ -177,6 +177,7 @@ public:
   virtual Event::EventType_t EventType() const { return Event::ET_BOUNDED_EVENT; }
   virtual BoundedEventDef * GetBoundedEvent () { return this; }
   virtual wxString GetEventInfo();
+  virtual size_t NumOccurrences() const { return m_list.size(); }
 
   BoundedOccurrence const* FindByTime (double time);
 
@@ -207,6 +208,7 @@ public:
   virtual Event::EventType_t EventType() const { return Event::ET_DISCRETE_EVENT; }
   virtual DiscreteEventDef * GetDiscreteEvent () { return this; }
   virtual wxString GetEventInfo();
+  virtual size_t NumOccurrences() const { return m_list.size(); }
 
 
   // vector of occurrences

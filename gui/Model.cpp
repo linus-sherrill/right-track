@@ -29,7 +29,8 @@ Model::
 Model(MainFrameApp * frame)
   : m_parentFrame(frame),
     m_timingOffset(1e300),
-    m_maxTime(0)
+    m_maxTime(0),
+    m_eventFilter(0)
 {
 
   s_instance = this;
@@ -313,6 +314,37 @@ GetSelectedEvent() const
 }
 
 
+int Model::
+EventCount() const
+{
+  return this->m_eventMap.size();
+}
+
+
+// ----------------------------------------------------------------
+/** Number of displayable events.
+ *
+ * Calculate the number of displayable events. Good for determining
+ * number of displayable lines.
+ */
+int Model::
+DisplayableEventCount() const
+{
+  int count(0);
+  const size_t limit ( m_drawOrder.size() );
+
+  for (size_t i = 0; i < limit; i++)
+  {
+    if ( IsEventDisplayable ( m_drawOrder[i] ) )
+    {
+      count++;
+    }
+  } // end for
+
+  return count;
+}
+
+
 // ----------------------------------------------------------------
 /** Send message to windows when something changed.
  *
@@ -322,6 +354,57 @@ void Model::
 ModelUpdate(unsigned code)
 {
   m_parentFrame->ModelUpdate(code);
+}
+
+
+// ----------------------------------------------------------------
+/** Move selected event to top of list.
+ *
+ *
+ */
+void Model::
+MoveSelectedEventTop()
+{
+  ItemId_t item = GetSelectedEvent();
+  if (item < 0)
+  {
+    return; // no selected event
+  }
+
+  size_t index(0);
+
+  // Scan the drawing order vector
+
+  // Start loop at 1 since if the desired element is at index 0, it
+  // can not be moved higher, so don't even try.
+  size_t limit = m_drawOrder.size();
+  for (size_t i = 1; i < limit; ++i)
+  {
+    if (m_drawOrder[i] == item)
+    {
+      index = i;
+      break;
+    }
+  } // end for
+
+  // On exit, index -> selected elements location in draw order,
+  // of zero, indicating not found or already at top
+  if (0 == index)
+  {
+    return; // item not found
+  }
+
+  // shift list down from [0] .. [index] one slot.
+  for (size_t i = index; i > 0; i--)
+  {
+    m_drawOrder[i] = m_drawOrder[i-1];
+  }
+
+  // store item at Top
+  m_drawOrder[0] = item;
+
+  // Need to redraw events
+  ModelUpdate(UPDATE_EVENTS);
 }
 
 
@@ -396,4 +479,103 @@ MoveSelectedEventDown()
       break;
     }
   } // end for
+}
+
+
+// ----------------------------------------------------------------
+/** Move selected event to bottom of list.
+ *
+ *
+ */
+void Model::
+MoveSelectedEventBottom()
+{
+  ItemId_t item = GetSelectedEvent();
+  if (item < 0)
+  {
+    return; // no selected event
+  }
+
+  size_t index(0);
+
+  // Scan the drawing order vector
+
+  // End loop at next to the last element, since if the one we are
+  // looking for is there, it can not be moved.
+  size_t limit = m_drawOrder.size() -1;
+  for (size_t i = 0; i < limit; ++i)
+  {
+    if (m_drawOrder[i] == item)
+    {
+      index = i;
+      break;
+    }
+  } // end for
+
+  // On exit, index -> selected elements location in draw order,
+  // of zero, indicating not found.
+  if (0 == index)
+  {
+    return; // item not found - not expected
+  }
+
+  // shift list down from [index] .. [size-1] one slot.
+  for (size_t i = index; i < limit-1; i--)
+  {
+    m_drawOrder[i] = m_drawOrder[i+1];
+  }
+
+  // store item at Bottom
+  m_drawOrder[limit] = item;
+
+  // Need to redraw events
+  ModelUpdate(UPDATE_EVENTS);
+}
+
+
+// ----------------------------------------------------------------
+/** Set filter mode.
+ *
+ *
+ */
+void Model::
+SetEventFilter( bool v )
+{
+  m_eventFilter = v;
+
+  // Need to redraw events
+  ModelUpdate(UPDATE_EVENTS);
+}
+
+
+// ----------------------------------------------------------------
+/** Is event filtered out.
+ *
+ * This method determines if the specified event is filtered out of
+ * the display.
+ *
+ * This interface is designed to support a more general event
+ * filtering scheme, but for now the filter only suppresses events
+ * with no occurrences.
+ *
+ * I can see a time when the filter is more script like and can apply
+ * a wide range of predicates.
+ *
+ * @param[in] event - event id to check if filtered
+ *
+ * @retval true - display event
+ * @retval false - do not display event
+ */
+bool Model::
+IsEventDisplayable(ItemId_t event) const
+{
+  if (m_eventFilter) // is filter enabled
+  {
+    const_event_iterator_t ix = m_eventMap.find (event);
+    size_t count = ix->second->NumOccurrences();
+    return (count != 0);
+  }
+
+  // display by default
+  return true;
 }

@@ -44,6 +44,7 @@ public:
   // Event data types
   typedef vcl_map < ItemId_t, EventDef::handle_t > event_map_t;
   typedef event_map_t::iterator event_iterator_t;
+  typedef event_map_t::const_iterator const_event_iterator_t;
 
   // Context data types
   typedef vcl_map < ItemId_t, ContextDef_t > context_map_t;
@@ -68,21 +69,33 @@ public:
 
   /**  Number of events in data base.
    */
-  int EventCount() const { return this->m_eventMap.size(); }
+  int EventCount() const;
+  int DisplayableEventCount() const;
 
 
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
   void ModelUpdate(unsigned code);
 
+  void MoveSelectedEventTop();
   void MoveSelectedEventUp();
   void MoveSelectedEventDown();
+  void MoveSelectedEventBottom();
 
   // FindEventByTime (ItemId_t id, double ots);
 
-  // Event data areas
+  // Event data areas -- proposal
+  struct drawing_attributes_t
+  {
+    ItemId_t event_id;
+    bool selected;
+    bool display_enable;
+  };
+
   vcl_vector < ItemId_t > m_drawOrder;
-  event_map_t m_eventMap;
+  event_map_t m_eventMap; // list of events
+
+  EventDef::handle_t GetEventHistory( ItemId_t ev) { return m_eventMap[ev]; }
 
   // Context data areas
   context_map_t m_contextMap;
@@ -98,6 +111,9 @@ public:
   void SelectEvent (ItemId_t event);
   bool IsEventSelected (ItemId_t event) const;
   ItemId_t GetSelectedEvent() const;
+
+  void SetEventFilter( bool v );
+  bool IsEventDisplayable(ItemId_t event) const;
 
 
 //   bool GetEventInfoByTime (EventHistory_t const& eh, double time_offset, EventInfo_t * out_info);
@@ -134,6 +150,7 @@ private:
   double m_evc_data;
 
   ItemId_t m_selectedEvent;
+  bool m_eventFilter;
 
   static Model * s_instance;
 };

@@ -64,8 +64,13 @@ protected:
   virtual void ResetCursorHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void RefreshHandler(wxCommandEvent &event); // wxGlade: <event_handler>
 
+  virtual void handle_move_top(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void handle_move_up(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void handle_move_down(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void handle_move_bottom(wxCommandEvent &event); // wxGlade: <event_handler>
+
+  virtual void handle_filter_events(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void handle_enter_timeline(wxCommandEvent &event); // wxGlade: <event_handler>
 
   virtual void Curs1Set(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void Curs1Down(wxSpinEvent &event); // wxGlade: <event_handler>

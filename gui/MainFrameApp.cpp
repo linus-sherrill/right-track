@@ -453,6 +453,13 @@ DrawNames ()
  *
  */
 void MainFrameApp::
+handle_move_top(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventTop();
+}
+
+
+void MainFrameApp::
 handle_move_up(wxCommandEvent &event)
 {
   GetModel()->MoveSelectedEventUp();
@@ -463,4 +470,33 @@ void MainFrameApp::
 handle_move_down(wxCommandEvent &event)
 {
   GetModel()->MoveSelectedEventDown();
+}
+
+
+void MainFrameApp::
+handle_move_bottom(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventBottom();
+}
+
+
+// ----------------------------------------------------------------
+/** Handle events filter tool bar icon.
+ *
+ *
+ */
+void MainFrameApp::
+handle_filter_events(wxCommandEvent &event)
+{
+  bool val = event.IsChecked();
+
+  GetModel()->SetEventFilter(val);
+}
+
+
+
+void MainFrameApp::
+handle_enter_timeline(wxCommandEvent &event)
+{
+
 }
