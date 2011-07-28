@@ -31,7 +31,7 @@ MainFrameApp(wxWindow* parent,
              long style)
   : MainFrame (parent, id, title, pos, size, style)
 {
-
+  m_pendingUpdate = 0;
 }
 
 MainFrameApp::
@@ -239,21 +239,17 @@ void MainFrameApp::
 UpdateEventInfo()
 {
   Model * pm = GetModel();
-  BoundedEventStatistics stats;
-
-  stats = pm->GetEventInfo ();
 
   this->g_TotalEventCount->SetLabel(wxString::Format(wxT("Total events: %d"), pm->EventCount()) );
 
   wxString result;
-  result << wxString::Format(wxT("Name: %s\n"), stats.m_name.c_str());
-  result << wxString::Format(wxT("Event Count: %d\n"), stats.m_count);
-  result << wxString::Format(wxT("Min dur: %f\n"), stats.m_minDuration);
-  result << wxString::Format(wxT("Max dur: %f\n"), stats.m_maxDuration);
-  result << wxString::Format(wxT("Avg dir: %f\n"), stats.m_avgDuration);
-  result << wxString::Format(wxT("std: %f"), stats.m_stdDuration);
 
-  this->g_EventInfo->SetValue (result);
+  ItemId_t item = pm->GetSelectedEvent();
+  if (item >= 0)
+  {
+    EventDef::handle_t eh = pm->m_eventMap [ item ];
+    this->g_EventInfo->SetValue (eh->GetEventInfo());
+  }
 }
 
 
@@ -457,6 +453,13 @@ DrawNames ()
  *
  */
 void MainFrameApp::
+handle_move_top(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventTop();
+}
+
+
+void MainFrameApp::
 handle_move_up(wxCommandEvent &event)
 {
   GetModel()->MoveSelectedEventUp();
@@ -467,4 +470,33 @@ void MainFrameApp::
 handle_move_down(wxCommandEvent &event)
 {
   GetModel()->MoveSelectedEventDown();
+}
+
+
+void MainFrameApp::
+handle_move_bottom(wxCommandEvent &event)
+{
+  GetModel()->MoveSelectedEventBottom();
+}
+
+
+// ----------------------------------------------------------------
+/** Handle events filter tool bar icon.
+ *
+ *
+ */
+void MainFrameApp::
+handle_filter_events(wxCommandEvent &event)
+{
+  bool val = event.IsChecked();
+
+  GetModel()->SetEventFilter(val);
+}
+
+
+
+void MainFrameApp::
+handle_enter_timeline(wxCommandEvent &event)
+{
+
 }

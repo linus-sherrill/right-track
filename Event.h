@@ -41,7 +41,9 @@ public:
 
   virtual EventType_t EventType() const = 0;
   vcl_string const& EventGroup() const;
-  unsigned int EventColor() const;
+  int EventColor() const;
+  void EventColor (int rgb);
+  void EventColor (unsigned char r, unsigned char g, unsigned char b);
 
 
 protected:

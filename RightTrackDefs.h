@@ -25,7 +25,7 @@ struct EventTimestamp_t
   uint32_t usecs;
 };
 
-typedef uint32_t ItemId_t;
+typedef int32_t ItemId_t;
 typedef uint32_t EventPid_t;
 
 
