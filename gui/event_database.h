@@ -140,7 +140,7 @@ public:
 
   wxString GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
-
+  bool IsCommentActive() const { return ! m_userComment.empty(); }
 
 
   wxPen m_eventBaselinePen;

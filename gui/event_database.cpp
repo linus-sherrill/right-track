@@ -43,7 +43,7 @@ GetEventInfo()
   wxString  result;
 
   result << wxString::Format(wxT("Name: %s\n"), EventName().c_str());
-  result << wxString::Format(wxT("Event Count: %d\n"), m_stats.m_count);
+  result << wxString::Format(wxT("Occur Count: %d\n"), m_stats.m_count);
   result << wxString::Format(wxT("Min dur: %f\n"), m_stats.m_minDuration);
   result << wxString::Format(wxT("Max dur: %f\n"), m_stats.m_maxDuration);
   result << wxString::Format(wxT("Avg dir: %f\n"), m_stats.m_avgDuration);

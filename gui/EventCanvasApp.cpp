@@ -212,6 +212,7 @@ DrawEvents(wxDC& dc)
     dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
 
     EventDef::handle_t eh = event_it.CurrentEvent();
+
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
       DrawBoundedEvent (dc, eh->GetBoundedEvent(), y_coord);
@@ -254,6 +255,11 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
   dc.SetFont(fnt);
   dc.DrawText(eh->EventName(), view.x + 2, y_coord);
 
+  // Test for event level comment
+  if (eh->IsCommentActive())
+  {
+    DrawCommentAnnotation (dc, view.x + 6, y_coord);
+  }
 
   BoundedEventDef::iterator_t it;
   BoundedEventDef::iterator_t bit = eh->m_list.begin();
@@ -344,6 +350,12 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
+
+  // Test for event level comment
+  if (eh->IsCommentActive())
+  {
+    DrawCommentAnnotation (dc, view.x + 6, y_coord);
+  }
 
   DiscreteEventDef::iterator_t it;
   DiscreteEventDef::iterator_t bit = eh->m_list.begin();
