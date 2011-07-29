@@ -13,6 +13,7 @@ SET (gui_sources
     EventCanvasApp.h                    EventCanvasApp.cpp
     TimeLineCursor.h                    TimeLineCursor.cpp
     event_database.h                    event_database.cpp
+    DisplayableIterator.h               DisplayableIterator.cxx
 )
 
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )

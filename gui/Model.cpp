@@ -30,9 +30,10 @@ Model(MainFrameApp * frame)
   : m_parentFrame(frame),
     m_timingOffset(1e300),
     m_maxTime(0),
+    m_selectedEvent(-1),
+    m_selectedOccurrence(0),
     m_eventFilter(0)
 {
-
   s_instance = this;
   Reset();
 }
@@ -68,7 +69,11 @@ Reset()
 
   m_selectColor = wxColor (222, 207, 15);
 
+  m_commentMarkerColor = wxColor (166, 98, 203);
+
   m_selectedEvent = -1;
+  m_selectedOccurrence = 0;
+
 }
 
 
@@ -273,6 +278,7 @@ GetCursorTimes (double& t1, double& t2)
 }
 
 
+// ================================================================
 void Model::
 SetTimeBounds (double start, double end)
 {
@@ -289,7 +295,7 @@ GetTimeBounds (double& start, double& end)
   end = m_viewTimeEnd;
 }
 
-
+// ================================================================
 void Model::
 SelectEvent (ItemId_t event)
 {
@@ -314,6 +320,30 @@ GetSelectedEvent() const
 }
 
 
+// ================================================================
+void Model::
+SelectOccurrence (BaseOccurrence * oc)
+{
+  m_selectedOccurrence = oc;
+}
+
+
+bool Model::
+IsOccurrenceSelected(BaseOccurrence * oc) const
+{
+  return (m_selectedOccurrence == oc);
+}
+
+
+BaseOccurrence * Model::
+GetSelectedOccurrence() const
+{
+  return m_selectedOccurrence;
+}
+
+
+
+// ================================================================
 int Model::
 EventCount() const
 {

@@ -244,12 +244,21 @@ UpdateEventInfo()
 
   wxString result;
 
+  // test for selected event
   ItemId_t item = pm->GetSelectedEvent();
   if (item >= 0)
   {
     EventDef::handle_t eh = pm->m_eventMap [ item ];
-    this->g_EventInfo->SetValue (eh->GetEventInfo());
+    result = eh->GetEventInfo();
   }
+
+  // test for selected occurrence
+  if (pm->GetSelectedOccurrence() != 0)
+  {
+    result += pm->GetSelectedOccurrence()->GetInfo();
+  }
+
+  this->g_EventInfo->SetValue (result);
 }
 
 

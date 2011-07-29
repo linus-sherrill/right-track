@@ -48,8 +48,9 @@ class DiscreteEventDef;
 class BaseOccurrence
 {
 public:
-  wxString GetUserComment() const { return (m_userComment); }
+  wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
+  bool IsCommentActive() const { return ! m_userComment.empty(); }
   virtual wxString GetInfo() = 0;
 
   EventPid_t m_eventPid;
@@ -179,7 +180,7 @@ public:
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
 
-  BoundedOccurrence const* FindByTime (double time);
+  BoundedOccurrence * FindByTime (double time);
 
 
   // vector of occurrences
@@ -235,3 +236,12 @@ struct ContextDef_t
 
 
 #endif /* _EVENT_DATABASE_H_ */
+
+// Local Variables:
+// mode: c++
+// fill-column: 70
+// c-tab-width: 2
+// c-basic-offset: 2
+// c-basic-indent: 2
+// c-indent-tabs-mode: nil
+// end:

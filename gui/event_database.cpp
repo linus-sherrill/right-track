@@ -60,7 +60,7 @@ GetEventInfo()
  *
  *
  */
-BoundedOccurrence const* BoundedEventDef::
+BoundedOccurrence * BoundedEventDef::
 FindByTime (double time)
 {
   iterator_t ix = m_list.begin();
@@ -91,6 +91,7 @@ GetInfo()
     result << wxString::Format(wxT("Duration: %f\n"), (m_endTime - m_startTime) );
     result << wxString::Format(wxT("Start data: %f\n"), m_startData );
     result << wxString::Format(wxT("End data: %f\n"), m_endData );
+    result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
     return result;
 }
@@ -107,6 +108,7 @@ GetInfo()
     wxString  result;
 
     result << wxString::Format(wxT("Data: %f\n"), m_eventData );
+    result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
     return result;
 }
