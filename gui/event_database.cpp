@@ -48,7 +48,7 @@ GetEventInfo()
   result << wxString::Format(wxT("Max dur: %f\n"), m_stats.m_maxDuration);
   result << wxString::Format(wxT("Avg dir: %f\n"), m_stats.m_avgDuration);
   result << wxString::Format(wxT("std: %f\n"), m_stats.m_stdDuration);
-  result << wxString::Format(wxT("active%%: %f"), m_stats.m_activePct);
+  result << wxString::Format(wxT("active%%: %f\n"), m_stats.m_activePct);
 
   return result;
 }

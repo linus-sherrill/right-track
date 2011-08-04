@@ -92,7 +92,7 @@ FileOpenHandler(wxCommandEvent &event)
   g_EventFrame->ResetView();
 
   // update content in event loop
-  Refresh();
+//  Refresh();
 }
 
 
@@ -209,24 +209,34 @@ ModelUpdate(unsigned code)
 void MainFrameApp::
 DoModelUpdate(unsigned code)
 {
-  if (code & Model::UPDATE_INFO)
-  {
-    UpdateEventInfo();
-    UpdateTimeline();
-  }
+  // Order of tests is important
 
-  if (code & Model::UPDATE_EVENTS)
-  {
-    g_EventFrame->DrawNow();
-  }
-
-  if (code & Model::UPDATE_CURSOR)
+  if (code & Model::UPDATE_cursor_info)
   {
     // Update cursor objects with model data
     UpdateCursorTimes(); // update time display areas
     g_EventFrame->ResetCursorToModel(); // move lines to new location
-    g_EventFrame->DrawNow();
+
+    // this is a cheap way of forcing a redraw of event frame to
+    // render the cursors in their new location
+    code |= Model::UPDATE_event_frame;
   }
+
+  if (code & Model::UPDATE_event_info)
+  {
+    UpdateEventInfo();
+  }
+
+  if (code & Model::UPDATE_time_line)
+  {
+    UpdateTimeline();
+  }
+
+  if (code & Model::UPDATE_event_frame)
+  {
+    g_EventFrame->DrawNow(); // update whole frame
+  }
+
 }
 
 

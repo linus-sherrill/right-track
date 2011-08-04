@@ -72,9 +72,7 @@ ResetView()
 
   double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
   double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
-  GetModel()->SetCursorTimes(ct_1, ct_2);
-
-  DrawNow();
+  GetModel()->SetCursorTimes(ct_1, ct_2); // causes update request
 }
 
 
