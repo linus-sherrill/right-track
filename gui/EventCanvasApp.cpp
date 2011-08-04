@@ -5,10 +5,12 @@
  */
 
 
-#include <EventCanvasApp.h>
+#include "EventCanvasApp.h"
 
 #include <wx/dcclient.h>
-#include <Model.h>
+
+#include "Model.h"
+#include "DisplayableIterator.h"
 
 #include <boost/foreach.hpp>
 
@@ -70,9 +72,7 @@ ResetView()
 
   double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
   double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
-  GetModel()->SetCursorTimes(ct_1, ct_2);
-
-  DrawNow();
+  GetModel()->SetCursorTimes(ct_1, ct_2); // causes update request
 }
 
 
@@ -182,36 +182,15 @@ DrawEvents(wxDC& dc)
   // row number to draw this event on
   int y_coord = (start_idx + 1) * m_yIncrement;
 
+  DisplayableIterator event_it;
   // scan through list of events to find the start_idx'th DISPLAYABLE
   // element
-  size_t do_idx(0);
-  int count (start_idx);
-  const size_t limit (pm->m_drawOrder.size());
-  for (do_idx = 0; do_idx < limit; do_idx++)
-  {
-    if (pm->IsEventDisplayable (pm->m_drawOrder[do_idx]))
-    {
-      count--;
-      if (count < 0) break;
-    }
-  }
+  event_it.Next(start_idx);
 
   // for each event in their drawing order
-  for ( ; row_count >= 0; do_idx++)
+  while ( event_it.IsCurrentValid() && (row_count >= 0))
   {
-    // Stop at the last element
-    if (do_idx >= limit)
-    {
-      break;
-    }
-
-    ItemId_t ev_id = pm->m_drawOrder[do_idx];
-
-    // skip events that are filtered out
-    if ( ! pm->IsEventDisplayable(ev_id))
-    {
-      continue;
-    }
+    ItemId_t ev_id = event_it.CurrentItemId();
 
     // Handle selected event
     if (pm->IsEventSelected(ev_id))
@@ -230,7 +209,8 @@ DrawEvents(wxDC& dc)
     }
     dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
 
-    EventDef::handle_t eh = pm->m_eventMap[ev_id];
+    EventDef::handle_t eh = event_it.CurrentEvent();
+
     if (eh->EventType() == Event::ET_BOUNDED_EVENT)
     {
       DrawBoundedEvent (dc, eh->GetBoundedEvent(), y_coord);
@@ -240,10 +220,10 @@ DrawEvents(wxDC& dc)
       DrawDiscreteEvent (dc, eh->GetDiscreteEvent(), y_coord);
     }
 
-    // Increment to next drawing line
+    // Increment to next drawing line, row, event, ...
     y_coord += m_yIncrement;
-
     row_count--;
+    event_it.Next();
   } // end foreach
 
 }
@@ -273,6 +253,11 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
   dc.SetFont(fnt);
   dc.DrawText(eh->EventName(), view.x + 2, y_coord);
 
+  // Test for event level comment
+  if (eh->IsCommentActive())
+  {
+    DrawCommentAnnotation (dc, view.x + 6, y_coord);
+  }
 
   BoundedEventDef::iterator_t it;
   BoundedEventDef::iterator_t bit = eh->m_list.begin();
@@ -327,6 +312,11 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
     dc.SetBrush(it->m_startMarkerBrush);
     dc.DrawRectangle(x_coord_start - 1, y_coord, 3, -10);
 
+    if (it->IsCommentActive())
+    {
+      DrawCommentAnnotation (dc, x_coord_start, y_coord - 10);
+    }
+
     // draw line from x_event_start to x_coord
     dc.SetPen(it->m_eventDurationPen);
     dc.DrawLine(x_coord_start, y_coord, x_coord_end + 1, y_coord);
@@ -358,6 +348,12 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
   wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
+
+  // Test for event level comment
+  if (eh->IsCommentActive())
+  {
+    DrawCommentAnnotation (dc, view.x + 6, y_coord);
+  }
 
   DiscreteEventDef::iterator_t it;
   DiscreteEventDef::iterator_t bit = eh->m_list.begin();
@@ -411,8 +407,36 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
     marker[2] = wxPoint( 0, -10);
     dc.DrawPolygon ( WXSIZEOF (marker), marker, x_coord, y_coord);
 
+    // Test for comment active and draw
+    if (it->IsCommentActive())
+    {
+      DrawCommentAnnotation (dc, x_coord, y_coord - 10);
+    }
+
   } // end for
 
+}
+
+
+// ----------------------------------------------------------------
+/** Draw comment annotation.
+ *
+ * This method draws a graphical annotation indicating there is a
+ * comment.
+ *
+ * @param[in] x - x coordinate for drawing
+ * @param[in] y - y coordinate for drawing
+ */
+void EventCanvasApp::
+DrawCommentAnnotation(wxDC & dc, int x, int y)
+{
+  wxPen pen = wxPen ( GetModel()->m_commentMarkerColor, 1, wxSOLID );
+  wxBrush brush = wxBrush ( GetModel()->m_commentMarkerColor, wxSOLID );
+
+  dc.SetPen( pen );
+  dc.SetBrush (brush );
+
+  dc.DrawCircle(x, y, 2);
 }
 
 
@@ -552,36 +576,23 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
     return;
   }
 
-  // 1) determine which event by looking at Y coord
+  // determine which event by looking at Y coord
   int row_idx = ( (int) (((float) pt.y / m_yIncrement) + 0.5) - 1);
 
-  // 2) determine offset time by looking at X coord
+  // determine offset time by looking at X coord
   double ots = XcoordToSeconds(pt.x);
 
-  // 3) locate actual event record based on time
-  ItemId_t item_id (-1);
-  const size_t limit (p_model->m_drawOrder.size());
-  if ( (row_idx >= 0) && ((unsigned)row_idx < limit) )
-  {
-    // Need to skip elements that are not currently displayed and count
-    // displayable elements
-    int count = row_idx;
-    for (size_t i = 0; (i < limit) && (count >= 0); i++)
-    {
-      item_id = p_model->m_drawOrder[i];
-      if (p_model->IsEventDisplayable (item_id))
-      {
-        count--;
-      }
-    } // end for
+  // Need to skip elements that are not currently displayed
+  DisplayableIterator event_it;
 
+  event_it.Next(row_idx);
+  if (event_it.IsCurrentValid())
+  {
     // Set selected item id in model
+    ItemId_t item_id = event_it.CurrentItemId();
     p_model->SelectEvent (item_id);
 
-    // 3-a) locate the specific event based on 'ots' if there is one
-    // TBD - call method in Model to locate the event.
-
-    // 4) display event data by filling in Model.
+    //+ DEBUG
     std::cout << "row idx: " << row_idx
               << "  offset time: " << ots
               << "  item id: " << item_id
@@ -589,23 +600,17 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
               << "  time offset: " <<  GetModel()->TimeOffset()
               << std::endl;
 
-    EventDef::handle_t eh = p_model->m_eventMap[item_id];
+    EventDef::handle_t eh = event_it.CurrentEvent();
 
-    //
+    // locate actual event record based on time
     // look through <eh> for end event just greater than (ots + time_offset)
-    //
     BoundedEventDef * bep = eh->GetBoundedEvent();
     if (bep != 0)
     {
-      BoundedOccurrence const * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
-      if (bop)
-      {
-        std::cout << "Length of occurrence: " << (bop->m_endTime - bop->m_startTime)
-                  << "  pid: " << bop->m_eventPid
-                  << std::endl;
-      }
+      BoundedOccurrence * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
+      GetModel()->SelectOccurrence(bop); // ok if null is returned by FindByTime()
     }
-  }
+  } // end is valid event
   else
   {
     std::cout << "No event selected\n";  //+ DEBUG
@@ -760,3 +765,5 @@ GetCurrentView()
 
   return wxRect (origin, sz);
 }
+
+

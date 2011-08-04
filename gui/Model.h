@@ -53,9 +53,11 @@ public:
   typedef context_history_t::iterator pp_iterator_t;
 
   enum { // bit mask
-    UPDATE_EVENTS = 1,
-    UPDATE_INFO = 2,
-    UPDATE_CURSOR = 4
+    // Low level update events
+    UPDATE_event_info  = 0x001,
+    UPDATE_time_line   = 0x002,
+    UPDATE_event_frame = 0x004,
+    UPDATE_cursor_info = 0x008,
   };
 
   // -- CONSTRUCTORS --
@@ -101,16 +103,23 @@ public:
   context_map_t m_contextMap;
   vcl_vector < ContextHistoryElement_t > m_contextHistory;
 
-
+  // cursor time bounds
   void SetCursorTimes (double t1, double t2);
   void GetCursorTimes (double& t1, double& t2);
 
+  // x-axis timeline bounds
   void SetTimeBounds (double start, double end);
   void GetTimeBounds (double& start, double& end);
 
+  // Event selection
   void SelectEvent (ItemId_t event);
   bool IsEventSelected (ItemId_t event) const;
   ItemId_t GetSelectedEvent() const;
+
+  // Occurrences selection
+  void SelectOccurrence (BaseOccurrence * oc);
+  bool IsOccurrenceSelected(BaseOccurrence * oc) const;
+  BaseOccurrence * GetSelectedOccurrence() const;
 
   void SetEventFilter( bool v );
   bool IsEventDisplayable(ItemId_t event) const;
@@ -126,6 +135,7 @@ public:
   wxColour m_startEventColor;
   wxColour m_endEventColor;
   wxColour m_selectColor;
+  wxColour m_commentMarkerColor;
 
   wxColourData m_persistentColourData;
 
@@ -149,7 +159,10 @@ private:
   BoundedEventStatistics m_evc_stats;
   double m_evc_data;
 
+  // selected items
   ItemId_t m_selectedEvent;
+  BaseOccurrence * m_selectedOccurrence;
+
   bool m_eventFilter;
 
   static Model * s_instance;

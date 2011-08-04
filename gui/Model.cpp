@@ -30,9 +30,10 @@ Model(MainFrameApp * frame)
   : m_parentFrame(frame),
     m_timingOffset(1e300),
     m_maxTime(0),
+    m_selectedEvent(-1),
+    m_selectedOccurrence(0),
     m_eventFilter(0)
 {
-
   s_instance = this;
   Reset();
 }
@@ -68,7 +69,11 @@ Reset()
 
   m_selectColor = wxColor (222, 207, 15);
 
+  m_commentMarkerColor = wxColor (166, 98, 203);
+
   m_selectedEvent = -1;
+  m_selectedOccurrence = 0;
+
 }
 
 
@@ -93,10 +98,6 @@ ReadFromFile( const char * file )
   }
 
   ScanEvents();
-
-  // Reset scaling of views.  wxID_RESET
-
-  // ModelUpdate(UPDATE_INFO);
 
   return (status);
 }
@@ -261,7 +262,8 @@ SetCursorTimes (double t1, double t2)
   m_cursor_1_time = t1;
   m_cursor_2_time = t2;
 
-  ModelUpdate(UPDATE_CURSOR);
+  // redraw cursor info fields and event frame
+  ModelUpdate(UPDATE_cursor_info);
 }
 
 
@@ -273,13 +275,14 @@ GetCursorTimes (double& t1, double& t2)
 }
 
 
+// ================================================================
 void Model::
 SetTimeBounds (double start, double end)
 {
   m_viewTimeStart = start;
   m_viewTimeEnd = end;
 
-  ModelUpdate(UPDATE_INFO);
+  ModelUpdate(UPDATE_time_line | UPDATE_event_frame);
 }
 
 void Model::
@@ -289,14 +292,14 @@ GetTimeBounds (double& start, double& end)
   end = m_viewTimeEnd;
 }
 
-
+// ================================================================
 void Model::
 SelectEvent (ItemId_t event)
 {
   m_selectedEvent = event;
 
-  // Need to redraw events
-  ModelUpdate(UPDATE_EVENTS + UPDATE_INFO);
+  // update event info pane, update event frame to get new highlight
+  ModelUpdate(UPDATE_event_info | UPDATE_event_frame);
 }
 
 
@@ -314,6 +317,30 @@ GetSelectedEvent() const
 }
 
 
+// ================================================================
+void Model::
+SelectOccurrence (BaseOccurrence * oc)
+{
+  m_selectedOccurrence = oc;
+}
+
+
+bool Model::
+IsOccurrenceSelected(BaseOccurrence * oc) const
+{
+  return (m_selectedOccurrence == oc);
+}
+
+
+BaseOccurrence * Model::
+GetSelectedOccurrence() const
+{
+  return m_selectedOccurrence;
+}
+
+
+
+// ================================================================
 int Model::
 EventCount() const
 {
@@ -403,8 +430,8 @@ MoveSelectedEventTop()
   // store item at Top
   m_drawOrder[0] = item;
 
-  // Need to redraw events
-  ModelUpdate(UPDATE_EVENTS);
+  // Need to redraw all events
+  ModelUpdate(UPDATE_event_frame);
 }
 
 
@@ -437,7 +464,7 @@ MoveSelectedEventUp()
       m_drawOrder[i-1] = temp;
 
       // Need to redraw events
-      ModelUpdate(UPDATE_EVENTS);
+      ModelUpdate(UPDATE_event_frame);
 
       break;
     }
@@ -474,7 +501,7 @@ MoveSelectedEventDown()
       m_drawOrder[i+1] = temp;
 
       // Need to redraw events
-      ModelUpdate(UPDATE_EVENTS);
+      ModelUpdate(UPDATE_event_frame);
 
       break;
     }
@@ -519,8 +546,8 @@ MoveSelectedEventBottom()
     return; // item not found - not expected
   }
 
-  // shift list down from [index] .. [size-1] one slot.
-  for (size_t i = index; i < limit-1; i--)
+  // shift list up from [index] .. [limit-1] one slot.
+  for (size_t i = index; i <= limit-1; i++)
   {
     m_drawOrder[i] = m_drawOrder[i+1];
   }
@@ -529,7 +556,7 @@ MoveSelectedEventBottom()
   m_drawOrder[limit] = item;
 
   // Need to redraw events
-  ModelUpdate(UPDATE_EVENTS);
+  ModelUpdate(UPDATE_event_frame);
 }
 
 
@@ -544,7 +571,7 @@ SetEventFilter( bool v )
   m_eventFilter = v;
 
   // Need to redraw events
-  ModelUpdate(UPDATE_EVENTS);
+  ModelUpdate(UPDATE_event_frame);
 }
 
 

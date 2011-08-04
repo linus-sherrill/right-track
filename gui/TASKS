@@ -2,21 +2,9 @@
 
 Draw names in left side panel. Panel contents must match larger drawing pane.
 
-Highlight even when clicked on. Make name bold and make a brighter
-background (light yellow).
-
-Enable re-ordering events. There are icons on toolbar to handle this,
-but it is not implemented in the code. Add button to move event to
-bottom of list, button for top of list.
-
 Devise a way of hiding one or more event time lines. This could be a
 checkbox, but then there would need to be a way of getting it back.
 
-Clicking on event should display some stuff in right pane.
-         - event name (based on y-coord)
-         - event info (based on x-coord)
-            - event start, stop time and duration
-            - associated data
 
 Allow annotation of data set. This is a big feature.
     - Establish a separate data file (and internal structures) to hold
@@ -33,8 +21,7 @@ rectangle to be dragged to change the view.
 
 Resources have a hardcoded path. Should be relative. Or use .rc file, or compile in.
 
-Display statistics on a specific event. Num events, min, max, average,
-std. Also would be nice to display a event lentgh histogram.
+Finish implementing editable timeline bounds.
 
 BUG - horizontal scrolling does not refresh screen correctly.
 
@@ -46,3 +33,32 @@ BUG - event base line does not draw correctly when zoomed/h-scrolled
 BUG - cursors can disappear when panel is scrolled.
 
 BUG - events that extend beyond the window border are not drawn correctly.
+
+Display statistics on a specific event. Num events, min, max, average,
+std. Also would be nice to display a event lentgh histogram.
+
+Clicking on event should display some stuff in right pane.
+         - event name (based on y-coord)
+         - event info (based on x-coord)
+            - event start, stop time and duration
+            - associated data
+
+
+Enable re-ordering events. There are icons on toolbar to handle this,
+but it is not implemented in the code. Add button to move event to
+bottom of list, button for top of list.
+
+Highlight even when clicked on. Make name bold and make a brighter
+background (light yellow).
+
+Implement filter conteols. Start with filtering out empty events.
+
+-----------------------------------------------------------------------------
+Writing out the internal program state to be later read in and modified.
+
+Header
+        - file level comments
+        - file version
+
+Model state.
+      - the model needs to be able to be written to a file and read back.

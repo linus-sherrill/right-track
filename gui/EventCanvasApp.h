@@ -59,6 +59,8 @@ protected:
   void DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord);
   void DrawCursors ();
   void NormalizeCursors();
+  void DrawCommentAnnotation(wxDC & dc, int x, int y);
+
 
   // display management
   wxSize CalculateVirtualSize();
