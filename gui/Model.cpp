@@ -148,7 +148,6 @@ ScanEvents()
       m_timingOffset = eh->m_time;
     }
 
-
     // Setup general colors
     eh->m_eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxSOLID );
 
@@ -174,33 +173,33 @@ ScanEvents()
       event_marker_pen   = wxPen ( def_color, 1, wxSOLID );
     }
 
-
     // do specific processing by event type.
     if (eh->EventType() == Event::ET_DISCRETE_EVENT)
     {
       DiscreteEventDef * def = eh->GetDiscreteEvent();
-      DiscreteEventDef::iterator_t it = def->m_list.begin();
-      DiscreteEventDef::iterator_t eit = def->m_list.end();
+      EventDef::iterator_t it = def->m_list.begin();
+      EventDef::iterator_t eit = def->m_list.end();
 
       for ( ; it != eit; it++)
       {
-        double ts = it->m_eventTime;
+        DiscreteOccurrence * dop = (*it)->GetDiscreteOccurrence();
+        double ts = dop->m_eventTime;
 
         if (ts > m_maxTime)
         {
           m_maxTime = ts;
         }
 
-        it->m_eventMarkerPen = event_marker_pen;
-        it->m_eventMarkerBrush = start_marker_brush;
+        dop->m_eventMarkerPen = event_marker_pen;
+        dop->m_eventMarkerBrush = start_marker_brush;
       } // end for it
 
     }
     else
     {
       BoundedEventDef * def = eh->GetBoundedEvent();
-      BoundedEventDef::iterator_t it = def->m_list.begin();
-      BoundedEventDef::iterator_t eit = def->m_list.end();
+      EventDef::iterator_t it = def->m_list.begin();
+      EventDef::iterator_t eit = def->m_list.end();
 
       def->m_stats.m_minDuration = 1e300;
       def->m_stats.m_maxDuration = 0.0;
@@ -210,22 +209,23 @@ ScanEvents()
 
       for ( ; it != eit; it++)
       {
-        double ts = it->m_endTime;
+        BoundedOccurrence * bop = (*it)->GetBoundedOccurrence();
+        double ts = bop->m_endTime;
 
         if (ts > m_maxTime)
         {
           m_maxTime = ts;
         }
 
-        it->m_startMarkerPen = start_marker_pen;
-        it->m_startMarkerBrush = start_marker_brush;
+        bop->m_startMarkerPen = start_marker_pen;
+        bop->m_startMarkerBrush = start_marker_brush;
 
-        it->m_eventDurationPen = event_duration_pen;
+        bop->m_eventDurationPen = event_duration_pen;
 
-        it->m_endMarkerPen = end_marker_pen;
-        it->m_endMarkerBrush = end_marker_brush;
+        bop->m_endMarkerPen = end_marker_pen;
+        bop->m_endMarkerBrush = end_marker_brush;
 
-        double duration = it->m_endTime - it->m_startTime;
+        double duration = bop->m_endTime - bop->m_startTime;
         if (def->m_stats.m_maxDuration < duration) def->m_stats.m_maxDuration = duration;
         if (def->m_stats.m_minDuration > duration) def->m_stats.m_minDuration = duration;
         sum += duration;
@@ -239,7 +239,8 @@ ScanEvents()
 
       if (def->m_list.size() > 1) // need some elementsfor this to work
       {
-        def->m_stats.m_activePct = (sum / (def->m_list.back().m_endTime - def->m_list.front().m_startTime)) * 100.0;
+        def->m_stats.m_activePct = (sum / (def->m_list.back()->GetBoundedOccurrence()->m_endTime
+                                           - def->m_list.front()->GetBoundedOccurrence()->m_startTime)) * 100.0;
       }
       else
       {

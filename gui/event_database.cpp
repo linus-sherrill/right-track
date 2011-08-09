@@ -54,23 +54,22 @@ GetEventInfo()
 }
 
 
-
 // ----------------------------------------------------------------
 /** Find occurrence by time
  *
  *
  */
-BoundedOccurrence * BoundedEventDef::
-FindByTime (double time)
+BaseOccurrence * EventDef::
+FindByTime (double time, double delta)
 {
   iterator_t ix = m_list.begin();
   iterator_t eix = m_list.end();
 
   for ( ; ix != eix; ix++)
   {
-    if (ix->ContainsTime(time))
+    if ((*ix)->ContainsTime(time, delta))
     {
-      return &(*ix);
+      return (*ix).get();
     }
   } // end for
 
@@ -128,3 +127,19 @@ GetEventInfo()
   return result;
 }
 
+
+
+// ================================================================
+
+bool BoundedOccurrence::
+ContainsTime (double time, double delta) const
+{
+  return (time >= m_startTime) && (time <= m_endTime);
+}
+
+
+bool DiscreteOccurrence::
+ContainsTime (double time, double delta) const
+{
+  return (m_eventTime >= time - delta) && (m_eventTime <= time + delta);
+}
