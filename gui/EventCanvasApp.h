@@ -24,6 +24,23 @@ using namespace RightTrack::Internal;
 
 
 // ----------------------------------------------------------------
+/** Click location.
+ *
+ * This structure represents a selected event and occurrence.  Both
+ * event and occurrence can be null if the mouser's aim is not so
+ * good.
+ */
+struct ClickLocation
+{
+  EventDef * event;
+  BaseOccurrence * occurrence;
+
+  // CTOR
+  ClickLocation() : event(0), occurrence(0) { }
+};
+
+
+// ----------------------------------------------------------------
 /** Event drawing canvas.
  *
  *
@@ -72,8 +89,14 @@ protected:
   virtual void OnMouseLeftUpEvent (wxMouseEvent& event);
   virtual void OnMouseLeftDownEvent (wxMouseEvent& event);
   virtual void OnMouseMotionEvent (wxMouseEvent& event);
+  virtual void OnMouseRightClick(wxMouseEvent& evt);
+
+  virtual void OnPopupClick(wxCommandEvent& evt);
 
   virtual void OnDraw( wxDC & dc);
+
+  ClickLocation DetermineClickLocation( wxPoint pt );
+
 
   DECLARE_EVENT_TABLE();
 
