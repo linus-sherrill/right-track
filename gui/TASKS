@@ -12,6 +12,12 @@ Allow annotation of data set. This is a big feature.
     - Allow user colouring of individual events.
     - Allow user to add annotations to events. Mark event as having annotation.
 
+In comment display window - add text "enter comment" in gray text if
+there is currently no annotation.
+
+Floating event info window - holds same data as scrolling pane
+currently does.
+
 Allow loading multiple data sets into one viewer. Add menu item to
 clear all events.
 
@@ -22,6 +28,12 @@ rectangle to be dragged to change the view.
 Resources have a hardcoded path. Should be relative. Or use .rc file, or compile in.
 
 Finish implementing editable timeline bounds.
+
+How should contexts be displayed?
+    - contexts apply to a thread
+    - different color for events on that thread and within the context window
+
+BUG - Zoom does not keep timeline centered when the scale is changed.
 
 BUG - horizontal scrolling does not refresh screen correctly.
 
@@ -51,7 +63,14 @@ bottom of list, button for top of list.
 Highlight even when clicked on. Make name bold and make a brighter
 background (light yellow).
 
-Implement filter conteols. Start with filtering out empty events.
+Implement filter controls. Start with filtering out empty events.
+
+Allow right-click on events for drop down menu to allow
+      - changing colour of occurrence
+      - change colour of whole event
+      - edit annotation for occurrence
+      - edit annotation for whole event
+
 
 -----------------------------------------------------------------------------
 Writing out the internal program state to be later read in and modified.
