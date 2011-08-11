@@ -47,8 +47,8 @@ GetEventInfo()
   result << wxString::Format(wxT("Min dur: %f\n"), m_stats.m_minDuration);
   result << wxString::Format(wxT("Max dur: %f\n"), m_stats.m_maxDuration);
   result << wxString::Format(wxT("Avg dir: %f\n"), m_stats.m_avgDuration);
-  result << wxString::Format(wxT("std: %f\n"), m_stats.m_stdDuration);
-  result << wxString::Format(wxT("active%%: %f\n"), m_stats.m_activePct);
+  result << wxString::Format(wxT("Std: %f\n"), m_stats.m_stdDuration);
+  result << wxString::Format(wxT("Active%%: %f\n"), m_stats.m_activePct);
 
   return result;
 }
@@ -87,7 +87,7 @@ GetInfo()
 {
     wxString  result;
 
-    result << wxString::Format(wxT("Duration: %f\n"), (m_endTime - m_startTime) );
+    result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime), m_startTime, m_endTime );
     result << wxString::Format(wxT("Start data: %f\n"), m_startData );
     result << wxString::Format(wxT("End data: %f\n"), m_endData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
@@ -106,6 +106,7 @@ GetInfo()
 {
     wxString  result;
 
+    result << wxString::Format(wxT("Time: %f\n"), m_eventTime);
     result << wxString::Format(wxT("Data: %f\n"), m_eventData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
@@ -122,7 +123,6 @@ GetEventInfo()
 
   result << wxString::Format(wxT("Name: %s\n"), EventName().c_str());
   result << wxString::Format(wxT("Event Count: %d\n"), m_list.size());
-
 
   return result;
 }
