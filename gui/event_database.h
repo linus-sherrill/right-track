@@ -66,10 +66,11 @@ public:
 
   EventPid_t m_eventPid;
 
-  wxString m_userComment;
 
   bool m_selected; // set if the occurrence is selected
 
+protected:
+  wxString m_userComment;
 };
 
 
@@ -154,7 +155,7 @@ public:
 
   BaseOccurrence * FindByTime (double time, double delta);
   ItemId_t GetEventId() const { return m_eventId; }
-  wxString GetUserComment() const { return (m_userComment); }
+  wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
   bool IsCommentActive() const { return ! m_userComment.empty(); }
 
@@ -172,7 +173,6 @@ public:
 
   // vector of occurrences
   vcl_vector < BaseOccurrence::handle_t > m_list;
-
 
 protected:
   wxString m_userComment;
