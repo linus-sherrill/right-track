@@ -938,6 +938,7 @@ OnMouseRightClick(wxMouseEvent& event)
     // Edit annotation of event
     mnu.Append(ID_ECM_COLOR_EVENT,  wxT("Set color"));
     mnu.Append(ID_ECM_EVENT_ANNOTATION,   wxT("Edit annotation"));
+    //+ edit group name?
     mnu.Connect(wxEVT_COMMAND_MENU_SELECTED, ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this);
     PopupMenu(&mnu);
   }

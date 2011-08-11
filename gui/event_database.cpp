@@ -53,6 +53,7 @@ GetEventInfo()
   result << wxString::Format(wxT("Avg dir: %f\n"), m_stats.m_avgDuration);
   result << wxString::Format(wxT("Std: %f\n"), m_stats.m_stdDuration);
   result << wxString::Format(wxT("Active%%: %f\n"), m_stats.m_activePct);
+//+ add group name if there is one?
 
   return result;
 }
