@@ -11,6 +11,7 @@
 
 #include "Model.h"
 #include "DisplayableIterator.h"
+#include "TextEditDialogApp.h"
 
 #include <boost/foreach.hpp>
 
@@ -805,57 +806,84 @@ OnPopupClick(wxCommandEvent& event)
 {
   // fix data type for client data
   void* data = static_cast< wxMenu* >( event.GetEventObject() )->GetClientData();
-  ClickLocation * loc = static_cast< ClickLocation * >(data);
+  ClickLocation* loc = static_cast< ClickLocation* >(data);
+  wxString comment_string;
 
   // handle menu code
   switch ( event.GetId() )
   {
-  case ID_ECM_COLOR_EVENT:
-  case ID_ECM_COLOR_OCCURRENCE:
-  {
-    // Enable all color variants
-    GetModel()->m_persistentColourData.SetChooseFull(true);
-
-    // display open file dialog.
-    wxColourDialog dialog (this, &GetModel()->m_persistentColourData);
-    if (dialog.ShowModal() == wxID_OK)
+    case ID_ECM_COLOR_EVENT:
+    case ID_ECM_COLOR_OCCURRENCE:
     {
-      wxColourData ret_data = dialog.GetColourData();
-      wxColour col = ret_data.GetColour();
+      // Enable all color variants
+      GetModel()->m_persistentColourData.SetChooseFull(true);
 
-      if ( event.GetId() == ID_ECM_COLOR_EVENT)
+      // display dialog.
+      wxColourDialog dialog(this, & GetModel()->m_persistentColourData);
+      if (dialog.ShowModal() == wxID_OK)
       {
-        // store in event
-        //+ maybe background colour?
-        loc->event->m_eventBaselinePen = wxPen ( col, 1, wxSOLID );
-      }
-      else // color occurence
-      {
-        // store in event
-        if (loc->occurrence->GetBoundedOccurrence() != 0)
+        wxColourData ret_data = dialog.GetColourData();
+        wxColour col = ret_data.GetColour();
+
+        if ( event.GetId() == ID_ECM_COLOR_EVENT)
         {
-          BoundedOccurrence * bop = loc->occurrence->GetBoundedOccurrence();
-          bop->m_eventDurationPen = wxPen ( col, 2, wxSOLID );
+          // store in event
+          //+ maybe background colour?
+          loc->event->m_eventBaselinePen = wxPen(col, 1, wxSOLID);
+        }
+        else // color occurence
+        {
+          // store in event
+          if (loc->occurrence->GetBoundedOccurrence() != 0)
+          {
+            BoundedOccurrence* bop = loc->occurrence->GetBoundedOccurrence();
+            bop->m_eventDurationPen = wxPen(col, 2, wxSOLID);
+          }
+          else
+          {
+            DiscreteOccurrence* dop = loc->occurrence->GetDiscreteOccurrence();
+            dop->m_eventMarkerPen = wxPen(col, 1, wxSOLID);
+            dop->m_eventMarkerBrush = wxBrush(col, wxSOLID);
+          }
+        }
+
+      }
+      break;
+    }
+
+    case ID_ECM_EVENT_ANNOTATION:
+    case ID_ECM_OCCURRENCE_ANNOTATION:
+    {
+      wxString title = loc->event->EventName();
+
+      if (event.GetId() == ID_ECM_EVENT_ANNOTATION)
+      {
+        comment_string = loc->event->GetUserComment();
+      }
+      else
+      {
+        comment_string = loc->occurrence->GetUserComment();
+      }
+
+      TextEditDialogApp dialog(this, -1, title);
+      dialog.SetText(comment_string);
+
+      if (dialog.ShowModal() == wxID_OK)
+      {
+        if (event.GetId() == ID_ECM_EVENT_ANNOTATION)
+        {
+          loc->event->SetUserComment( dialog.GetText() );
         }
         else
         {
-          DiscreteOccurrence * dop = loc->occurrence->GetDiscreteOccurrence();
-          dop->m_eventMarkerPen = wxPen ( col, 1, wxSOLID );
-          dop->m_eventMarkerBrush = wxBrush ( col, wxSOLID );
+          loc->occurrence->SetUserComment( dialog.GetText() );
         }
       }
-
+      break;
     }
-  }
-    break;
 
-  case ID_ECM_EVENT_ANNOTATION:
-    break;
-
-  case ID_ECM_OCCURRENCE_ANNOTATION:
-    break;
   } // switch
-}
+} /* OnPopupClick */
 
 
 // ----------------------------------------------------------------

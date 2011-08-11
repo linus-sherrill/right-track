@@ -253,6 +253,8 @@ UpdateEventInfo()
   this->g_TotalEventCount->SetLabel(wxString::Format(wxT("Total events: %d"), pm->EventCount()) );
 
   wxString result;
+  wxString temp;
+  wxString comments;
 
   // test for selected event
   ItemId_t item = pm->GetSelectedEvent();
@@ -260,15 +262,33 @@ UpdateEventInfo()
   {
     EventDef::handle_t eh = pm->m_eventMap [ item ];
     result = eh->GetEventInfo();
+    temp = eh->GetUserComment();
+    if ( ! temp.empty() ) // collect comment if any
+    {
+      comments += wxT("Event:\n") + temp;
+    }
   }
 
   // test for selected occurrence
   if (pm->GetSelectedOccurrence() != 0)
   {
     result += pm->GetSelectedOccurrence()->GetInfo();
+
+    if ( ! comments.empty())
+    {
+      comments += wxT("\n\n");
+    }
+
+    temp = pm->GetSelectedOccurrence()->GetUserComment();
+    if ( ! temp.empty() ) // collect comment if any
+    {
+      comments += wxT("Occurrence:\n") + temp;
+    }
+
   }
 
   this->g_EventInfo->SetValue (result);
+  this->g_CommentText->SetValue (comments);
 }
 
 
