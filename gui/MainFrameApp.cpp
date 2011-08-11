@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -13,6 +13,7 @@
 #include <wx/dcclient.h>
 #include <wx/pen.h>
 #include <wx/treectrl.h>
+#include <wx/aboutdlg.h>
 
 
 // Define our custom event table
@@ -187,10 +188,49 @@ QuitHandler(wxCommandEvent &event)
  *
  *
  */
-void MainFrameApp::
-AboutHandler(wxCommandEvent &event)
+void MainFrameApp::AboutHandler(wxCommandEvent& event)
 {
-// about box TBD
+  // This object will contain all information displayed in About box
+  wxAboutDialogInfo info;
+
+  // Call of AddDeveloper() method adds a record to list of developers
+  info.AddDeveloper( wxT("Linus Sherrill") );
+
+  // Call of AddDocWriter() method adds a record to list of documentation writers
+  info.AddDocWriter( wxT("Donald Duck") );
+
+  // Call of AddArtist() method adds a record to list of artists
+  //info.AddArtist( wxT("Scrooge Mc.Duck") );
+
+  // Call of AddTranslator() method adds a record to list of translators
+  //info.AddTranslator( wxT("Mickey Mouse") );
+
+  // This method adds application description.
+  info.SetDescription( wxT("Right Track event viewer.\n"
+                           "Displays and enables analysis of Right Track event files.") );
+
+  // This method sets application version string
+  info.SetVersion( wxT(RIGHT_TRACK_VERSION) );
+
+  // SetName() method sets application name displayed in About box.
+  // It is better to pass wxApp::GetAppName() to this method
+  info.SetName( wxTheApp->GetAppName() );
+
+  // Sets application Web-site URL
+  info.SetWebSite( wxT("http://www.kitware.com") );
+
+  // Sets the icon which will be displayed in About box.
+//+  info.SetIcon( wxICON(wxICON_AAA) );
+
+  // Sets application license string. Only wxGTK port has native way of
+  // displaying application license. All other ports will use generic way for this purpose.
+  info.SetLicence( wxT("Copyright 2011 by Kitware, Inc. All Rights Reserved. Please refer to\n"
+                       "KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,\n"
+                       "Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.") );
+
+  info.SetCopyright( wxT("(C) 2011 Kitware Inc.") );
+  // At last, we can display about box
+  wxAboutBox(info);
 }
 
 
