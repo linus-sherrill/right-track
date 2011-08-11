@@ -5,10 +5,12 @@ SET (gui_sources
     gen_files/EventViewFrame.h          gen_files/EventViewFrame.cpp
     gen_files/MainFrame.h               gen_files/MainFrame.cpp
     gen_files/EventCanvas.h             gen_files/EventCanvas.cpp
+    gen_files/TextEditDialog.h          gen_files/TextEditDialog.cpp
 
     EventTransportReaderGui.h           EventTransportReaderGui.cxx
     main.cpp
     MainFrameApp.h                      MainFrameApp.cpp
+    TextEditDialogApp.h                 TextEditDialogApp.cpp
     Model.h                             Model.cpp
     EventCanvasApp.h                    EventCanvasApp.cpp
     TimeLineCursor.h                    TimeLineCursor.cpp
