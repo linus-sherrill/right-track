@@ -38,6 +38,8 @@ struct BoundedEventStatistics
 
 class BoundedEventDef;
 class DiscreteEventDef;
+class BoundedOccurrence;
+class DiscreteOccurrence;
 
 
 // ----------------------------------------------------------------
@@ -48,17 +50,27 @@ class DiscreteEventDef;
 class BaseOccurrence
 {
 public:
+  typedef boost::shared_ptr < BaseOccurrence > handle_t;
+  typedef vcl_vector < handle_t >::iterator iterator_t;
+  typedef vcl_vector < handle_t >::const_iterator const_iterator_t;
+  typedef vcl_vector < handle_t >::reference occurrence_ref_t;
+
   wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
   bool IsCommentActive() const { return ! m_userComment.empty(); }
   virtual wxString GetInfo() = 0;
+  virtual bool ContainsTime (double time, double delta) const = 0;
+
+  virtual BoundedOccurrence *  GetBoundedOccurrence() { return 0; }
+  virtual DiscreteOccurrence *  GetDiscreteOccurrence() { return 0; }
 
   EventPid_t m_eventPid;
 
-  wxString m_userComment;
 
   bool m_selected; // set if the occurrence is selected
 
+protected:
+  wxString m_userComment;
 };
 
 
@@ -71,15 +83,15 @@ class BoundedOccurrence
   : public BaseOccurrence
 {
 public:
-  bool ContainsTime (double time) const { return (time >= m_startTime) && (time <= m_endTime); }
+  virtual bool ContainsTime (double time, double delta) const;
   virtual wxString GetInfo();
+  virtual BoundedOccurrence *  GetBoundedOccurrence() { return this; }
 
   double m_startTime; // in seconds
   EventData_t m_startData;
 
   double m_endTime; // in seconds
   EventData_t m_endData;
-
 
   wxPen m_startMarkerPen;
   wxBrush m_startMarkerBrush;
@@ -100,12 +112,12 @@ class DiscreteOccurrence
   : public BaseOccurrence
 {
 public:
+  virtual bool ContainsTime (double time, double delta) const;
   virtual wxString GetInfo();
+  virtual DiscreteOccurrence *  GetDiscreteOccurrence() { return this; }
 
   double m_eventTime; // in seconds
   EventData_t m_eventData;
-
-
 
   wxPen m_eventMarkerPen; // discrete event
   wxBrush m_eventMarkerBrush;
@@ -122,6 +134,9 @@ class EventDef
 {
 public:
   typedef boost::shared_ptr < EventDef > handle_t;
+  typedef vcl_vector < BaseOccurrence::handle_t >::iterator iterator_t;
+  typedef vcl_vector < BaseOccurrence::handle_t >::const_iterator const_iterator_t;
+  typedef vcl_vector < BaseOccurrence::handle_t >::reference occurrence_ref_t;
 
   EventDef();
   virtual ~EventDef();
@@ -138,7 +153,9 @@ public:
   virtual wxString GetEventInfo() = 0;
   virtual size_t NumOccurrences() const = 0;
 
-  wxString GetUserComment() const { return (m_userComment); }
+  BaseOccurrence * FindByTime (double time, double delta);
+  ItemId_t GetEventId() const { return m_eventId; }
+  wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
   bool IsCommentActive() const { return ! m_userComment.empty(); }
 
@@ -154,6 +171,9 @@ public:
   wxString m_eventName;
   wxString m_groupName;
 
+  // vector of occurrences
+  vcl_vector < BaseOccurrence::handle_t > m_list;
+
 protected:
   wxString m_userComment;
 };
@@ -168,10 +188,6 @@ class BoundedEventDef
   : public EventDef
 {
 public:
-  typedef vcl_vector < BoundedOccurrence >::iterator iterator_t;
-  typedef vcl_vector < BoundedOccurrence >::const_iterator const_iterator_t;
-  typedef vcl_vector < BoundedOccurrence >::reference occurrence_ref_t;
-
   BoundedEventDef() { }
   virtual ~BoundedEventDef() { }
 
@@ -179,12 +195,6 @@ public:
   virtual BoundedEventDef * GetBoundedEvent () { return this; }
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
-
-  BoundedOccurrence * FindByTime (double time);
-
-
-  // vector of occurrences
-  vcl_vector < BoundedOccurrence > m_list;
 
   BoundedEventStatistics m_stats; // calculated when data is loaded
 };
@@ -199,10 +209,6 @@ class DiscreteEventDef
   : public EventDef
 {
 public:
-  typedef vcl_vector < DiscreteOccurrence >::iterator iterator_t;
-  typedef vcl_vector < DiscreteOccurrence >::const_iterator const_iterator_t;
-  typedef vcl_vector < DiscreteOccurrence >::reference occurrence_ref_t;
-
   DiscreteEventDef() { }
   virtual ~DiscreteEventDef() { }
 
@@ -210,28 +216,29 @@ public:
   virtual DiscreteEventDef * GetDiscreteEvent () { return this; }
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
-
-
-  // vector of occurrences
-  vcl_vector < DiscreteOccurrence > m_list;
-
 };
 
 
 // ----------------------------------------------------------------
-// Context data types
+// Context data type
 //
-struct ContextHistoryElement_t
+class ContextHistoryElement
 {
-  double event_time;
+public:
+  typedef boost::shared_ptr < ContextHistoryElement > handle_t;
+
+  double m_startTime;
+  double m_endTime;
 
 };
 
 
-struct ContextDef_t
+class ContextDef
 {
+public:
   ContextDefinition ctxt_def;
 
+  // list of context history elements (by handle
 };
 
 

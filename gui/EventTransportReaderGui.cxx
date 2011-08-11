@@ -62,7 +62,6 @@ NewEvent(EventDefinition const& msg)
  *
  *
  */
-
 int EventTransportReaderGui::
 NewEvent(EventStart const& msg)
 {
@@ -76,25 +75,23 @@ NewEvent(EventStart const& msg)
   // build specific type object
   if (ix->second->EventType() == Event::ET_DISCRETE_EVENT)
   {
-    DiscreteOccurrence occ;
+    DiscreteOccurrence * occ = new DiscreteOccurrence();
 
-    occ.m_eventPid = msg.event_pid;
-    occ.m_eventData = msg.event_data;
-    occ.m_eventTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+    occ->m_eventPid = msg.event_pid;
+    occ->m_eventData = msg.event_data;
+    occ->m_eventTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
 
-    DiscreteEventDef * def = ix->second->GetDiscreteEvent();
-    def->m_list.push_back (occ);
+    ix->second->m_list.push_back (BaseOccurrence::handle_t(occ) );
   }
   else
   {
-    BoundedOccurrence occ;
+    BoundedOccurrence * occ = new BoundedOccurrence();
 
-    occ.m_eventPid = msg.event_pid;
-    occ.m_startData = msg.event_data;
-    occ.m_startTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+    occ->m_eventPid = msg.event_pid;
+    occ->m_startData = msg.event_data;
+    occ->m_startTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
 
-    BoundedEventDef * def = ix->second->GetBoundedEvent();
-    def->m_list.push_back (occ);
+    ix->second->m_list.push_back (BaseOccurrence::handle_t(occ) );
   }
 
   return (0);
@@ -118,13 +115,13 @@ NewEvent(EventEnd const& msg)
 
   // These are for only bounded events
   // The last occurrence in the list is the start that matches this end.
-  BoundedEventDef * def = ix->second->GetBoundedEvent();
-  assert (def != 0);
-  BoundedEventDef::occurrence_ref_t ref = def->m_list.back(); // get last our added
+  BaseOccurrence::handle_t ref = ix->second->m_list.back(); // get last our added occurrence
+  BoundedOccurrence * bop = ref->GetBoundedOccurrence();
+  assert (bop != 0);
 
   // Update that element with ending info
-  ref.m_endTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
-  ref.m_endData = msg.event_data;
+  bop->m_endTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+  bop->m_endData = msg.event_data;
 
   return (0);
 }
@@ -138,7 +135,7 @@ NewEvent(EventEnd const& msg)
 int EventTransportReaderGui::
 NewEvent(ContextDefinition const& msg)
 {
-  ContextDef_t ev;
+  ContextDef ev;
   ev.ctxt_def = msg;
 
   // TBD
@@ -154,8 +151,8 @@ NewEvent(ContextDefinition const& msg)
 int EventTransportReaderGui::
 NewEvent(ContextPush const& msg)
 {
-  ContextHistoryElement_t ev;
-  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+  ContextHistoryElement ev;
+  ev.m_startTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
  // TBD
 
   return (0);
@@ -170,8 +167,8 @@ NewEvent(ContextPush const& msg)
 int EventTransportReaderGui::
 NewEvent(ContextPop const& msg)
 {
-  ContextHistoryElement_t ev;
-  ev.event_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+  ContextHistoryElement ev;
+  ev.m_endTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   // TBD
 
   return (0);

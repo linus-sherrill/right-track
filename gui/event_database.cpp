@@ -6,6 +6,10 @@
 
 #include "event_database.h"
 
+#include "Model.h"
+
+
+
 EventDef::
 EventDef()
 { }
@@ -47,12 +51,12 @@ GetEventInfo()
   result << wxString::Format(wxT("Min dur: %f\n"), m_stats.m_minDuration);
   result << wxString::Format(wxT("Max dur: %f\n"), m_stats.m_maxDuration);
   result << wxString::Format(wxT("Avg dir: %f\n"), m_stats.m_avgDuration);
-  result << wxString::Format(wxT("std: %f\n"), m_stats.m_stdDuration);
-  result << wxString::Format(wxT("active%%: %f\n"), m_stats.m_activePct);
+  result << wxString::Format(wxT("Std: %f\n"), m_stats.m_stdDuration);
+  result << wxString::Format(wxT("Active%%: %f\n"), m_stats.m_activePct);
+//+ add group name if there is one?
 
   return result;
 }
-
 
 
 // ----------------------------------------------------------------
@@ -60,17 +64,17 @@ GetEventInfo()
  *
  *
  */
-BoundedOccurrence * BoundedEventDef::
-FindByTime (double time)
+BaseOccurrence * EventDef::
+FindByTime (double time, double delta)
 {
   iterator_t ix = m_list.begin();
   iterator_t eix = m_list.end();
 
   for ( ; ix != eix; ix++)
   {
-    if (ix->ContainsTime(time))
+    if ((*ix)->ContainsTime(time, delta))
     {
-      return &(*ix);
+      return (*ix).get();
     }
   } // end for
 
@@ -88,7 +92,9 @@ GetInfo()
 {
     wxString  result;
 
-    result << wxString::Format(wxT("Duration: %f\n"), (m_endTime - m_startTime) );
+    result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime),
+                               Model::Instance()->TimeOffset(m_startTime),
+                               Model::Instance()->TimeOffset(m_endTime) );
     result << wxString::Format(wxT("Start data: %f\n"), m_startData );
     result << wxString::Format(wxT("End data: %f\n"), m_endData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
@@ -107,6 +113,7 @@ GetInfo()
 {
     wxString  result;
 
+    result << wxString::Format(wxT("Time: %f\n"), Model::Instance()->TimeOffset(m_eventTime) );
     result << wxString::Format(wxT("Data: %f\n"), m_eventData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
@@ -124,7 +131,22 @@ GetEventInfo()
   result << wxString::Format(wxT("Name: %s\n"), EventName().c_str());
   result << wxString::Format(wxT("Event Count: %d\n"), m_list.size());
 
-
   return result;
 }
 
+
+
+// ================================================================
+
+bool BoundedOccurrence::
+ContainsTime (double time, double delta) const
+{
+  return (time >= m_startTime) && (time <= m_endTime);
+}
+
+
+bool DiscreteOccurrence::
+ContainsTime (double time, double delta) const
+{
+  return (m_eventTime >= time - delta) && (m_eventTime <= time + delta);
+}

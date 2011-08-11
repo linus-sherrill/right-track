@@ -47,9 +47,9 @@ public:
   typedef event_map_t::const_iterator const_event_iterator_t;
 
   // Context data types
-  typedef vcl_map < ItemId_t, ContextDef_t > context_map_t;
+  typedef vcl_map < ItemId_t, ContextDef > context_map_t;
   typedef context_map_t::iterator context_iterator_t;
-  typedef vcl_vector < ContextHistoryElement_t > context_history_t;
+  typedef vcl_vector < ContextHistoryElement > context_history_t;
   typedef context_history_t::iterator pp_iterator_t;
 
   enum { // bit mask
@@ -67,7 +67,16 @@ public:
 
   // -- ACCESSORS --
   double EventTimeRange() const;
+
+  /** Get time offset for events.  This method returns the earliest
+   * time in the data set which is used as the start time for the
+   * display.
+   */
   double TimeOffset() const { return m_timingOffset; }
+
+  /** Convert global time of offset time.
+   */
+  double TimeOffset(double time) const { return time - m_timingOffset; }
 
   /**  Number of events in data base.
    */
@@ -101,7 +110,7 @@ public:
 
   // Context data areas
   context_map_t m_contextMap;
-  vcl_vector < ContextHistoryElement_t > m_contextHistory;
+  vcl_vector < ContextHistoryElement > m_contextHistory;
 
   // cursor time bounds
   void SetCursorTimes (double t1, double t2);

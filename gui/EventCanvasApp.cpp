@@ -11,6 +11,7 @@
 
 #include "Model.h"
 #include "DisplayableIterator.h"
+#include "TextEditDialogApp.h"
 
 #include <boost/foreach.hpp>
 
@@ -21,6 +22,8 @@ BEGIN_EVENT_TABLE (EventCanvasApp, wxScrolledWindow )
     EVT_LEFT_UP (                  EventCanvasApp::OnMouseLeftUpEvent)
     EVT_LEFT_DOWN (                EventCanvasApp::OnMouseLeftDownEvent)
     EVT_MOTION (                   EventCanvasApp::OnMouseMotionEvent)
+    EVT_RIGHT_DOWN (               EventCanvasApp::OnMouseRightClick)
+
 END_EVENT_TABLE()
 
 
@@ -277,15 +280,15 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
     for (it = bit; it != eit; it++)
     {
       if ( ( l >= 0 ) // first state and either endpoint is in the window
-           && (( SecondsToXcoord(it->m_startTime) >= l )
-               || ( SecondsToXcoord(it->m_endTime) >= l ))
+           && (( SecondsToXcoord((*it)->GetBoundedOccurrence()->m_startTime) >= l )
+               || ( SecondsToXcoord((*it)->GetBoundedOccurrence()->m_endTime) >= l ))
         )
       {
         obit = it; // set begin iterator
         if (it != bit) obit--;
         l = -1; // switch to next state
       }
-      else if ( SecondsToXcoord(it->m_endTime) > r )
+      else if ( SecondsToXcoord((*it)->GetBoundedOccurrence()->m_endTime) > r )
       {
         oeit = it; // set end interator
         if (it != eit)
@@ -304,26 +307,26 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
   // draw the event history.
   for (it = bit; it != eit; it++)
   {
-    int x_coord_start = SecondsToXcoord(it->m_startTime);
-    int x_coord_end = SecondsToXcoord(it->m_endTime);
+    int x_coord_start = SecondsToXcoord((*it)->GetBoundedOccurrence()->m_startTime);
+    int x_coord_end = SecondsToXcoord((*it)->GetBoundedOccurrence()->m_endTime);
 
     // draw starting marker
-    dc.SetPen(it->m_startMarkerPen);
-    dc.SetBrush(it->m_startMarkerBrush);
+    dc.SetPen((*it)->GetBoundedOccurrence()->m_startMarkerPen);
+    dc.SetBrush((*it)->GetBoundedOccurrence()->m_startMarkerBrush);
     dc.DrawRectangle(x_coord_start - 1, y_coord, 3, -10);
 
-    if (it->IsCommentActive())
+    if ((*it)->GetBoundedOccurrence()->IsCommentActive())
     {
       DrawCommentAnnotation (dc, x_coord_start, y_coord - 10);
     }
 
     // draw line from x_event_start to x_coord
-    dc.SetPen(it->m_eventDurationPen);
+    dc.SetPen((*it)->GetBoundedOccurrence()->m_eventDurationPen);
     dc.DrawLine(x_coord_start, y_coord, x_coord_end + 1, y_coord);
 
     // draw endmarker at x_coord
-    dc.SetPen(it->m_endMarkerPen);
-    dc.SetBrush(it->m_endMarkerBrush);
+    dc.SetPen((*it)->GetBoundedOccurrence()->m_endMarkerPen);
+    dc.SetBrush((*it)->GetBoundedOccurrence()->m_endMarkerBrush);
     dc.DrawRectangle(x_coord_end - 1, y_coord, 3, 10);
   } // end for
 
@@ -355,24 +358,24 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
     DrawCommentAnnotation (dc, view.x + 6, y_coord);
   }
 
-  DiscreteEventDef::iterator_t it;
-  DiscreteEventDef::iterator_t bit = eh->m_list.begin();
-  DiscreteEventDef::iterator_t eit = eh->m_list.end();
+  EventDef::iterator_t it;
+  EventDef::iterator_t bit = eh->m_list.begin();
+  EventDef::iterator_t eit = eh->m_list.end();
 
   // Don't optimize this way if zoom factor is less than some zoom
   // factor because the time to do the optimization must be less than
   // the full draw time for the optimization to be of value.
   if (XZoomFactor() >= 2)
   {
-    DiscreteEventDef::iterator_t obit = eh->m_list.begin();
-    DiscreteEventDef::iterator_t oeit = eh->m_list.end();
+    EventDef::iterator_t obit = eh->m_list.begin();
+    EventDef::iterator_t oeit = eh->m_list.end();
 
     int l = view.GetLeft();
     int r = view.GetRight();
 
     for (it = bit; it != eit; it++)
     {
-      int x_coord = SecondsToXcoord (it->m_eventTime);
+      int x_coord = SecondsToXcoord ((*it)->GetDiscreteOccurrence()->m_eventTime);
       if ( (l >= 0) && (x_coord >= l) )
       {
         if (it != bit)
@@ -395,10 +398,10 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
 
   for (it = bit; it != eit; it++)
   {
-    int x_coord = SecondsToXcoord (it->m_eventTime);
+    int x_coord = SecondsToXcoord ((*it)->GetDiscreteOccurrence()->m_eventTime);
 
-    dc.SetPen( it->m_eventMarkerPen );
-    dc.SetBrush (it->m_eventMarkerBrush );
+    dc.SetPen( (*it)->GetDiscreteOccurrence()->m_eventMarkerPen );
+    dc.SetBrush ((*it)->GetDiscreteOccurrence()->m_eventMarkerBrush );
 
     // draw event marker
     wxPoint marker[3]; // make triangle marker
@@ -408,7 +411,7 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
     dc.DrawPolygon ( WXSIZEOF (marker), marker, x_coord, y_coord);
 
     // Test for comment active and draw
-    if (it->IsCommentActive())
+    if ((*it)->GetDiscreteOccurrence()->IsCommentActive())
     {
       DrawCommentAnnotation (dc, x_coord, y_coord - 10);
     }
@@ -576,44 +579,16 @@ OnMouseLeftUpEvent ( wxMouseEvent& event)
     return;
   }
 
-  // determine which event by looking at Y coord
-  int row_idx = ( (int) (((float) pt.y / m_yIncrement) + 0.5) - 1);
-
-  // determine offset time by looking at X coord
-  double ots = XcoordToSeconds(pt.x);
-
-  // Need to skip elements that are not currently displayed
-  DisplayableIterator event_it;
-
-  event_it.Next(row_idx);
-  if (event_it.IsCurrentValid())
+  // Determine the click location - event and occurrence
+  ClickLocation cl = DetermineClickLocation (pt);
+  if (cl.event != 0)
   {
-    // Set selected item id in model
-    ItemId_t item_id = event_it.CurrentItemId();
-    p_model->SelectEvent (item_id);
+    p_model->SelectEvent (cl.event->GetEventId());
 
-    //+ DEBUG
-    std::cout << "row idx: " << row_idx
-              << "  offset time: " << ots
-              << "  item id: " << item_id
-              << "  pixels per second: " << m_pixelsPerSecond
-              << "  time offset: " <<  GetModel()->TimeOffset()
-              << std::endl;
-
-    EventDef::handle_t eh = event_it.CurrentEvent();
-
-    // locate actual event record based on time
-    // look through <eh> for end event just greater than (ots + time_offset)
-    BoundedEventDef * bep = eh->GetBoundedEvent();
-    if (bep != 0)
+    if (cl.occurrence != 0)
     {
-      BoundedOccurrence * bop = bep->FindByTime (ots + GetModel()->TimeOffset() );
-      GetModel()->SelectOccurrence(bop); // ok if null is returned by FindByTime()
+      p_model->SelectOccurrence(cl.occurrence);
     }
-  } // end is valid event
-  else
-  {
-    std::cout << "No event selected\n";  //+ DEBUG
   }
 
 }
@@ -636,6 +611,49 @@ OnMouseMotionEvent ( wxMouseEvent& event)
 
 
   }
+}
+
+
+// ----------------------------------------------------------------
+/** determine click location.
+ *
+ *
+ */
+ClickLocation EventCanvasApp::
+DetermineClickLocation( wxPoint pt )
+{
+  ClickLocation ret_loc;
+
+  // determine which event by looking at Y coord
+  int row_idx = ( (int) (((float) pt.y / m_yIncrement) + 0.5) - 1);
+
+  // determine offset time by looking at X coord
+  double ots = XcoordToSeconds(pt.x);
+
+  // Need to skip elements that are not currently displayed
+  DisplayableIterator event_it;
+
+  event_it.Next(row_idx);
+  if (event_it.IsCurrentValid())
+  {
+    //+ DEBUG
+    std::cout << "row idx: " << row_idx
+              << "  offset time: " << ots
+              << "  item id: " << event_it.CurrentItemId()
+              << "  pixels per second: " << m_pixelsPerSecond
+              << "  time offset: " <<  GetModel()->TimeOffset()
+              << std::endl;
+
+    EventDef * eh = event_it.CurrentEvent().get();
+    ret_loc.event = eh;
+
+    double ctime = ots + GetModel()->TimeOffset();
+    double delta = 5.0 / m_pixelsPerSecond; // 5 pixels left and right
+    BaseOccurrence * bop = eh->FindByTime (ctime, delta);
+    ret_loc.occurrence = bop;  // ok if null is returned by FindByTime()
+  } // end is valid event
+
+  return ret_loc;
 }
 
 
@@ -712,6 +730,7 @@ XcoordToSeconds( int xcoord) const
   return sec;
 }
 
+
 // ----------------------------------------------------------------
 /** Zoom X scaling
  *
@@ -767,3 +786,163 @@ GetCurrentView()
 }
 
 
+// Menu event codes
+enum {
+  ID_ECM_COLOR_EVENT = 210001,
+  ID_ECM_COLOR_OCCURRENCE,
+  ID_ECM_EVENT_ANNOTATION,
+  ID_ECM_OCCURRENCE_ANNOTATION,
+};
+
+
+
+// ----------------------------------------------------------------
+/** Popup menu click handler.
+ *
+ *
+ */
+void EventCanvasApp::
+OnPopupClick(wxCommandEvent& event)
+{
+  // fix data type for client data
+  void* data = static_cast< wxMenu* >( event.GetEventObject() )->GetClientData();
+  ClickLocation* loc = static_cast< ClickLocation* >(data);
+  wxString comment_string;
+
+  // handle menu code
+  switch ( event.GetId() )
+  {
+    case ID_ECM_COLOR_EVENT:
+    case ID_ECM_COLOR_OCCURRENCE:
+    {
+      // Enable all color variants
+      GetModel()->m_persistentColourData.SetChooseFull(true);
+
+      // display dialog.
+      wxColourDialog dialog(this, & GetModel()->m_persistentColourData);
+      if (dialog.ShowModal() == wxID_OK)
+      {
+        wxColourData ret_data = dialog.GetColourData();
+        wxColour col = ret_data.GetColour();
+
+        if ( event.GetId() == ID_ECM_COLOR_EVENT)
+        {
+          // store in event
+          //+ maybe background colour?
+          loc->event->m_eventBaselinePen = wxPen(col, 1, wxSOLID);
+        }
+        else // color occurence
+        {
+          // store in event
+          if (loc->occurrence->GetBoundedOccurrence() != 0)
+          {
+            BoundedOccurrence* bop = loc->occurrence->GetBoundedOccurrence();
+            bop->m_eventDurationPen = wxPen(col, 2, wxSOLID);
+          }
+          else
+          {
+            DiscreteOccurrence* dop = loc->occurrence->GetDiscreteOccurrence();
+            dop->m_eventMarkerPen = wxPen(col, 1, wxSOLID);
+            dop->m_eventMarkerBrush = wxBrush(col, wxSOLID);
+          }
+        }
+
+      }
+      break;
+    }
+
+    case ID_ECM_EVENT_ANNOTATION:
+    case ID_ECM_OCCURRENCE_ANNOTATION:
+    {
+      wxString title = loc->event->EventName();
+
+      if (event.GetId() == ID_ECM_EVENT_ANNOTATION)
+      {
+        comment_string = loc->event->GetUserComment();
+      }
+      else
+      {
+        comment_string = loc->occurrence->GetUserComment();
+      }
+
+      TextEditDialogApp dialog(this, -1, title);
+      dialog.SetText(comment_string);
+
+      if (dialog.ShowModal() == wxID_OK)
+      {
+        if (event.GetId() == ID_ECM_EVENT_ANNOTATION)
+        {
+          loc->event->SetUserComment( dialog.GetText() );
+        }
+        else
+        {
+          loc->occurrence->SetUserComment( dialog.GetText() );
+        }
+      }
+      break;
+    }
+
+  } // switch
+} /* OnPopupClick */
+
+
+// ----------------------------------------------------------------
+/** Handle right mouse click.
+ *
+ *
+ */
+void EventCanvasApp::
+OnMouseRightClick(wxMouseEvent& event)
+{
+  wxPoint pt (event.GetPosition() );
+
+  // Need to convert Content area coords to world coords
+  int ppuX, ppuY, startX, startY;
+  GetScrollPixelsPerUnit( &ppuX, &ppuY);
+  GetViewStart (&startX, &startY);
+  pt.x += startX * ppuX;
+  pt.y += startY * ppuY;
+
+  ClickLocation loc = DetermineClickLocation( pt );
+  void* data = reinterpret_cast< void* >( &loc );
+
+  // If clicked on occurrence, display one menu
+  // Ic clicked on whole event, display another menu
+
+  if (loc.occurrence != 0)
+  {
+    // Clicked on an occurrence
+    wxMenu mnu;
+
+    // client data could be occurrence clicked on
+    mnu.SetClientData(data);
+
+    // create new menu
+    // Set color of this occurrence
+    // Edit annotation of this occurrence
+    mnu.Append(ID_ECM_COLOR_OCCURRENCE,  wxT("Set color"));
+    mnu.Append(ID_ECM_OCCURRENCE_ANNOTATION,   wxT("Edit annotation"));
+    mnu.Connect(wxEVT_COMMAND_MENU_SELECTED, ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this);
+    PopupMenu(&mnu);
+  }
+  else if (loc.event != 0)
+  {
+    // clicked on an event
+    wxMenu mnu;
+
+    // client data could be occurrence clicked on
+    mnu.SetClientData(data);
+
+    // create new menu
+    // Set color of event
+    // Edit annotation of event
+    mnu.Append(ID_ECM_COLOR_EVENT,  wxT("Set color"));
+    mnu.Append(ID_ECM_EVENT_ANNOTATION,   wxT("Edit annotation"));
+    //+ edit group name?
+    mnu.Connect(wxEVT_COMMAND_MENU_SELECTED, ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this);
+    PopupMenu(&mnu);
+  }
+
+  // else no action if not in a event area
+
+}
