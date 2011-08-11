@@ -67,7 +67,16 @@ public:
 
   // -- ACCESSORS --
   double EventTimeRange() const;
+
+  /** Get time offset for events.  This method returns the earliest
+   * time in the data set which is used as the start time for the
+   * display.
+   */
   double TimeOffset() const { return m_timingOffset; }
+
+  /** Convert global time of offset time.
+   */
+  double TimeOffset(double time) const { return time - m_timingOffset; }
 
   /**  Number of events in data base.
    */
