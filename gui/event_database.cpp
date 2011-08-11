@@ -6,6 +6,10 @@
 
 #include "event_database.h"
 
+#include "Model.h"
+
+
+
 EventDef::
 EventDef()
 { }
@@ -87,7 +91,9 @@ GetInfo()
 {
     wxString  result;
 
-    result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime), m_startTime, m_endTime );
+    result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime),
+                               Model::Instance()->TimeOffset(m_startTime),
+                               Model::Instance()->TimeOffset(m_endTime) );
     result << wxString::Format(wxT("Start data: %f\n"), m_startData );
     result << wxString::Format(wxT("End data: %f\n"), m_endData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
@@ -106,7 +112,7 @@ GetInfo()
 {
     wxString  result;
 
-    result << wxString::Format(wxT("Time: %f\n"), m_eventTime);
+    result << wxString::Format(wxT("Time: %f\n"), Model::Instance()->TimeOffset(m_eventTime) );
     result << wxString::Format(wxT("Data: %f\n"), m_eventData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
