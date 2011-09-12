@@ -92,6 +92,7 @@ GetInfo()
 {
     wxString  result;
 
+    result << wxT("------\n");
     result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime),
                                Model::Instance()->TimeOffset(m_startTime),
                                Model::Instance()->TimeOffset(m_endTime) );
@@ -113,6 +114,7 @@ GetInfo()
 {
     wxString  result;
 
+    result << wxT("------\n");
     result << wxString::Format(wxT("Time: %f\n"), Model::Instance()->TimeOffset(m_eventTime) );
     result << wxString::Format(wxT("Data: %f\n"), m_eventData );
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );

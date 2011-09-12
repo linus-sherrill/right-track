@@ -14,6 +14,10 @@
 #include <wx/pen.h>
 #include <wx/treectrl.h>
 #include <wx/aboutdlg.h>
+#include <wx/file.h>
+
+#include "DisplayableIterator.h"
+#include "TextEditDialogApp.h"
 
 
 // Define our custom event table
@@ -168,6 +172,105 @@ void MainFrameApp::
 RefreshHandler(wxCommandEvent &event)
 {
   this->Refresh();
+}
+
+
+// ----------------------------------------------------------------
+/** Generate event summary data.
+ *
+ * scan through all active events and collect event summary info
+ */
+void MainFrameApp::
+EventDataHandler(wxCommandEvent &event)
+{
+  wxString result;
+
+  // Display header line
+  result << wxT("Event-name, num-occur, min-duration, max-duration, avg-dur, std-dev, active-percent\n");
+
+  DisplayableIterator event_it;
+  int row_count(0);
+
+#if 0
+
+  EventTableApp * event_table = new EventTableApp( ... );
+
+  // count number of rows
+  while ( event_it.IsCurrentValid())
+  {
+    BoundedEventDef * ev = event_it.CurrentEvent()->GetBoundedEvent();
+    if (ev)
+    {
+      row_count++;
+    }
+  } // end while
+
+  // create grid of sufficient size
+
+#endif
+
+  // for each event in their drawing order
+  while ( event_it.IsCurrentValid())
+  {
+    BoundedEventDef * ev = event_it.CurrentEvent()->GetBoundedEvent();
+    if (ev)
+    {
+      BoundedEventStatistics stats = ev->m_stats;
+
+      // format stats to a string
+      result << wxString::Format(wxT("%s, "),  ev->EventName().c_str());
+      result << wxString::Format(wxT("%d, "),  stats.m_count);
+      result << wxString::Format(wxT("%f, "),  stats.m_minDuration);
+      result << wxString::Format(wxT("%f, "),  stats.m_maxDuration);
+      result << wxString::Format(wxT("%f, "),  stats.m_avgDuration);
+      result << wxString::Format(wxT("%f, "),  stats.m_stdDuration);
+      result << wxString::Format(wxT("%f\n"),  stats.m_activePct);
+    } // end if
+
+    event_it.Next();
+  } // end while
+
+  /// @todo display in window that has an option to save
+
+  // Open an output file
+  wxFileDialog dialog (this, wxT("Save event data file"),
+                       wxEmptyString, // default directory
+                       wxEmptyString, // default file name
+                       wxT("Text files (*.txt)|*.txt|All files (*)|*"),  // file types
+                       (wxSAVE | wxOVERWRITE_PROMPT)
+    );
+  if (dialog.ShowModal() != wxID_OK)
+  {
+    return; // cancel pressed
+  }
+
+  wxString path = dialog.GetPath();
+  wxFile file (path, wxFile::write);
+  if ( ! file.IsOpened() )
+  {
+    return;
+  }
+
+  file.Write(result);
+
+}
+
+
+// ----------------------------------------------------------------
+/** Edit data set annotation.
+ *
+ *
+ */
+void MainFrameApp::
+EditDataSetAnnotationHandler(wxCommandEvent &event)
+{
+  TextEditDialogApp dialog(this, -1, wxT("Data Set Annotation") );
+  dialog.SetText(GetModel()->DataSetAnnotation());
+  if (dialog.ShowModal() == wxID_OK)
+  {
+    GetModel()->DataSetAnnotation() =  dialog.GetText();
+  }
+
 }
 
 

@@ -3,11 +3,12 @@
 #include <wx/wx.h>
 #include <wx/image.h>
 
-#ifndef TEXTEDITDIALOG_H
-#define TEXTEDITDIALOG_H
+#ifndef EVENTTABLE_H
+#define EVENTTABLE_H
 
 // begin wxGlade: ::dependencies
 #include <wx/statline.h>
+#include <wx/grid.h>
 // end wxGlade
 
 // begin wxGlade: ::extracode
@@ -15,25 +16,25 @@
 // end wxGlade
 
 
-class TextEditDialog: public wxDialog {
+class EventTable: public wxDialog {
 public:
-    // begin wxGlade: TextEditDialog::ids
+    // begin wxGlade: EventTable::ids
     // end wxGlade
 
-    TextEditDialog(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_DIALOG_STYLE);
+    EventTable(wxWindow* parent, int id, const wxString& title, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_DIALOG_STYLE);
 
 private:
-    // begin wxGlade: TextEditDialog::methods
+    // begin wxGlade: EventTable::methods
     void set_properties();
     void do_layout();
     // end wxGlade
 
 protected:
-    // begin wxGlade: TextEditDialog::attributes
-    wxTextCtrl* TextField;
-    wxButton* ok_button;
+    // begin wxGlade: EventTable::attributes
+    wxGrid* data_grid;
+    wxButton* done_button;
     wxStaticLine* static_line_3;
-    wxButton* clear_button;
+    wxButton* save_button;
     wxStaticLine* static_line_4;
     wxButton* cancel_button;
     // end wxGlade
@@ -45,4 +46,4 @@ public:
 }; // wxGlade: end class
 
 
-#endif // TEXTEDITDIALOG_H
+#endif // EVENTTABLE_H

@@ -83,6 +83,7 @@ public:
   int EventCount() const;
   int DisplayableEventCount() const;
 
+  wxString& DataSetAnnotation() { return m_modelAnnotation; }
 
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
@@ -163,6 +164,8 @@ private:
 
   double m_viewTimeStart;
   double m_viewTimeEnd;
+
+  wxString m_modelAnnotation;
 
   // Event click info
   BoundedEventStatistics m_evc_stats;
