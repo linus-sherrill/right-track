@@ -14,6 +14,12 @@
 #include <wx/pen.h>
 #include <wx/treectrl.h>
 #include <wx/aboutdlg.h>
+#include <wx/file.h>
+
+#include "DisplayableIterator.h"
+#include "TextEditDialogApp.h"
+#include "EventTableApp.h"
+
 
 
 // Define our custom event table
@@ -168,6 +174,45 @@ void MainFrameApp::
 RefreshHandler(wxCommandEvent &event)
 {
   this->Refresh();
+}
+
+
+// ----------------------------------------------------------------
+/** Generate event summary data.
+ *
+ * scan through all active events and collect event summary info
+ */
+void MainFrameApp::
+EventDataHandler(wxCommandEvent &event)
+{
+  wxString result;
+
+  // Display header line
+  result << wxT("Event-name, num-occur, min-duration, max-duration, avg-dur, std-dev, active-percent\n");
+
+  DisplayableIterator event_it;
+
+  EventTableApp * event_table = new EventTableApp( this, -1, wxT("Event Table") );
+  event_table->InitGrid( event_it );
+  event_table->Show();
+}
+
+
+// ----------------------------------------------------------------
+/** Edit data set annotation.
+ *
+ *
+ */
+void MainFrameApp::
+EditDataSetAnnotationHandler(wxCommandEvent &event)
+{
+  TextEditDialogApp dialog(this, -1, wxT("Data Set Annotation") );
+  dialog.SetText(GetModel()->DataSetAnnotation());
+  if (dialog.ShowModal() == wxID_OK)
+  {
+    GetModel()->DataSetAnnotation() =  dialog.GetText();
+  }
+
 }
 
 

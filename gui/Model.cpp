@@ -27,12 +27,7 @@ Model * Model::s_instance(0);
  */
 Model::
 Model(MainFrameApp * frame)
-  : m_parentFrame(frame),
-    m_timingOffset(1e300),
-    m_maxTime(0),
-    m_selectedEvent(-1),
-    m_selectedOccurrence(0),
-    m_eventFilter(0)
+  : m_parentFrame(frame)
 {
   s_instance = this;
   Reset();
@@ -74,6 +69,13 @@ Reset()
   m_selectedEvent = -1;
   m_selectedOccurrence = 0;
 
+  m_maxTime = 0;
+  m_eventFilter = 0;
+
+  m_viewTimeStart = 0;
+  m_viewTimeEnd = 0;
+
+  m_modelAnnotation.clear();
 }
 
 
@@ -237,7 +239,7 @@ ScanEvents()
       def->m_stats.m_avgDuration = sum / count;
       def->m_stats.m_stdDuration = sqrt((sum_sq - (sum * def->m_stats.m_avgDuration)) / (count - 1) );
 
-      if (def->m_list.size() > 1) // need some elementsfor this to work
+      if (def->m_list.size() >= 1) // need some elements for this to work
       {
         def->m_stats.m_activePct = (sum / (def->m_list.back()->GetBoundedOccurrence()->m_endTime
                                            - def->m_list.front()->GetBoundedOccurrence()->m_startTime)) * 100.0;

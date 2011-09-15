@@ -93,12 +93,22 @@ struct EventEnd
 };
 
 
+struct TextEvent
+{
+  ItemId_t event_id;
+  EventTimestamp_t event_time;
+  EventPid_t event_pid;
+  EventData_t event_data;
+
+  vcl_string text;
+};
+
+
 // ----------------------------------------------------------------
 struct ContextDefinition
 {
   vcl_string context_name;
   ItemId_t context_id;
-
 };
 
 
@@ -106,8 +116,6 @@ struct ContextPush
 {
   ItemId_t context_id;
   EventTimestamp_t event_time;
-
-
 };
 
 
@@ -115,9 +123,8 @@ struct ContextPop
 {
   ItemId_t context_id;
   EventTimestamp_t event_time;
-
-
 };
+
 
 } // end name space
 } // end name space

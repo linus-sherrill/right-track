@@ -12,14 +12,16 @@ Allow annotation of data set. This is a big feature.
     - Allow user colouring of individual events.
     - Allow user to add annotations to events. Mark event as having annotation.
 
-In comment display window - add text "enter comment" in gray text if
-there is currently no annotation.
+Add save/save as... menu items
+
+Add feature where the whole data set can have an annotation. Could
+be a menu item, tool bar icon, or other.
 
 Floating event info window - holds same data as scrolling pane
 currently does.
 
 Allow loading multiple data sets into one viewer. Add menu item to
-clear all events.
+clear all events. Add menu item to merge events into current set.
 
 Add an overview window/thumbnail that shows the whole event space with
 a gray outline of what is being viewed. For bonus points, allow view
@@ -70,6 +72,10 @@ Allow right-click on events for drop down menu to allow
       - change colour of whole event
       - edit annotation for occurrence
       - edit annotation for whole event
+
+
+In comment display window - add text "enter comment" in gray text if
+there is currently no annotation.
 
 
 -----------------------------------------------------------------------------

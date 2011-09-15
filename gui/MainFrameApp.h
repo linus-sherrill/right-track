@@ -63,6 +63,8 @@ protected:
   virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ResetCursorHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void RefreshHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void EventDataHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void EditDataSetAnnotationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
 
   virtual void handle_move_top(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void handle_move_up(wxCommandEvent &event); // wxGlade: <event_handler>
