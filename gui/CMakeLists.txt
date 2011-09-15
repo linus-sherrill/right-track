@@ -6,6 +6,7 @@ SET (gui_sources
     gen_files/MainFrame.h               gen_files/MainFrame.cpp
     gen_files/EventCanvas.h             gen_files/EventCanvas.cpp
     gen_files/TextEditDialog.h          gen_files/TextEditDialog.cpp
+    gen_files/EventTable.h              gen_files/EventTable.cpp
 
     EventTransportReaderGui.h           EventTransportReaderGui.cxx
     main.cpp
@@ -16,6 +17,7 @@ SET (gui_sources
     TimeLineCursor.h                    TimeLineCursor.cpp
     event_database.h                    event_database.cpp
     DisplayableIterator.h               DisplayableIterator.cxx
+    EventTableApp.h                     EventTableApp.cpp
 )
 
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )

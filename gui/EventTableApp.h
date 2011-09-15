@@ -10,6 +10,8 @@
 
 #include <EventTable.h>
 
+#include <DisplayableIterator.h>
+
 
 // ----------------------------------------------------------------
 /**
@@ -17,24 +19,36 @@
  *
  */
 class EventTableApp
-  : EventTable
+  : public EventTable
 {
 public:
-  EventTableApp();
+  EventTableApp(wxWindow* parent, int id, const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE);
   virtual ~EventTableApp();
 
-  void CreateGrid(int row, int col) { data_grid->CreateGrid(row,col); }
+  void InitGrid(DisplayableIterator & event_it);
 
 protected:
-
+    virtual void handle_done(wxCommandEvent &event); // wxGlade: <event_handler>
+    virtual void handle_save(wxCommandEvent &event); // wxGlade: <event_handler>
+    virtual void handle_cancel(wxCommandEvent &event); // wxGlade: <event_handler>
 
 
 private:
-
+  DisplayableIterator m_dataSource;
 
 
 }; // end class EventTableApp
 
 
-
 #endif /* _EVENTTABLEAPP_H_ */
+
+// Local Variables:
+// mode: c++
+// fill-column: 70
+// c-tab-width: 2
+// c-basic-offset: 2
+// c-basic-indent: 2
+// c-indent-tabs-mode: nil
+// end:
