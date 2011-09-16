@@ -51,12 +51,7 @@ InitGrid(DisplayableIterator & event_it)
   // count number of rows
   while ( m_dataSource.IsCurrentValid())
   {
-    BoundedEventDef * ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
-    if (ev)
-    {
-      row_count++;
-    }
-
+    row_count++;
     m_dataSource.Next();
   } // end while
 
@@ -81,9 +76,13 @@ InitGrid(DisplayableIterator & event_it)
 
   while ( m_dataSource.IsCurrentValid())
   {
-    BoundedEventDef * ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
-    if (ev)
+    EventDef::handle_t eh = m_dataSource.CurrentEvent();
+
+    switch (eh->EventType())
     {
+    case Event::ET_BOUNDED_EVENT:
+    {
+      BoundedEventDef * ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
       BoundedEventStatistics stats = ev->m_stats;
 
       // format stats to a string
@@ -94,9 +93,23 @@ InitGrid(DisplayableIterator & event_it)
       this->data_grid->SetCellValue (row_count, 4, wxString::Format(wxT("%f"),  stats.m_avgDuration) );
       this->data_grid->SetCellValue (row_count, 5, wxString::Format(wxT("%f"),  stats.m_stdDuration) );
       this->data_grid->SetCellValue (row_count, 6, wxString::Format(wxT("%f"),  stats.m_activePct) );
-      row_count++;
-    } // end if
+    } // end case
+    break;
 
+    case Event::ET_DISCRETE_EVENT:
+    {
+      DiscreteEventDef * ev = m_dataSource.CurrentEvent()->GetDiscreteEvent();
+      DiscreteEventStatistics stats = ev->m_stats;
+
+      this->data_grid->SetCellValue (row_count, 0, wxString::Format(wxT("%s"),  ev->EventName().c_str()) );
+      this->data_grid->SetCellValue (row_count, 1, wxString::Format(wxT("%d"),  ev->NumOccurrences()) );
+
+    } // end case
+    break;
+
+    } // end switch
+
+    row_count++;
     m_dataSource.Next();
   } // end while
 

@@ -9,8 +9,8 @@ project ( right_track )
 cmake_minimum_required(VERSION 2.8)
 
 set(right_track_VERSION_MAJOR 0)
-set(right_track_VERSION_MINOR 3)
-set(right_track_VERSION_PATCH 6)
+set(right_track_VERSION_MINOR 4)
+set(right_track_VERSION_PATCH 0)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
 find_package ( Boost REQUIRED )
@@ -29,6 +29,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 set ( library_sources
       BoundedEvent.h                    BoundedEvent.cxx
       DiscreteEvent.h                   DiscreteEvent.cxx
+      TextEvent.h                       TextEvent.cxx
       EventContext.h                    EventContext.cxx
       Event.h                           Event.cxx
       EventManager.h                    EventManager.cxx
@@ -75,7 +76,7 @@ target_link_libraries (right_track_dump
 #
 set ( install_includes
     RightTrackDefs.h RightTrackItem.h
-    Event.h BoundedEvent.h DiscreteEvent.h
+    Event.h BoundedEvent.h DiscreteEvent.h TextEvent.h
     EventContext.h
     ScopedEvent.h ScopedContext.h
 )

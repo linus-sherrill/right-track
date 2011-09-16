@@ -51,7 +51,7 @@ EventManager()
 
   // Create file name
   vcl_stringstream filename;
-  filename << "RightTrack_" << GetPid() << ".rtrk";
+  filename << "RightTrack_" << vpl_getpid() << ".rtrk";
   m_filename = filename.str();
   trans->OpenFile(m_filename.c_str());
 
@@ -226,6 +226,27 @@ StartEvent (Event * ev, ::RightTrack::EventData_t val)
   msg.event_time = CurrentTimestamp();
   msg.event_pid = GetPid();
   msg.event_data = val;
+
+  m_transport->Write (msg);
+}
+
+
+// ----------------------------------------------------------------
+/** Create a text event message.
+ *
+ *
+ */
+void EventManager::
+StartEvent (Event * ev, vcl_string const& val)
+{
+  boost::mutex::scoped_lock lock(m_lock);
+
+  // create a start event message
+  EventText msg;
+  msg.event_id = ev->ItemId();
+  msg.event_time = CurrentTimestamp();
+  msg.event_pid = GetPid();
+  msg.event_text = val;
 
   m_transport->Write (msg);
 }

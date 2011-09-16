@@ -34,6 +34,7 @@ public:
   virtual int NewEvent(EventDefinition const& msg);
   virtual int NewEvent(EventStart const& msg);
   virtual int NewEvent(EventEnd const& msg);
+  virtual int NewEvent(EventText const& msg);
   virtual int NewEvent(ContextDefinition const& msg);
   virtual int NewEvent(ContextPush const& msg);
   virtual int NewEvent(ContextPop const& msg);

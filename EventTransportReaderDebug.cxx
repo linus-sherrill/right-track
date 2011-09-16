@@ -60,6 +60,20 @@ NewEvent(EventEnd const& msg)
 
 
 int EventTransportReaderDebug::
+NewEvent(EventText const& msg)
+{
+  vcl_cout << "Event text: "
+           << "  id: " << msg.event_id
+           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
+           << "  pid: " << msg.event_pid
+           << "  text: \"" << msg.event_text << "\""
+           << vcl_endl;
+
+  return (0);
+}
+
+
+int EventTransportReaderDebug::
 NewEvent(ContextDefinition const& msg)
 {
   vcl_cout << "Context definition: "

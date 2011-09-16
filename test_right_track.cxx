@@ -7,9 +7,9 @@
 
 #include "BoundedEvent.h"
 #include "DiscreteEvent.h"
+#include "TextEvent.h"
 #include "ScopedEvent.h"
 #include "EventContext.h"
-
 
 #include <EventManager.h>
 #include <EventTransportFile.h>
@@ -28,12 +28,18 @@ int main ()
 {
   ::RightTrack::BoundedEvent be("main", "main-group");
   ::RightTrack::DiscreteEvent de("main.de");
+  ::RightTrack::TextEvent te("main.te");
   ::RightTrack::EventContext ctxt("main foo");
 
   be.Start();
   ctxt.Push();
   for (int i = 0; i < 10; i++)
   {
+    vcl_string str;
+    str = "loop ";
+    te.Start(str);
+    sleep(1);
+
     de.Start(i);
     foo();
     sleep(1);

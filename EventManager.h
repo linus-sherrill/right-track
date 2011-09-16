@@ -46,6 +46,7 @@ public:
 
   ItemId_t GetNextId();
   void RegisterEvent(Event * ev);
+  void StartEvent (Event * ev, vcl_string const& val);
   void StartEvent (Event * ev, ::RightTrack::EventData_t val);
   void EndEvent (Event * ev, ::RightTrack::EventData_t val);
 

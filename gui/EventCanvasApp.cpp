@@ -214,15 +214,28 @@ DrawEvents(wxDC& dc)
 
     EventDef::handle_t eh = event_it.CurrentEvent();
 
-    if (eh->EventType() == Event::ET_BOUNDED_EVENT)
+    switch (eh->EventType() )
     {
+    case Event::ET_BOUNDED_EVENT:
       DrawBoundedEvent (dc, eh->GetBoundedEvent(), y_coord);
-    }
-    else
-    {
-      DrawDiscreteEvent (dc, eh->GetDiscreteEvent(), y_coord);
-    }
+      break;
 
+    case Event::ET_DISCRETE_EVENT:
+      DrawDiscreteEvent (dc, eh->GetDiscreteEvent(), y_coord);
+      break;
+
+/*
+    case Event::ET_TEXT_EVENT:
+      // probably not any of these
+      DrawDiscreteEvent (dc, eh->GetDiscreteEvent(), y_coord);
+      break;
+*/
+    default:
+      // display message;
+      wxMessageBox( wxT("Internal error - unexpected event type"),
+                    wxT("Error"), wxICON_ERROR | wxOK);
+      break;
+    } // end swotch
     // Increment to next drawing line, row, event, ...
     y_coord += m_yIncrement;
     row_count--;

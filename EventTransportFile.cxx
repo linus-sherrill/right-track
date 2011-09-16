@@ -93,6 +93,21 @@ Write(EventEnd & msg)
 
 
 int EventTransportFile::
+Write(EventText & msg)
+{
+  m_bstream->clear_serialisation_records();
+  vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_TEXT );
+  vsl_b_write( *m_bstream, msg.event_id );
+  vsl_b_write( *m_bstream, msg.event_time.secs );
+  vsl_b_write( *m_bstream, msg.event_time.usecs );
+  vsl_b_write( *m_bstream, msg.event_pid );
+  vsl_b_write( *m_bstream, msg.event_text );
+
+  return (0);
+}
+
+
+int EventTransportFile::
 Write(ContextDefinition & msg)
 {
   m_bstream->clear_serialisation_records();
@@ -228,6 +243,20 @@ ReadEvents(vcl_string const& resource,
     }
     break;
 
+    case PAYLOAD_EVENT_TEXT:
+    {
+      EventText msg;
+
+      vsl_b_read (bstream, msg.event_id);
+      vsl_b_read (bstream, msg.event_time.secs );
+      vsl_b_read (bstream, msg.event_time.usecs );
+      vsl_b_read (bstream, msg.event_pid);
+      vsl_b_read (bstream, msg.event_text);
+
+      status = reader.NewEvent(msg);
+    }
+    break;
+
     case PAYLOAD_CONTEXT_DEFINITION:
     {
       ContextDefinition msg;
@@ -264,6 +293,7 @@ ReadEvents(vcl_string const& resource,
     break;
 
     default:
+      vcl_cerr << "Unrecognised payload type: " << payload << vcl_endl;
       // TBD log error
       break;
     } // end switch

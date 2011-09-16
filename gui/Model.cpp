@@ -176,11 +176,15 @@ ScanEvents()
     }
 
     // do specific processing by event type.
-    if (eh->EventType() == Event::ET_DISCRETE_EVENT)
+    switch (eh->EventType())
+    {
+    case Event::ET_DISCRETE_EVENT:
     {
       DiscreteEventDef * def = eh->GetDiscreteEvent();
       EventDef::iterator_t it = def->m_list.begin();
       EventDef::iterator_t eit = def->m_list.end();
+
+      int count (0);
 
       for ( ; it != eit; it++)
       {
@@ -194,10 +198,15 @@ ScanEvents()
 
         dop->m_eventMarkerPen = event_marker_pen;
         dop->m_eventMarkerBrush = start_marker_brush;
+
+        count++;
       } // end for it
 
+      def->m_stats.m_count = count;
     }
-    else
+    break;
+
+    case Event::ET_BOUNDED_EVENT:
     {
       BoundedEventDef * def = eh->GetBoundedEvent();
       EventDef::iterator_t it = def->m_list.begin();
@@ -249,6 +258,15 @@ ScanEvents()
         def->m_stats.m_activePct = 0;
       }
     }
+    break;
+
+    default:
+      // display message;
+      wxMessageBox( wxT("Internal error - unexpected event type"),
+                    wxT("Error"), wxICON_ERROR | wxOK);
+      break;
+
+    } // end switch
 
   } // end for
 }
