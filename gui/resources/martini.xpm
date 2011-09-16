@@ -1,5 +1,5 @@
 /* XPM */
-static char * 144_martini_xpm[] = {
+static char * martini_xpm[] = {
 "22 24 2 1",
 " 	c None",
 ".	c #444444",
