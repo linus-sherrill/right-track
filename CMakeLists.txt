@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(right_track_VERSION_MAJOR 0)
 set(right_track_VERSION_MINOR 3)
-set(right_track_VERSION_PATCH 5)
+set(right_track_VERSION_PATCH 6)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
 find_package ( Boost REQUIRED )
