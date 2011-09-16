@@ -9,6 +9,8 @@
 
 #include <wx/filedlg.h>
 #include <wx/file.h>
+#include <wx/colour.h>
+
 
 
 
@@ -19,16 +21,16 @@
  */
 EventTableApp::
 EventTableApp(wxWindow* parent, int id, const wxString& title,
-              const wxPoint& pos,
-              const wxSize& size, long style)
-  : EventTable (parent, id, title, pos, size, style)
+                             const wxPoint& pos,
+                             const wxSize& size, long style) :
+  EventTable(parent, id, title, pos, size, style)
 {
 
 }
 
 
 EventTableApp::
-~EventTableApp()
+  ~EventTableApp()
 {
 
 }
@@ -41,71 +43,129 @@ EventTableApp::
  */
 
 void EventTableApp::
-InitGrid(DisplayableIterator & event_it)
+InitGrid(DisplayableIterator& event_it)
 {
+  wxColor heading_colour = wxColor(255, 165, 0);
+
   m_dataSource = event_it;
 
   int row_count(0);
   m_dataSource.Start();
 
   // count number of rows
-  while ( m_dataSource.IsCurrentValid())
+  while ( m_dataSource.IsCurrentValid() )
   {
     row_count++;
     m_dataSource.Next();
   } // end while
 
   // create grid of sufficient size
-  this->data_grid->CreateGrid( row_count + 1, 7);
+  this->data_grid->CreateGrid(row_count + 1, 7);
   this->data_grid->SetColSize(0, 200); // event name column
 
   // for each event in their drawing order
   m_dataSource.Start();
   row_count = 0;
+  int col = 0;
 
-  /// @todo make title bold
-  this->data_grid->SetCellValue (row_count, 0, wxT("Name") );
-  this->data_grid->SetCellValue (row_count, 1, wxT("Count") );
-  this->data_grid->SetCellValue (row_count, 2, wxT("Minimum") );
-  this->data_grid->SetCellValue (row_count, 3, wxT("Maximum") );
-  this->data_grid->SetCellValue (row_count, 4, wxT("Average") );
-  this->data_grid->SetCellValue (row_count, 5, wxT("Std Dev") );
-  this->data_grid->SetCellValue (row_count, 6, wxT("Percent active") );
+  this->data_grid->SetCellValue( row_count, col, wxT("Name") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Count") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Minimum") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Maximum") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Average") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Std Dev") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
+
+  this->data_grid->SetCellValue( row_count, col, wxT("Percent active") );
+  this->data_grid->SetCellBackgroundColour(row_count, col, heading_colour);
+  this->data_grid->SetReadOnly(row_count, col);
+  col++;
 
   row_count++;
 
-  while ( m_dataSource.IsCurrentValid())
+  while ( m_dataSource.IsCurrentValid() )
   {
     EventDef::handle_t eh = m_dataSource.CurrentEvent();
 
-    switch (eh->EventType())
+    switch ( eh->EventType() )
     {
-    case Event::ET_BOUNDED_EVENT:
-    {
-      BoundedEventDef * ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
-      BoundedEventStatistics stats = ev->m_stats;
+      case Event::ET_BOUNDED_EVENT:
+      {
+        BoundedEventDef* ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
+        BoundedEventStatistics stats = ev->m_stats;
+        int col = 0;
 
-      // format stats to a string
-      this->data_grid->SetCellValue (row_count, 0, wxString::Format(wxT("%s"),  ev->EventName().c_str()) );
-      this->data_grid->SetCellValue (row_count, 1, wxString::Format(wxT("%d"),  stats.m_count) );
-      this->data_grid->SetCellValue (row_count, 2, wxString::Format(wxT("%f"),  stats.m_minDuration) );
-      this->data_grid->SetCellValue (row_count, 3, wxString::Format(wxT("%f"),  stats.m_maxDuration) );
-      this->data_grid->SetCellValue (row_count, 4, wxString::Format(wxT("%f"),  stats.m_avgDuration) );
-      this->data_grid->SetCellValue (row_count, 5, wxString::Format(wxT("%f"),  stats.m_stdDuration) );
-      this->data_grid->SetCellValue (row_count, 6, wxString::Format(wxT("%f"),  stats.m_activePct) );
-    } // end case
-    break;
+        // format stats to a string
+        this->data_grid->SetCellValue( row_count, col, wxString::Format( wxT("%s"),  ev->EventName().c_str() ) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
 
-    case Event::ET_DISCRETE_EVENT:
-    {
-      DiscreteEventDef * ev = m_dataSource.CurrentEvent()->GetDiscreteEvent();
-      DiscreteEventStatistics stats = ev->m_stats;
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%d"),  stats.m_count) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
 
-      this->data_grid->SetCellValue (row_count, 0, wxString::Format(wxT("%s"),  ev->EventName().c_str()) );
-      this->data_grid->SetCellValue (row_count, 1, wxString::Format(wxT("%d"),  ev->NumOccurrences()) );
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%f"),  stats.m_minDuration) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
 
-    } // end case
-    break;
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%f"),  stats.m_maxDuration) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%f"),  stats.m_avgDuration) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%f"),  stats.m_stdDuration) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        this->data_grid->SetCellValue( row_count, col, wxString::Format(wxT("%f"),  stats.m_activePct) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        break;
+      } // end case
+
+      case Event::ET_DISCRETE_EVENT:
+      {
+        DiscreteEventDef* ev = m_dataSource.CurrentEvent()->GetDiscreteEvent();
+        DiscreteEventStatistics stats = ev->m_stats;
+        int col = 0;
+
+        this->data_grid->SetCellValue( row_count, col, wxString::Format( wxT("%s"),  ev->EventName().c_str() ) );
+        this->data_grid->SetCellBackgroundColour(row_count, col, *wxLIGHT_GREY);
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        this->data_grid->SetCellValue( row_count, col, wxString::Format( wxT("%d"),  ev->NumOccurrences() ) );
+        this->data_grid->SetReadOnly(row_count, col);
+        col++;
+
+        break;
+      } // end case
 
     } // end switch
 
@@ -113,7 +173,8 @@ InitGrid(DisplayableIterator & event_it)
     m_dataSource.Next();
   } // end while
 
-}
+  this->data_grid->Fit();
+} /* InitGrid */
 
 
 // ----------------------------------------------------------------
@@ -123,7 +184,7 @@ InitGrid(DisplayableIterator & event_it)
  */
 
 void EventTableApp::
-handle_done(wxCommandEvent &event)
+handle_done(wxCommandEvent& event)
 {
   std::cout << "Done button\n";
   // terminate and close window
@@ -137,19 +198,18 @@ handle_done(wxCommandEvent &event)
  *
  */
 void EventTableApp::
-handle_save(wxCommandEvent &event)
+handle_save(wxCommandEvent& event)
 {
   wxString result;
 
   m_dataSource.Start();
 
   // Open an output file
-  wxFileDialog dialog (this, wxT("Save event data file"),
-                       wxEmptyString, // default directory
-                       wxEmptyString, // default file name
-                       wxT("Text files (*.txt)|*.txt|All files (*)|*"),  // file types
-                       (wxSAVE | wxOVERWRITE_PROMPT)
-    );
+  wxFileDialog dialog( this, wxT("Save event data file"),
+                      wxEmptyString,  // default directory
+                      wxEmptyString,  // default file name
+                      wxT("Text files (*.txt)|*.txt|All files (*)|*"),   // file types
+                      ( wxSAVE | wxOVERWRITE_PROMPT ) );
   if (dialog.ShowModal() != wxID_OK)
   {
     return; // cancel pressed
@@ -162,15 +222,15 @@ handle_save(wxCommandEvent &event)
   result << wxT("Event-name, num-occur, min-duration, max-duration, avg-dur, std-dev, active-percent\n");
 
   // for each event in their drawing order
-  while ( m_dataSource.IsCurrentValid())
+  while ( m_dataSource.IsCurrentValid() )
   {
-    BoundedEventDef * ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
+    BoundedEventDef* ev = m_dataSource.CurrentEvent()->GetBoundedEvent();
     if (ev)
     {
       BoundedEventStatistics stats = ev->m_stats;
 
       // format stats to a string
-      result << wxString::Format(wxT("%s, "),  ev->EventName().c_str());
+      result << wxString::Format( wxT("%s, "),  ev->EventName().c_str() );
       result << wxString::Format(wxT("%d, "),  stats.m_count);
       result << wxString::Format(wxT("%f, "),  stats.m_minDuration);
       result << wxString::Format(wxT("%f, "),  stats.m_maxDuration);
@@ -183,14 +243,14 @@ handle_save(wxCommandEvent &event)
   } // end while
 
   wxString path = dialog.GetPath();
-  wxFile file (path, wxFile::write);
-  if ( ! file.IsOpened() )
+  wxFile file(path, wxFile::write);
+  if ( !file.IsOpened() )
   {
     return;
   }
 
   file.Write(result);
-}
+} /* handle_save */
 
 
 // ----------------------------------------------------------------
@@ -199,7 +259,7 @@ handle_save(wxCommandEvent &event)
  *
  */
 void EventTableApp::
-handle_cancel(wxCommandEvent &event)
+handle_cancel(wxCommandEvent& event)
 {
   Close(true);
 }

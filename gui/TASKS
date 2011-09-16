@@ -1,33 +1,47 @@
 ---- To Do ----
 
+(1) Writing out the internal program state to be later read in and
+modified.  Need to maintain a 'data-set' name. when data is loaded,
+name is undefined.  We get name fro reloading a data-set. Maybe we
+need a different menu or we can tell from the file type loaded.
+
+Header
+        - file level comments
+        - file version
+        - date
+
+Model state.
+      - the model needs to be able to be written to a file and read back.
+
+
 Draw names in left side panel. Panel contents must match larger drawing pane.
+Use tree view to control hierarchy
 
 Devise a way of hiding one or more event time lines. This could be a
 checkbox, but then there would need to be a way of getting it back.
-
-
-Allow annotation of data set. This is a big feature.
-    - Establish a separate data file (and internal structures) to hold
-      user modifications and display state.
-    - Allow user colouring of individual events.
-    - Allow user to add annotations to events. Mark event as having annotation.
-
-Add save/save as... menu items
-
-Add feature where the whole data set can have an annotation. Could
-be a menu item, tool bar icon, or other.
-
-Floating event info window - holds same data as scrolling pane
-currently does.
+Currently have a filter button which hides empty events.
 
 Allow loading multiple data sets into one viewer. Add menu item to
-clear all events. Add menu item to merge events into current set.
+clear all events. Add menu item to *merge events* into current set.
+This means that events can be merged into a restored data-set.
 
 Add an overview window/thumbnail that shows the whole event space with
 a gray outline of what is being viewed. For bonus points, allow view
-rectangle to be dragged to change the view.
+rectangle to be dragged to change the view. this sould be drawn once
+(to a bitmap) and a thin rectangle overlayed based on the scroller
+values.
 
-Resources have a hardcoded path. Should be relative. Or use .rc file, or compile in.
+Add feature to plot event data values against time. Maybe a thin strip
+at the bottom to show selected event values. Also possible to expand
+space around event timeline or even plot over timeline. Plot events as
+a line plot and/or discrete vertical bars. Scaling could be
+challenging since the values are double.  This would imply that there
+should be an option to plot one or more events in a big scalable pane.
+
+Couple the event display grid with the timeline. Maybe highlight the
+same row on both. Make grid track when event timeline is moved.
+
+allow annotation for events to be edited in the table view.
 
 Finish implementing editable timeline bounds.
 
@@ -40,6 +54,8 @@ BUG - Zoom does not keep timeline centered when the scale is changed.
 BUG - horizontal scrolling does not refresh screen correctly.
 
 
+
+------------------------------------------------------------------------------
 ---- Done ----
 
 BUG - event base line does not draw correctly when zoomed/h-scrolled
@@ -77,13 +93,22 @@ Allow right-click on events for drop down menu to allow
 In comment display window - add text "enter comment" in gray text if
 there is currently no annotation.
 
+Floating event info window - holds same data as scrolling pane
+currently does.
+
+Resources have a hardcoded path. Should be relative. Or use .rc file, or compile in.
+
+Add save/save as... menu items
+
+Allow annotation of data set. This is a big feature.
+    - Establish a separate data file (and internal structures) to hold
+      user modifications and display state.
+    - Allow user colouring of individual events.
+    - Allow user to add annotations to events. Mark event as having annotation.
+
+Add feature where the whole data set can have an annotation. Could
+be a menu item, tool bar icon, or other.
+
+
 
 -----------------------------------------------------------------------------
-Writing out the internal program state to be later read in and modified.
-
-Header
-        - file level comments
-        - file version
-
-Model state.
-      - the model needs to be able to be written to a file and read back.

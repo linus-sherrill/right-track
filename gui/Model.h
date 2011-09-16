@@ -83,6 +83,7 @@ public:
   int EventCount() const;
   int DisplayableEventCount() const;
 
+  // provide access to the data set annotation
   wxString& DataSetAnnotation() { return m_modelAnnotation; }
 
   // -- MANIPULATORS --
@@ -135,9 +136,6 @@ public:
   bool IsEventDisplayable(ItemId_t event) const;
 
 
-//   bool GetEventInfoByTime (EventHistory_t const& eh, double time_offset, EventInfo_t * out_info);
-// Need to define EventInfo_t structure
-
   // Colors to use
   wxColour m_defaultBaselineColor;
   wxColour m_defaultLineColor;
@@ -176,6 +174,9 @@ private:
   BaseOccurrence * m_selectedOccurrence;
 
   bool m_eventFilter;
+
+  // name where the model was stored.
+  wxString m_modelFileName;
 
   static Model * s_instance;
 };
