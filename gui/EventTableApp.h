@@ -32,7 +32,6 @@ public:
 protected:
     virtual void handle_done(wxCommandEvent &event); // wxGlade: <event_handler>
     virtual void handle_save(wxCommandEvent &event); // wxGlade: <event_handler>
-    virtual void handle_cancel(wxCommandEvent &event); // wxGlade: <event_handler>
 
 
 private:

@@ -400,6 +400,8 @@ DisplayableEventCount() const
 void Model::
 ModelUpdate(unsigned code)
 {
+  ///@todo This needs to be done better. There are multiple clients
+  // for the update notification. Create a subject/observer pattern?
   m_parentFrame->ModelUpdate(code);
 }
 

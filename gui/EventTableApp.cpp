@@ -186,7 +186,6 @@ InitGrid(DisplayableIterator& event_it)
 void EventTableApp::
 handle_done(wxCommandEvent& event)
 {
-  std::cout << "Done button\n";
   // terminate and close window
   Close(true);
 }
@@ -251,17 +250,3 @@ handle_save(wxCommandEvent& event)
 
   file.Write(result);
 } /* handle_save */
-
-
-// ----------------------------------------------------------------
-/**
- *
- *
- */
-void EventTableApp::
-handle_cancel(wxCommandEvent& event)
-{
-  Close(true);
-}
-
-
