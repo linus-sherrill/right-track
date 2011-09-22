@@ -81,6 +81,13 @@ protected:
   virtual void Curs2Down(wxSpinEvent &event); // wxGlade: <event_handler>
   virtual void Curs2Up(wxSpinEvent &event); // wxGlade: <event_handler>
 
+  virtual void SortEventNameHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SortNumOccurHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SortAvgHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SortMaxDurationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SortMinDurationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SortPctActHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+
   DECLARE_EVENT_TABLE();
 
 

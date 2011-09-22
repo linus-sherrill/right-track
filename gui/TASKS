@@ -21,6 +21,9 @@ Devise a way of hiding one or more event time lines. This could be a
 checkbox, but then there would need to be a way of getting it back.
 Currently have a filter button which hides empty events.
 
+Add search by event name [re] and highlight that row.
+Maybe allow sorting by event name.
+
 Allow loading multiple data sets into one viewer. Add menu item to
 clear all events. Add menu item to *merge events* into current set.
 This means that events can be merged into a restored data-set.

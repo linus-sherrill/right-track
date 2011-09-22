@@ -30,7 +30,6 @@ using namespace ::RightTrack::Internal;
 class MainFrameApp;
 
 
-
 // ================================================================
 // ----------------------------------------------------------------
 /** Model part of MVC
@@ -94,6 +93,9 @@ public:
   void MoveSelectedEventUp();
   void MoveSelectedEventDown();
   void MoveSelectedEventBottom();
+
+  template <class SORT>
+  void SortEvents ();
 
   // FindEventByTime (ItemId_t id, double ots);
 
@@ -180,6 +182,22 @@ private:
 
   static Model * s_instance;
 };
+
+
+// ----------------------------------------------------------------
+/** Sort event displayable order.
+ *
+ *
+ */
+template <class SORT>
+void Model::
+SortEvents ()
+{
+  std::sort (m_drawOrder.begin(), m_drawOrder.end(), SORT());
+
+  // Need to redraw events
+  ModelUpdate(UPDATE_event_frame);
+}
 
 #endif /* _MODEL_H_ */
 

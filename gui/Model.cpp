@@ -16,7 +16,6 @@
 #include <EventTransportReaderGui.h>
 #include <EventTransportReaderDebug.h>
 
-
 Model * Model::s_instance(0);
 
 
@@ -627,3 +626,4 @@ IsEventDisplayable(ItemId_t event) const
   // display by default
   return true;
 }
+
