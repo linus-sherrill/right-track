@@ -19,6 +19,7 @@
 #include "DisplayableIterator.h"
 #include "TextEditDialogApp.h"
 #include "EventTableApp.h"
+#include "EventSort.h"
 
 
 
@@ -624,3 +625,52 @@ handle_enter_timeline(wxCommandEvent &event)
 {
 
 }
+
+
+// ----------------------------------------------------------------
+/** Handle sort events
+ *
+ *
+ */
+void MainFrameApp::
+SortEventNameHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByName > ();
+}
+
+
+void MainFrameApp::
+SortNumOccurHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByCount > ();
+}
+
+
+void MainFrameApp::
+SortAvgHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByAverageTime > ();
+}
+
+
+void MainFrameApp::
+SortMaxDurationHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByMaxDuration > ();
+}
+
+
+void MainFrameApp::
+SortMinDurationHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByMinDuration > ();
+}
+
+
+void MainFrameApp::
+SortPctActHandler(wxCommandEvent &event)
+{
+  GetModel()->SortEvents < SortByPercentage > ();
+}
+
+

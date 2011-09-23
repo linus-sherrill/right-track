@@ -13,11 +13,14 @@ SET (gui_sources
     MainFrameApp.h                      MainFrameApp.cpp
     TextEditDialogApp.h                 TextEditDialogApp.cpp
     Model.h                             Model.cpp
+    EventSort.h                         EventSort.cpp
+
     EventCanvasApp.h                    EventCanvasApp.cpp
     TimeLineCursor.h                    TimeLineCursor.cpp
-    event_database.h                    event_database.cpp
     DisplayableIterator.h               DisplayableIterator.cxx
     EventTableApp.h                     EventTableApp.cpp
+
+    event_database.h                    event_database.cpp
 )
 
 ADD_EXECUTABLE (right_track_gui  ${gui_sources} )

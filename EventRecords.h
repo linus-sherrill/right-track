@@ -53,6 +53,7 @@ enum {
   PAYLOAD_CONTEXT_DEFINITION,
   PAYLOAD_CONTEXT_PUSH,
   PAYLOAD_CONTEXT_POP,
+  PAYLOAD_EVENT_TEXT,
 };
 
 
@@ -93,14 +94,13 @@ struct EventEnd
 };
 
 
-struct TextEvent
+struct EventText
 {
   ItemId_t event_id;
   EventTimestamp_t event_time;
   EventPid_t event_pid;
-  EventData_t event_data;
 
-  vcl_string text;
+  vcl_string event_text;
 };
 
 

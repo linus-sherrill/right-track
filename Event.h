@@ -27,7 +27,9 @@ public:
   enum EventType_t {
     ET_UNDEFINED_EVENT = 0,
     ET_BOUNDED_EVENT,
-    ET_DISCRETE_EVENT };
+    ET_DISCRETE_EVENT,
+    ET_TEXT_EVENT
+  };
 
   // -- CONSTRUCTORS --
   Event(vcl_string const& name,

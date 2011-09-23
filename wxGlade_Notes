@@ -1,0 +1,17 @@
+Notes for wxGlade
+-----------------
+
+Normally icons are loaded from a file. If the file name string starts
+with "code:", then a local symbol can be specified.
+
+
+Extra code block has the format
+
+<code for header file>
+###
+<code for source file>
+
+
+XPM files can be created by gimp. Load image, save as .xpm.
+Should make script to convert to .xpm files.
+

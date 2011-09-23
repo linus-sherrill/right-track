@@ -1,11 +1,11 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
 
-#include <DiscreteEvent.h>
+#include <TextEvent.h>
 
 #include <EventManager.h>
 #include <RightTrackDefs.h>
@@ -29,29 +29,44 @@ namespace RightTrack {
  * using the HTML color encoding scheme. You can use a set of
  * predefined color names or just encode them as a literal.
  */
-DiscreteEvent::
-DiscreteEvent(vcl_string name, vcl_string group, int color)
+TextEvent::
+TextEvent(vcl_string name, vcl_string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);
 }
 
 
-DiscreteEvent::
-~DiscreteEvent()
+TextEvent::
+~TextEvent()
 {
 
 }
 
 
-void DiscreteEvent::
-Start(::RightTrack::EventData_t val)
+void TextEvent::
+Start(vcl_string const& val)
 {
   Manager()->StartEvent( this, val );
 }
 
 
-void DiscreteEvent::
+void TextEvent::
+Start(char const* val)
+{
+  Manager()->StartEvent( this, vcl_string (val) );
+}
+
+
+void TextEvent::
+Start(::RightTrack::EventData_t val)
+{
+  // should never be called
+  // Raise an error
+}
+
+
+void TextEvent::
 End(::RightTrack::EventData_t val)
 {
   // should never be called
@@ -59,10 +74,10 @@ End(::RightTrack::EventData_t val)
 }
 
 
-Internal::Event::EventType_t DiscreteEvent::
+Internal::Event::EventType_t TextEvent::
 EventType() const
 {
-  return ::RightTrack::Internal::Event::ET_DISCRETE_EVENT;
+  return ::RightTrack::Internal::Event::ET_TEXT_EVENT;
 }
 
 } // end namespace

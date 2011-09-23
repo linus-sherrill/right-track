@@ -33,6 +33,7 @@ public:
   virtual int Write(EventDefinition & msg);
   virtual int Write(EventStart & msg);
   virtual int Write(EventEnd & msg);
+  virtual int Write(EventText & msg);
   virtual int Write(ContextDefinition & msg);
   virtual int Write(ContextPush & msg);
   virtual int Write(ContextPop & msg);

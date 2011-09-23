@@ -36,6 +36,18 @@ struct BoundedEventStatistics
 };
 
 
+// ----------------------------------------------------------------
+/** Discrete event statistics
+ *
+ *
+ */
+struct DiscreteEventStatistics
+{
+  int m_count;
+};
+
+
+
 class BoundedEventDef;
 class DiscreteEventDef;
 class BoundedOccurrence;
@@ -216,6 +228,8 @@ public:
   virtual DiscreteEventDef * GetDiscreteEvent () { return this; }
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
+
+  DiscreteEventStatistics m_stats;
 };
 
 
