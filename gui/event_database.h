@@ -76,6 +76,9 @@ public:
   virtual BoundedOccurrence *  GetBoundedOccurrence() { return 0; }
   virtual DiscreteOccurrence *  GetDiscreteOccurrence() { return 0; }
 
+  virtual BoundedOccurrence const *  GetBoundedOccurrence() const { return 0; }
+  virtual DiscreteOccurrence const *  GetDiscreteOccurrence() const { return 0; }
+
   EventPid_t m_eventPid;
 
 
@@ -98,6 +101,7 @@ public:
   virtual bool ContainsTime (double time, double delta) const;
   virtual wxString GetInfo();
   virtual BoundedOccurrence *  GetBoundedOccurrence() { return this; }
+  virtual BoundedOccurrence const *  GetBoundedOccurrence() const { return this; }
 
   double m_startTime; // in seconds
   EventData_t m_startData;
@@ -127,6 +131,7 @@ public:
   virtual bool ContainsTime (double time, double delta) const;
   virtual wxString GetInfo();
   virtual DiscreteOccurrence *  GetDiscreteOccurrence() { return this; }
+  virtual DiscreteOccurrence const *  GetDiscreteOccurrence() const { return this; }
 
   double m_eventTime; // in seconds
   EventData_t m_eventData;
@@ -159,8 +164,11 @@ public:
   wxString const& EventName() const { return m_eventName; }
   wxString const& EventGroup() const { return m_groupName; }
 
-  virtual BoundedEventDef * GetBoundedEvent ();
-  virtual DiscreteEventDef * GetDiscreteEvent ();
+  virtual BoundedEventDef * GetBoundedEvent () { return 0; }
+  virtual DiscreteEventDef * GetDiscreteEvent () { return 0; }
+
+  virtual BoundedEventDef const * GetBoundedEvent () const { return 0; }
+  virtual DiscreteEventDef const * GetDiscreteEvent () const { return 0; }
 
   virtual wxString GetEventInfo() = 0;
   virtual size_t NumOccurrences() const = 0;
@@ -205,6 +213,7 @@ public:
 
   virtual Event::EventType_t EventType() const { return Event::ET_BOUNDED_EVENT; }
   virtual BoundedEventDef * GetBoundedEvent () { return this; }
+  virtual BoundedEventDef const * GetBoundedEvent () const { return this; }
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
 
@@ -226,6 +235,7 @@ public:
 
   virtual Event::EventType_t EventType() const { return Event::ET_DISCRETE_EVENT; }
   virtual DiscreteEventDef * GetDiscreteEvent () { return this; }
+  virtual DiscreteEventDef const * GetDiscreteEvent () const { return this; }
   virtual wxString GetEventInfo();
   virtual size_t NumOccurrences() const { return m_list.size(); }
 

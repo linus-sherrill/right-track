@@ -97,19 +97,6 @@ public:
   template <class SORT>
   void SortEvents ();
 
-  // FindEventByTime (ItemId_t id, double ots);
-
-  // Event data areas -- proposal
-  struct drawing_attributes_t
-  {
-    ItemId_t event_id;
-    bool selected;
-    bool display_enable;
-  };
-
-  vcl_vector < ItemId_t > m_drawOrder;
-  event_map_t m_eventMap; // list of events
-
   EventDef::handle_t GetEventHistory( ItemId_t ev) { return m_eventMap[ev]; }
 
   // Context data areas
@@ -137,6 +124,14 @@ public:
   void SetEventFilter( bool v );
   bool IsEventDisplayable(ItemId_t event) const;
 
+  // Model IO
+  bool WriteModel(const char * file);
+  bool ReadModel(const char * file);
+
+
+  // Event structures
+  vcl_vector < ItemId_t > m_drawOrder;
+  event_map_t m_eventMap; // list of events
 
   // Colors to use
   wxColour m_defaultBaselineColor;
@@ -166,10 +161,6 @@ private:
   double m_viewTimeEnd;
 
   wxString m_modelAnnotation;
-
-  // Event click info
-  BoundedEventStatistics m_evc_stats;
-  double m_evc_data;
 
   // selected items
   ItemId_t m_selectedEvent;

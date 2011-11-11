@@ -20,19 +20,6 @@ EventDef::
  { }
 
 
-BoundedEventDef * EventDef::
-GetBoundedEvent ()
-{
-  return 0;
-}
-
-
-DiscreteEventDef * EventDef::
-GetDiscreteEvent ()
-{
-  return 0;
-}
-
 
 // ================================================================
 

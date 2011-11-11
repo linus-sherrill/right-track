@@ -13,6 +13,7 @@ SET (gui_sources
     MainFrameApp.h                      MainFrameApp.cpp
     TextEditDialogApp.h                 TextEditDialogApp.cpp
     Model.h                             Model.cpp
+    Model_IO.cpp
     EventSort.h                         EventSort.cpp
 
     EventCanvasApp.h                    EventCanvasApp.cpp
