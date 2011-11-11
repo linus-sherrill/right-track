@@ -125,8 +125,9 @@ public:
   bool IsEventDisplayable(ItemId_t event) const;
 
   // Model IO
-  bool WriteModel(const char * file);
-  bool ReadModel(const char * file);
+  bool WriteModel(wxString const& file);
+  bool ReadModel(wxString const& file);
+  wxString const& GetModelFileName() const { return m_modelFileName; }
 
 
   // Event structures

@@ -61,7 +61,7 @@ void vsl_b_read(vsl_b_istream& s, wxString & v);
  *
  */
 bool Model::
-WriteModel(const char * file)
+WriteModel(wxString const& file)
 {
   // Write model header info
   // - version number
@@ -75,7 +75,7 @@ WriteModel(const char * file)
 
   // open file
   vcl_ofstream * outStream = new vcl_ofstream;
-  outStream->open(file);
+  outStream->open(file.char_str());
 
   vsl_b_ostream bstream(outStream);
 
@@ -306,11 +306,11 @@ void vsl_b_write(vsl_b_ostream& s, wxString const& v)
  * Assume that the model has been cleaned of all previous information.
  */
 bool Model::
-ReadModel(const char * file)
+ReadModel(wxString const& file)
 {
   // open file
   vcl_ifstream * inStream = new vcl_ifstream;
-  inStream->open(file);
+  inStream->open(file.char_str());
 
   vsl_b_istream bstream(inStream);
 
@@ -381,6 +381,8 @@ ReadModel(const char * file)
       // do something
     }
 
+    // update model file name
+    m_modelFileName = *file;
   } // end for
 
 }

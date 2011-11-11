@@ -71,7 +71,6 @@ OnIdle(wxIdleEvent& evt)
  *
  *
  */
-
 void MainFrameApp::
 FileOpenHandler(wxCommandEvent &event)
 {
@@ -101,6 +100,51 @@ FileOpenHandler(wxCommandEvent &event)
 
   // update content in event loop
 //  Refresh();
+}
+
+
+// ----------------------------------------------------------------
+/** Save model
+ *
+ *
+ */
+void MainFrameApp::
+SaveHandler(wxCommandEvent &event)
+{
+  wxString const& filename = GetModel()->GetModelFileName();
+
+  // If no file
+  if (filename.empty())
+  {
+    SaveAsHandler(event);
+  }
+
+  GetModel()->WriteModel( filename );
+}
+
+
+// ----------------------------------------------------------------
+/** Save model under a new name (Save as...)
+ *
+ *
+ */
+void MainFrameApp::
+SaveAsHandler(wxCommandEvent &event)
+{
+  // prompt for file name
+  wxFileDialog dialog (this, wxT("Save data as..."),
+                       wxEmptyString, // default directory
+                       wxEmptyString, // default file name
+                       wxT("RightTrack files (*.rtdb)|*.rtdb|All files (*)|*"),  // file types
+                       wxSAVE | wxOVERWRITE_PROMPT);
+  if (dialog.ShowModal() != wxID_OK)
+  {
+    return; // cancel pressed
+  }
+
+  wxString path = dialog.GetPath();
+
+  GetModel()->WriteModel( path );
 }
 
 

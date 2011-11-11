@@ -54,6 +54,8 @@ protected:
 
 
   virtual void FileOpenHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SaveHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  virtual void SaveAsHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void ColorPickerHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void QuitHandler(wxCommandEvent &event); // wxGlade: <event_handler>
   virtual void AboutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
