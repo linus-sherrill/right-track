@@ -35,20 +35,29 @@ NewEvent(EventDefinition const& msg)
 {
   EventDef * def;
 
-  if (msg.event_type == Event::ET_DISCRETE_EVENT)
+  switch (msg.event_type)
   {
+  case Event::ET_TEXT_EVENT:
+  case Event::ET_DISCRETE_EVENT:
     def = new DiscreteEventDef();
-  }
-  else
-  {
+    break;
+
+  case Event::ET_BOUNDED_EVENT:
     def = new BoundedEventDef();
-  }
+    break;
+
+  default:
+    // display message;
+    wxMessageBox( wxT("Internal error - unexpected event type"),
+                  wxT("Error"), wxICON_ERROR | wxOK);
+  } // end switch
 
   def->m_eventName = wxString (msg.event_name.c_str(), wxConvUTF8);
   def->m_groupName = wxString (msg.event_group.c_str(), wxConvUTF8);
   def->m_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   def->m_eventId = msg.event_id;
   def->m_color = msg.event_color;
+
 
   m_model->m_drawOrder.push_back(def->m_eventId);
   m_model->m_eventMap[def->m_eventId] = EventDef::handle_t(def);
@@ -93,6 +102,36 @@ NewEvent(EventStart const& msg)
 
     ix->second->m_list.push_back (BaseOccurrence::handle_t(occ) );
   }
+
+  return (0);
+}
+
+
+// ----------------------------------------------------------------
+/** Handle text event.
+ *
+ * Currently this is hacked in as a discrete event with the user
+ * comment already filled in.
+ */
+int EventTransportReaderGui::
+NewEvent(EventText const& msg)
+{
+  Model::event_iterator_t ix;
+  ix = m_model->m_eventMap.find (msg.event_id);
+  if (ix == m_model->m_eventMap.end())
+  {
+    return (1); // event not found
+  }
+
+  // build specific type object
+  DiscreteOccurrence * occ = new DiscreteOccurrence();
+
+  occ->m_eventPid = msg.event_pid;
+  occ->m_eventData = 0;
+  occ->SetUserComment( wxString(msg.event_text.c_str(), wxConvUTF8) );
+  occ->m_eventTime = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
+
+  ix->second->m_list.push_back (BaseOccurrence::handle_t(occ) );
 
   return (0);
 }

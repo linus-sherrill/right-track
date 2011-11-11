@@ -59,6 +59,7 @@ Write(EventStart & msg)
                  << "  id: " << msg.event_id
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
+                 << "  data: " << msg.event_data
                  << vcl_endl;
 
   return (0);
@@ -72,6 +73,21 @@ Write(EventEnd & msg)
                  << "  id: " << msg.event_id
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
+                 << "  data: " << msg.event_data
+                 << vcl_endl;
+
+  return (0);
+}
+
+
+int EventTransportDebug::
+Write(EventText & msg)
+{
+  (*m_outStream) << "Event end: "
+                 << "  id: " << msg.event_id
+                 << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
+                 << "  pid: " << msg.event_pid
+                 << "  text: \"" << msg.event_text << "\""
                  << vcl_endl;
 
   return (0);

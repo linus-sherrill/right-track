@@ -30,7 +30,6 @@ using namespace ::RightTrack::Internal;
 class MainFrameApp;
 
 
-
 // ================================================================
 // ----------------------------------------------------------------
 /** Model part of MVC
@@ -83,6 +82,7 @@ public:
   int EventCount() const;
   int DisplayableEventCount() const;
 
+  // provide access to the data set annotation
   wxString& DataSetAnnotation() { return m_modelAnnotation; }
 
   // -- MANIPULATORS --
@@ -93,6 +93,9 @@ public:
   void MoveSelectedEventUp();
   void MoveSelectedEventDown();
   void MoveSelectedEventBottom();
+
+  template <class SORT>
+  void SortEvents ();
 
   // FindEventByTime (ItemId_t id, double ots);
 
@@ -135,9 +138,6 @@ public:
   bool IsEventDisplayable(ItemId_t event) const;
 
 
-//   bool GetEventInfoByTime (EventHistory_t const& eh, double time_offset, EventInfo_t * out_info);
-// Need to define EventInfo_t structure
-
   // Colors to use
   wxColour m_defaultBaselineColor;
   wxColour m_defaultLineColor;
@@ -177,8 +177,27 @@ private:
 
   bool m_eventFilter;
 
+  // name where the model was stored.
+  wxString m_modelFileName;
+
   static Model * s_instance;
 };
+
+
+// ----------------------------------------------------------------
+/** Sort event displayable order.
+ *
+ *
+ */
+template <class SORT>
+void Model::
+SortEvents ()
+{
+  std::sort (m_drawOrder.begin(), m_drawOrder.end(), SORT());
+
+  // Need to redraw events
+  ModelUpdate(UPDATE_event_frame);
+}
 
 #endif /* _MODEL_H_ */
 
