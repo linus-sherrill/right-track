@@ -129,6 +129,8 @@ public:
   bool ReadModel(wxString const& file);
   wxString const& GetModelFileName() const { return m_modelFileName; }
 
+  void SetDirty() { m_modelDirty = true; }
+
 
   // Event structures
   vcl_vector < ItemId_t > m_drawOrder;
@@ -147,6 +149,8 @@ public:
 
 private:
   void ScanEvents();
+
+  void SetModelFileName (wxString const& name);
 
   MainFrameApp * m_parentFrame;
   double m_timingOffset; // time of first event
@@ -171,6 +175,7 @@ private:
 
   // name where the model was stored.
   wxString m_modelFileName;
+  bool m_modelDirty;
 
   static Model * s_instance;
 };

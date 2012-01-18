@@ -17,10 +17,33 @@ Add option to dispaly histogram of bounded event timing.
 
 Add option to write out list of occurrences for a single event (start, stop, data, pid, ...)
 
+Loading events
+--------------
+
+Allow loading multiple data sets into one viewer. Add menu item to
+clear all events. Add menu item to *merge events* into current set.
+This means that events can be merged into a restored data-set.
+
+Should the load menu item allow for .rtrk and .rtdb files or should
+there be separate menu items for each file type. (do both file types)
+
+When loading .rtrk file into an empty model, set model dirty, save
+filename when loading.
+
+When loading .rtdb file, prompt to clear model before loading, save
+filename as model name.
+
+Saving model file name replaces file ext with .rtdb.
+
+Merging a .rtrk file into model, mark as dirty.
+
+Any modifications to the model marks as dirty.
+If model is dirty when exiting, prompt to save model.
 
 
+--------------------------------------------------------
 Draw names in left side panel. Panel contents must match larger drawing pane.
-Use tree view to control hierarchy
+Use tree view to control hierarchy?
 
 Devise a way of hiding one or more event time lines. This could be a
 checkbox, but then there would need to be a way of getting it back.
@@ -29,9 +52,6 @@ Currently have a filter button which hides empty events.
 Add search by event name [re] and highlight that row.
 Maybe allow sorting by event name.
 
-Allow loading multiple data sets into one viewer. Add menu item to
-clear all events. Add menu item to *merge events* into current set.
-This means that events can be merged into a restored data-set.
 
 Add an overview window/thumbnail that shows the whole event space with
 a gray outline of what is being viewed. For bonus points, allow view
