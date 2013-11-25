@@ -29,7 +29,7 @@ namespace RightTrack {
  * predefined color names or just encode them as a literal.
  */
 BoundedEvent::
-BoundedEvent(vcl_string name, vcl_string group, int color)
+BoundedEvent(std::string name, std::string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);

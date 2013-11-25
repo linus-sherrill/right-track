@@ -19,7 +19,7 @@ namespace Internal {
  * @param[in] color -
  */
 Event::
-Event(vcl_string const& name, vcl_string group, int color)
+Event(std::string const& name, std::string group, int color)
   : RightTrackItem(name),
     m_eventGroup(group),
     m_eventColor(color)
@@ -40,7 +40,7 @@ Event::
  *
  *
  */
-vcl_string const&
+std::string const&
 Event::
 EventGroup() const
 {

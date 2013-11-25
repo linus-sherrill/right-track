@@ -19,7 +19,7 @@ int main (int argc, char * argv[])
 {
   if (argc < 2)
   {
-    vcl_cout << "Need to specify file name\n";
+    std::cout << "Need to specify file name\n";
     exit(1);
   }
 

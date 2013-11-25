@@ -10,8 +10,8 @@
 
 #include "EventTransport.h"
 
-#include <vcl_ostream.h>
-#include <vcl_fstream.h>
+#include <ostream>
+#include <fstream>
 #include <vsl/vsl_binary_io.h>
 
 
@@ -38,15 +38,15 @@ public:
   virtual int Write(ContextPush & msg);
   virtual int Write(ContextPop & msg);
 
-  virtual int ReadEvents(vcl_string const& resource,
+  virtual int ReadEvents(std::string const& resource,
                          EventTransportReader & reader);
 
-  bool OpenFile (vcl_string name);
+  bool OpenFile (std::string name);
 
 
 private:
   // support for writing
-  vcl_ofstream * m_outStream;
+  std::ofstream * m_outStream;
   vsl_b_ostream * m_bstream;
 
 }; // end class EventTransportFile

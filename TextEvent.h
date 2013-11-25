@@ -21,13 +21,13 @@ class TextEvent
   : public Internal::Event
 {
 public:
-  TextEvent(vcl_string name,
-                vcl_string group = vcl_string(),
+  TextEvent(std::string name,
+                std::string group = std::string(),
                 int color = -1);
   virtual ~TextEvent();
 
   virtual void Start(::RightTrack::EventData_t val = 0);
-  virtual void Start(vcl_string const& val);
+  virtual void Start(std::string const& val);
   virtual void Start(char const* val);
 
   virtual EventType_t EventType() const;

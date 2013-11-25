@@ -17,7 +17,7 @@ namespace RightTrack {
  *
  */
 RightTrackItem::
-RightTrackItem(vcl_string const& name)
+RightTrackItem(std::string const& name)
   : m_itemName(name)
 {
   // Get handle to the manager.
@@ -51,7 +51,7 @@ ItemId() const
  *
  *
  */
-vcl_string const & RightTrackItem::
+std::string const & RightTrackItem::
 ItemName() const
 {
   return m_itemName;

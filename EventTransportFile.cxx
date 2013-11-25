@@ -11,7 +11,7 @@
 
 #include <RightTrackDefs.h>
 
-#include <vcl_string.h>
+#include <string>
 #include <vsl/vsl_binary_io.h>
 
 
@@ -151,9 +151,9 @@ Write(ContextPop & msg)
  * Filename based on application and PID.
  */
 bool EventTransportFile::
-OpenFile (vcl_string name)
+OpenFile (std::string name)
 {
-  m_outStream = new vcl_ofstream;
+  m_outStream = new std::ofstream;
   m_outStream->open(name.c_str());
 
   m_bstream = new vsl_b_ostream(m_outStream);
@@ -168,7 +168,7 @@ OpenFile (vcl_string name)
  *
  */
 int EventTransportFile::
-ReadEvents(vcl_string const& resource,
+ReadEvents(std::string const& resource,
            EventTransportReader & reader)
 {
   vsl_b_ifstream bstream( resource.c_str() );
@@ -293,7 +293,7 @@ ReadEvents(vcl_string const& resource,
     break;
 
     default:
-      vcl_cerr << "Unrecognised payload type: " << payload << vcl_endl;
+      std::cerr << "Unrecognised payload type: " << payload << std::endl;
       // TBD log error
       break;
     } // end switch
@@ -307,7 +307,7 @@ ReadEvents(vcl_string const& resource,
     if (! bstream)
     {
       // error
-      vcl_cerr << "Error reading input\n";
+      std::cerr << "Error reading input\n";
       break;
     }
 

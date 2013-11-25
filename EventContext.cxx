@@ -18,7 +18,7 @@ namespace RightTrack {
  *
  */
 EventContext::
-EventContext(vcl_string name)
+EventContext(std::string name)
   : RightTrackItem(name)
 {
   Manager()->RegisterContext(this);

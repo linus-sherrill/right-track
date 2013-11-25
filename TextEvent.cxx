@@ -30,7 +30,7 @@ namespace RightTrack {
  * predefined color names or just encode them as a literal.
  */
 TextEvent::
-TextEvent(vcl_string name, vcl_string group, int color)
+TextEvent(std::string name, std::string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);
@@ -45,7 +45,7 @@ TextEvent::
 
 
 void TextEvent::
-Start(vcl_string const& val)
+Start(std::string const& val)
 {
   Manager()->StartEvent( this, val );
 }
@@ -54,7 +54,7 @@ Start(vcl_string const& val)
 void TextEvent::
 Start(char const* val)
 {
-  Manager()->StartEvent( this, vcl_string (val) );
+  Manager()->StartEvent( this, std::string (val) );
 }
 
 

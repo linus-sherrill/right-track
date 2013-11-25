@@ -70,8 +70,8 @@ struct EventDefinition
   Event::EventType_t event_type; // [bounded, discrete]
   ItemId_t event_id;
 
-  vcl_string event_name;
-  vcl_string event_group;
+  std::string event_name;
+  std::string event_group;
   int event_color;
 };
 
@@ -100,14 +100,14 @@ struct EventText
   EventTimestamp_t event_time;
   EventPid_t event_pid;
 
-  vcl_string event_text;
+  std::string event_text;
 };
 
 
 // ----------------------------------------------------------------
 struct ContextDefinition
 {
-  vcl_string context_name;
+  std::string context_name;
   ItemId_t context_id;
 };
 

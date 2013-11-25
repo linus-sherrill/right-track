@@ -11,7 +11,7 @@
 #include "RightTrackDefs.h"
 
 #include <boost/noncopyable.hpp>
-#include <vcl_string.h>
+#include <string>
 
 
 namespace RightTrack {
@@ -33,11 +33,11 @@ public:
   virtual ~RightTrackItem();
 
   ItemId_t ItemId() const;
-  vcl_string const& ItemName() const;
+  std::string const& ItemName() const;
 
 
 protected:
-  RightTrackItem(vcl_string const& name); // CTOR
+  RightTrackItem(std::string const& name); // CTOR
 
   Internal::EventManager* Manager();
 
@@ -45,7 +45,7 @@ protected:
 private:
   Internal::EventManager* m_manager;
   ItemId_t m_itemId;
-  vcl_string m_itemName;
+  std::string m_itemName;
 
 }; // end class RightTrackItem
 

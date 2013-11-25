@@ -10,7 +10,7 @@
 
 #include "RightTrackDefs.h"
 
-#include <vcl_string.h>
+#include <string>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/noncopyable.hpp>
@@ -46,7 +46,7 @@ public:
 
   ItemId_t GetNextId();
   void RegisterEvent(Event * ev);
-  void StartEvent (Event * ev, vcl_string const& val);
+  void StartEvent (Event * ev, std::string const& val);
   void StartEvent (Event * ev, ::RightTrack::EventData_t val);
   void EndEvent (Event * ev, ::RightTrack::EventData_t val);
 
@@ -54,7 +54,7 @@ public:
   void PushContext (EventContext * ec);
   void PopContext (EventContext * ec);
 
-  vcl_string const& GetFilename() const;
+  std::string const& GetFilename() const;
 
 
 private:
@@ -65,8 +65,8 @@ private:
 
   boost::mutex m_lock;
 
-  vcl_string m_systemName;
-  vcl_string m_filename;
+  std::string m_systemName;
+  std::string m_filename;
 
   ItemId_t m_nextId;
 

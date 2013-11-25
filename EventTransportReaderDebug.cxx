@@ -7,7 +7,7 @@
 
 #include <EventTransportReaderDebug.h>
 
-#include <vcl_iostream.h>
+#include <iostream>
 
 
 
@@ -18,14 +18,14 @@ namespace RightTrack {
 int EventTransportReaderDebug::
 NewEvent(EventDefinition const& msg)
 {
-  vcl_cout << "Event definition: "
+  std::cout << "Event definition: "
            << "  name: \"" << msg.event_name << "\""
            << "  id: " << msg.event_id
            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  type: " << msg.event_type
            << "  group: " << msg.event_group
            << "  color: " << msg.event_color
-           << vcl_endl;
+           << std::endl;
 
   return (0);
 }
@@ -34,12 +34,12 @@ NewEvent(EventDefinition const& msg)
 int EventTransportReaderDebug::
 NewEvent(EventStart const& msg)
 {
-  vcl_cout << "Event start: "
+  std::cout << "Event start: "
            << "  id: " << msg.event_id
            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  pid: " << msg.event_pid
            << "  data: " << msg.event_data
-           << vcl_endl;
+           << std::endl;
 
   return (0);
 }
@@ -48,12 +48,12 @@ NewEvent(EventStart const& msg)
 int EventTransportReaderDebug::
 NewEvent(EventEnd const& msg)
 {
-  vcl_cout << "Event end: "
+  std::cout << "Event end: "
            << "  id: " << msg.event_id
            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  pid: " << msg.event_pid
            << "  data: " << msg.event_data
-           << vcl_endl;
+           << std::endl;
 
   return (0);
 }
@@ -62,12 +62,12 @@ NewEvent(EventEnd const& msg)
 int EventTransportReaderDebug::
 NewEvent(EventText const& msg)
 {
-  vcl_cout << "Event text: "
+  std::cout << "Event text: "
            << "  id: " << msg.event_id
            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
            << "  pid: " << msg.event_pid
            << "  text: \"" << msg.event_text << "\""
-           << vcl_endl;
+           << std::endl;
 
   return (0);
 }
@@ -76,10 +76,10 @@ NewEvent(EventText const& msg)
 int EventTransportReaderDebug::
 NewEvent(ContextDefinition const& msg)
 {
-  vcl_cout << "Context definition: "
+  std::cout << "Context definition: "
            << "  name: \"" << msg.context_name << "\""
            << "  id: " << msg.context_id
-           << vcl_endl;
+           << std::endl;
 
   return (0);
 }
@@ -88,9 +88,9 @@ NewEvent(ContextDefinition const& msg)
 int EventTransportReaderDebug::
 NewEvent(ContextPush const& msg)
 {
-   vcl_cout << "Context push: "
+   std::cout << "Context push: "
             << "  id: " << msg.context_id
-            << vcl_endl;
+            << std::endl;
 
   return (0);
 }
@@ -99,9 +99,9 @@ NewEvent(ContextPush const& msg)
 int EventTransportReaderDebug::
 NewEvent(ContextPop const& msg)
 {
-   vcl_cout << "Context pop: "
+   std::cout << "Context pop: "
                  << "  id: " << msg.context_id
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }

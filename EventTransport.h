@@ -40,7 +40,7 @@ public:
   virtual int Write(ContextPush & msg) = 0;
   virtual int Write(ContextPop & msg) = 0;
 
-  virtual int ReadEvents(vcl_string const& resource,
+  virtual int ReadEvents(std::string const& resource,
                          EventTransportReader & reader) = 0;
 
 

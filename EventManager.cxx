@@ -14,7 +14,7 @@
 #include <EventTransportDebug.h>
 
 #include <vul/vul_get_timestamp.h>
-#include <vcl_sstream.h>
+#include <sstream>
 #include <vpl/vpl.h>
 
 
@@ -50,7 +50,7 @@ EventManager()
   Internal::EventTransportFile * trans = new Internal::EventTransportFile();
 
   // Create file name
-  vcl_stringstream filename;
+  std::stringstream filename;
   filename << "RightTrack_" << vpl_getpid() << ".rtrk";
   m_filename = filename.str();
   trans->OpenFile(m_filename.c_str());
@@ -178,7 +178,7 @@ GetPid()
  *
  *
  */
-vcl_string const & EventManager::
+std::string const & EventManager::
 GetFilename() const
 {
   return m_filename;
@@ -237,7 +237,7 @@ StartEvent (Event * ev, ::RightTrack::EventData_t val)
  *
  */
 void EventManager::
-StartEvent (Event * ev, vcl_string const& val)
+StartEvent (Event * ev, std::string const& val)
 {
   boost::mutex::scoped_lock lock(m_lock);
 

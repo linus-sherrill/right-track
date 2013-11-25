@@ -35,7 +35,7 @@ int main ()
   ctxt.Push();
   for (int i = 0; i < 10; i++)
   {
-    vcl_string str;
+    std::string str;
     str = "loop ";
     te.Start(str);
     sleep(1);

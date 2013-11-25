@@ -21,8 +21,8 @@ class DiscreteEvent
   : public Internal::Event
 {
 public:
-  DiscreteEvent(vcl_string name,
-                vcl_string group = vcl_string(),
+  DiscreteEvent(std::string name,
+                std::string group = std::string(),
                 int color = -1);
   virtual ~DiscreteEvent();
 

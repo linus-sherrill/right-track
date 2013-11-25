@@ -32,8 +32,8 @@ public:
   };
 
   // -- CONSTRUCTORS --
-  Event(vcl_string const& name,
-        vcl_string group,
+  Event(std::string const& name,
+        std::string group,
         int color);
   virtual ~Event();
 
@@ -42,7 +42,7 @@ public:
   virtual void End(::RightTrack::EventData_t val = 0) = 0;
 
   virtual EventType_t EventType() const = 0;
-  vcl_string const& EventGroup() const;
+  std::string const& EventGroup() const;
   int EventColor() const;
   void EventColor (int rgb);
   void EventColor (unsigned char r, unsigned char g, unsigned char b);
@@ -52,7 +52,7 @@ protected:
 
 
 private:
-  vcl_string m_eventGroup; // as in "a.b.c.eventName"
+  std::string m_eventGroup; // as in "a.b.c.eventName"
   unsigned int m_eventColor;
 
 }; // end class Event

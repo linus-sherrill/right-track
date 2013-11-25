@@ -9,8 +9,8 @@
 
 #include <RightTrackDefs.h>
 
-#include <vcl_string.h>
-#include <vcl_iostream.h>
+#include <string>
+#include <iostream>
 
 
 namespace RightTrack {
@@ -25,7 +25,7 @@ EventTransportDebug::
 EventTransportDebug()
   : m_outStream(0)
 {
-  m_outStream = &vcl_cout;
+  m_outStream = &std::cout;
 }
 
 
@@ -46,7 +46,7 @@ Write(EventDefinition & msg)
                  << "  type: " << msg.event_type
                  << "  group: " << msg.event_group
                  << "  color: " << msg.event_color
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -60,7 +60,7 @@ Write(EventStart & msg)
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
                  << "  data: " << msg.event_data
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -74,7 +74,7 @@ Write(EventEnd & msg)
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
                  << "  data: " << msg.event_data
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -88,7 +88,7 @@ Write(EventText & msg)
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
                  << "  text: \"" << msg.event_text << "\""
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -100,7 +100,7 @@ Write(ContextDefinition & msg)
   (*m_outStream) << "Context definition: "
                  << "  name: " << msg.context_name
                  << "  id: " << msg.context_id
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -111,7 +111,7 @@ Write(ContextPush & msg)
 {
    (*m_outStream) << "Context push: "
                  << "  id: " << msg.context_id
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }
@@ -122,7 +122,7 @@ Write(ContextPop & msg)
 {
    (*m_outStream) << "Context pop: "
                  << "  id: " << msg.context_id
-                 << vcl_endl;
+                 << std::endl;
 
   return (0);
 }

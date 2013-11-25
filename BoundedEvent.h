@@ -22,8 +22,8 @@ class BoundedEvent
   : public Internal::Event
 {
 public:
-  BoundedEvent(vcl_string name,
-        vcl_string group = vcl_string(),
+  BoundedEvent(std::string name,
+        std::string group = std::string(),
         int color = -1);
 
   virtual ~BoundedEvent();

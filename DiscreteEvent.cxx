@@ -30,7 +30,7 @@ namespace RightTrack {
  * predefined color names or just encode them as a literal.
  */
 DiscreteEvent::
-DiscreteEvent(vcl_string name, vcl_string group, int color)
+DiscreteEvent(std::string name, std::string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);

@@ -21,7 +21,7 @@ class EventContext
   : public Internal::RightTrackItem
 {
 public:
-  EventContext(vcl_string name);
+  EventContext(std::string name);
   virtual ~EventContext();
 
   void Push();
