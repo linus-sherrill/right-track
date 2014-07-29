@@ -22,8 +22,9 @@ class TextEvent
 {
 public:
   TextEvent(std::string name,
-                std::string group = std::string(),
-                int color = -1);
+            std::string group = std::string(),
+            int color = -1);
+
   virtual ~TextEvent();
 
   virtual void Start(::RightTrack::EventData_t val = 0);

@@ -11,9 +11,9 @@
 #include <DiscreteEvent.h>
 #include <EventRecords.h>
 
-#include <vcl_map.h>
-#include <vcl_list.h>
-#include <vcl_vector.h>
+#include <map>
+#include <list>
+#include <vector>
 
 #include <wx/pen.h>
 #include <wx/brush.h>
@@ -41,14 +41,14 @@ class Model
 public:
   // -- TYPES --
   // Event data types
-  typedef vcl_map < ItemId_t, EventDef::handle_t > event_map_t;
+  typedef std::map < ItemId_t, EventDef::handle_t > event_map_t;
   typedef event_map_t::iterator event_iterator_t;
   typedef event_map_t::const_iterator const_event_iterator_t;
 
   // Context data types
-  typedef vcl_map < ItemId_t, ContextDef > context_map_t;
+  typedef std::map < ItemId_t, ContextDef > context_map_t;
   typedef context_map_t::iterator context_iterator_t;
-  typedef vcl_vector < ContextHistoryElement > context_history_t;
+  typedef std::vector < ContextHistoryElement > context_history_t;
   typedef context_history_t::iterator pp_iterator_t;
 
   enum { // bit mask
@@ -107,14 +107,14 @@ public:
     bool display_enable;
   };
 
-  vcl_vector < ItemId_t > m_drawOrder;
+  std::vector < ItemId_t > m_drawOrder;
   event_map_t m_eventMap; // list of events
 
   EventDef::handle_t GetEventHistory( ItemId_t ev) { return m_eventMap[ev]; }
 
   // Context data areas
   context_map_t m_contextMap;
-  vcl_vector < ContextHistoryElement > m_contextHistory;
+  std::vector < ContextHistoryElement > m_contextHistory;
 
   // cursor time bounds
   void SetCursorTimes (double t1, double t2);

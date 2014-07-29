@@ -13,7 +13,7 @@
 #include <EventRecords.h>
 
 #include <wx/wx.h>
-#include <vcl_vector.h>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 
@@ -63,9 +63,9 @@ class BaseOccurrence
 {
 public:
   typedef boost::shared_ptr < BaseOccurrence > handle_t;
-  typedef vcl_vector < handle_t >::iterator iterator_t;
-  typedef vcl_vector < handle_t >::const_iterator const_iterator_t;
-  typedef vcl_vector < handle_t >::reference occurrence_ref_t;
+  typedef std::vector < handle_t >::iterator iterator_t;
+  typedef std::vector < handle_t >::const_iterator const_iterator_t;
+  typedef std::vector < handle_t >::reference occurrence_ref_t;
 
   wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
@@ -146,9 +146,9 @@ class EventDef
 {
 public:
   typedef boost::shared_ptr < EventDef > handle_t;
-  typedef vcl_vector < BaseOccurrence::handle_t >::iterator iterator_t;
-  typedef vcl_vector < BaseOccurrence::handle_t >::const_iterator const_iterator_t;
-  typedef vcl_vector < BaseOccurrence::handle_t >::reference occurrence_ref_t;
+  typedef std::vector < BaseOccurrence::handle_t >::iterator iterator_t;
+  typedef std::vector < BaseOccurrence::handle_t >::const_iterator const_iterator_t;
+  typedef std::vector < BaseOccurrence::handle_t >::reference occurrence_ref_t;
 
   EventDef();
   virtual ~EventDef();
@@ -184,7 +184,7 @@ public:
   wxString m_groupName;
 
   // vector of occurrences
-  vcl_vector < BaseOccurrence::handle_t > m_list;
+  std::vector < BaseOccurrence::handle_t > m_list;
 
 protected:
   wxString m_userComment;

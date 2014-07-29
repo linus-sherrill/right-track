@@ -13,7 +13,7 @@ set(right_track_VERSION_MINOR 4)
 set(right_track_VERSION_PATCH 0)
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
-find_package ( Boost REQUIRED )
+find_package ( Boost REQUIRED COMPONENTS thread system )
 if(Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
 endif()
@@ -21,7 +21,6 @@ endif()
 find_package( VXL REQUIRED )
 include(${VXL_CMAKE_DIR}/UseVXL.cmake)
 
-include_directories( ${VXL_VCL_INCLUDE_DIR} )
 include_directories( ${VXL_CORE_INCLUDE_DIR} )
 
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
@@ -57,19 +56,20 @@ SET_TARGET_PROPERTIES( right_track PROPERTIES
 )
 
 target_link_libraries ( right_track
-                      vcl vpl vul vsl )
+                        vpl vul vsl
+                       )
 
 #
 # Build test program
 #
 add_executable (test_right_track test_right_track.cxx)
 target_link_libraries (test_right_track
-                      right_track vcl vpl vul vsl)
+                      right_track vpl vul vsl)
 
 
 add_executable (right_track_dump right_track_dump.cxx)
 target_link_libraries (right_track_dump
-                      right_track vcl vpl vul vsl)
+                      right_track vpl vul vsl)
 
 #
 # install commands
@@ -90,3 +90,5 @@ INSTALL ( TARGETS right_track_dump right_track
 INSTALL ( FILES ${install_includes}
         DESTINATION include/right_track
 )
+
+include(CPack)

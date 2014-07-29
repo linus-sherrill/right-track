@@ -88,7 +88,7 @@ protected:
 
 
 private:
-  vcl_vector< ItemId_t >::iterator m_currentIndex;
+  std::vector< ItemId_t >::iterator m_currentIndex;
   Model * m_model;
 };
 
