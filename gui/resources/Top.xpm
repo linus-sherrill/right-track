@@ -1,5 +1,5 @@
 /* XPM */
-static char * Top_xpm[] = {
+static char const* Top_xpm[] = {
 "16 16 129 2",
 "  	c #FFFFFF",
 ". 	c #2FA6EA",

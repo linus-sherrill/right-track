@@ -1,5 +1,5 @@
 /* XPM */
-static char * Expand_xpm[] = {
+static char const* Expand_xpm[] = {
 "16 16 175 2",
 "  	c #6AC7F0",
 ". 	c #8AD4F4",

@@ -1,5 +1,5 @@
 /* XPM */
-static char * right_arrow_xpm[] = {
+static char const* right_arrow_xpm[] = {
 "16 16 59 1",
 " 	c #FFFFFF",
 ".	c #C9E2F0",
