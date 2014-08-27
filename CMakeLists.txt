@@ -55,21 +55,23 @@ SET_TARGET_PROPERTIES( right_track PROPERTIES
   VERSION ${right_track_VERSION} SOVERSION ${right_track_VERSION}
 )
 
-target_link_libraries ( right_track
-                        vpl vul vsl
-                       )
+target_link_libraries( right_track
+                       ${Boost_LIBRARIES}
+                        vpl vul vsl )
 
 #
 # Build test program
 #
 add_executable (test_right_track test_right_track.cxx)
 target_link_libraries (test_right_track
+                       ${Boost_LIBRARIES}
                       right_track vpl vul vsl)
 
 
 add_executable (right_track_dump right_track_dump.cxx)
 target_link_libraries (right_track_dump
-                      right_track vpl vul vsl)
+                       ${Boost_LIBRARIES}
+                       right_track vpl vul vsl)
 
 #
 # install commands

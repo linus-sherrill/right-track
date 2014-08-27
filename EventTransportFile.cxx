@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010,2014 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -12,11 +12,251 @@
 #include <RightTrackDefs.h>
 
 #include <string>
-#include <vsl/vsl_binary_io.h>
 
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
+
+
+namespace {
+
+
+//experimental
+
+// ================================================================
+class SerializeEventDefinition
+{
+public:
+  SerializeEventDefinition( RightTrack::Internal::EventDefinition& msg )
+    : m_msg( msg )
+  { }
+
+
+  template < class Archive >
+  void save( Archive& ar, const unsigned int version )
+  {
+    ar & static_cast< int >(RightTrack::Internal::PAYLOAD_EVENT_DEFINITION);
+    ar &  msg.event_id;
+    ar & msg.event_time.secs;
+    ar & msg.event_time.usecs;
+    ar & (int) msg.event_type;
+    ar & msg.event_name;
+    ar & msg.event_group;
+    ar & msg.event_color;
+  }
+
+
+  template < class Archive >
+  void load( Archive& ar,  const unsigned int version )
+  {
+    ar & msg.event_id;
+    ar & msg.event_time.secs;
+    ar & msg.event_time.usecs;
+
+    int tmp; // need to coerce ENUM
+    ar & tmp;
+    msg.event_type = static_cast< RightTrack::Internal::Event::EventType_t >(tmp);
+
+    ar & msg.event_name;
+    ar & msg.event_group;
+    ar & msg.event_color;
+  }
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+private:
+  RightTrack::Internal::EventDefinition& m_msg;
+};
+BOOST_CLASS_VERSION(SerializeEventDefinition, 1)
+
+// ETC
+
+int EventTransportFile::
+Write(EventDefinition & msg)
+{
+  SerializeEventDefinition ser( msg );
+  serialize( *m_outArchive, ser, m_version );
+  return (0);
+}
+
+
+    case PAYLOAD_EVENT_DEFINITION:
+    {
+      EventDefinition msg;
+      SerializeEventDefinition ser( msg );
+      serialize( ia, ser, m_version );
+      status = reader.NewEvent(msg);
+    }
+    break;
+
+
+// ================================================================
+
+// replace templated class with boost::archive::text_oarchive
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::EventDefinition& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_EVENT_DEFINITION);
+  ar &  msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & (int) msg.event_type;
+  ar & msg.event_name;
+  ar & msg.event_group;
+  ar & msg.event_color;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::EventStart& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_EVENT_START);
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_data;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::EventEnd& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_EVENT_END);
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_data;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::EventText& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_EVENT_TEXT);
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_text;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::ContextDefinition& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_CONTEXT_DEFINITION);
+  ar & msg.context_name;
+  ar & msg.context_id;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::ContextPush& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_CONTEXT_PUSH);
+  ar & msg.context_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+}
+
+
+template < class Archive >
+void save( Archive& ar, RightTrack::Internal::ContextPop& msg, const unsigned int version )
+{
+  ar & static_cast< int >(RightTrack::Internal::PAYLOAD_CONTEXT_POP);
+  ar & msg.context_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+}
+
+
+// ================================================================
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::EventDefinition& msg, const unsigned int version )
+{
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+
+  int tmp; // need to coerce ENUM
+  ar & tmp;
+  msg.event_type = static_cast< RightTrack::Internal::Event::EventType_t >(tmp);
+
+  ar & msg.event_name;
+  ar & msg.event_group;
+  ar & msg.event_color;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::EventStart& msg, const unsigned int version )
+{
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_data;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::EventEnd& msg, const unsigned int version )
+{
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_data;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::EventText& msg, const unsigned int version )
+{
+  ar & msg.event_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+  ar & msg.event_pid;
+  ar & msg.event_text;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::ContextDefinition& msg, const unsigned int version )
+{
+  ar & msg.context_name;
+  ar & msg.context_id;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::ContextPush& msg, const unsigned int version )
+{
+  ar & msg.context_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+}
+
+
+template < class Archive >
+void load( Archive& ar, RightTrack::Internal::ContextPop& msg, const unsigned int version )
+{
+  ar & msg.context_id;
+  ar & msg.event_time.secs;
+  ar & msg.event_time.usecs;
+}
+
+
+} // end private namespace
+
+
+using namespace boost::serialization;
 
 namespace RightTrack {
 namespace Internal {
+
 
 // ----------------------------------------------------------------
 /** Constructor
@@ -26,7 +266,8 @@ namespace Internal {
 EventTransportFile::
 EventTransportFile()
   : m_outStream(0),
-    m_bstream(0)
+    m_outArchive(0),
+    m_version(1)
 {
 
 }
@@ -40,7 +281,7 @@ EventTransportFile::
     m_outStream->close();
   }
 
-  delete m_bstream;
+  delete m_outArchive;
   delete m_outStream;
 }
 
@@ -48,16 +289,7 @@ EventTransportFile::
 int EventTransportFile::
 Write(EventDefinition & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_DEFINITION );
-  vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-  vsl_b_write( *m_bstream, (int) msg.event_type );
-  vsl_b_write( *m_bstream, msg.event_name );
-  vsl_b_write( *m_bstream, msg.event_group );
-  vsl_b_write( *m_bstream, msg.event_color );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -65,14 +297,7 @@ Write(EventDefinition & msg)
 int EventTransportFile::
 Write(EventStart & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_START );
-  vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-  vsl_b_write( *m_bstream, msg.event_pid );
-  vsl_b_write( *m_bstream, msg.event_data );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -80,14 +305,7 @@ Write(EventStart & msg)
 int EventTransportFile::
 Write(EventEnd & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_END );
-  vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-  vsl_b_write( *m_bstream, msg.event_pid );
-  vsl_b_write( *m_bstream, msg.event_data );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -95,14 +313,7 @@ Write(EventEnd & msg)
 int EventTransportFile::
 Write(EventText & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_EVENT_TEXT );
-  vsl_b_write( *m_bstream, msg.event_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-  vsl_b_write( *m_bstream, msg.event_pid );
-  vsl_b_write( *m_bstream, msg.event_text );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -110,11 +321,7 @@ Write(EventText & msg)
 int EventTransportFile::
 Write(ContextDefinition & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_CONTEXT_DEFINITION );
-  vsl_b_write( *m_bstream, msg.context_name );
-  vsl_b_write( *m_bstream, msg.context_id );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -122,12 +329,7 @@ Write(ContextDefinition & msg)
 int EventTransportFile::
 Write(ContextPush & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_CONTEXT_PUSH );
-  vsl_b_write( *m_bstream, msg.context_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -135,12 +337,7 @@ Write(ContextPush & msg)
 int EventTransportFile::
 Write(ContextPop & msg)
 {
-  m_bstream->clear_serialisation_records();
-  vsl_b_write( *m_bstream, (int) PAYLOAD_CONTEXT_POP );
-  vsl_b_write( *m_bstream, msg.context_id );
-  vsl_b_write( *m_bstream, msg.event_time.secs );
-  vsl_b_write( *m_bstream, msg.event_time.usecs );
-
+  save( *m_outArchive, msg );
   return (0);
 }
 
@@ -154,9 +351,9 @@ bool EventTransportFile::
 OpenFile (std::string name)
 {
   m_outStream = new std::ofstream;
-  m_outStream->open(name.c_str());
+  m_outStream->open( name.c_str() );
 
-  m_bstream = new vsl_b_ostream(m_outStream);
+  m_outArchive = new boost::archive::text_oarchive( *m_outStream );
 
   return (true);
 }
@@ -171,12 +368,14 @@ int EventTransportFile::
 ReadEvents(std::string const& resource,
            EventTransportReader & reader)
 {
-  vsl_b_ifstream bstream( resource.c_str() );
-  if (! bstream)
+  std::ifstream ifs( resource.c_str() );
+  if (! ifs)
   {
     // log error
     return (1);
   }
+
+  boost::archive::text_iarchive ia( ifs );
 
   int status(0);
 
@@ -186,10 +385,9 @@ ReadEvents(std::string const& resource,
     int payload;
 
     // start reading event struct
-    bstream.clear_serialisation_records();
-    vsl_b_read (bstream, payload);
+    ia & payload;
 
-    if (bstream.is().eof())
+    if (ifs.eof())
     {
       break;
     }
@@ -199,18 +397,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_EVENT_DEFINITION:
     {
       EventDefinition msg;
-      vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-
-      int ev_type; // need to coerce enum
-      vsl_b_read (bstream, ev_type);
-      msg.event_type = static_cast< RightTrack::Internal::Event::EventType_t >(ev_type);
-
-      vsl_b_read (bstream, msg.event_name);
-      vsl_b_read (bstream, msg.event_group);
-      vsl_b_read (bstream, msg.event_color);
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -218,13 +405,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_EVENT_START:
     {
       EventStart msg;
-
-      vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-      vsl_b_read (bstream, msg.event_pid);
-      vsl_b_read (bstream, msg.event_data);
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -232,13 +413,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_EVENT_END:
     {
       EventEnd msg;
-
-      vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-      vsl_b_read (bstream, msg.event_pid);
-      vsl_b_read (bstream, msg.event_data);
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -246,13 +421,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_EVENT_TEXT:
     {
       EventText msg;
-
-      vsl_b_read (bstream, msg.event_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-      vsl_b_read (bstream, msg.event_pid);
-      vsl_b_read (bstream, msg.event_text);
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -260,10 +429,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_CONTEXT_DEFINITION:
     {
       ContextDefinition msg;
-
-      vsl_b_read (bstream, msg.context_name);
-      vsl_b_read (bstream, msg.context_id);
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -271,11 +437,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_CONTEXT_PUSH:
     {
       ContextPush msg;
-
-      vsl_b_read (bstream, msg.context_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -283,11 +445,7 @@ ReadEvents(std::string const& resource,
     case PAYLOAD_CONTEXT_POP:
     {
       ContextPop msg;
-
-      vsl_b_read (bstream, msg.context_id);
-      vsl_b_read (bstream, msg.event_time.secs );
-      vsl_b_read (bstream, msg.event_time.usecs );
-
+      load( ia, msg, m_version );
       status = reader.NewEvent(msg);
     }
     break;
@@ -304,7 +462,7 @@ ReadEvents(std::string const& resource,
       break;
     }
 
-    if (! bstream)
+    if ( ! ifs )
     {
       // error
       std::cerr << "Error reading input\n";

@@ -12,7 +12,10 @@
 
 #include <ostream>
 #include <fstream>
-#include <vsl/vsl_binary_io.h>
+
+// include headers that implement a archive in simple text format
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 
 namespace RightTrack {
@@ -47,7 +50,9 @@ public:
 private:
   // support for writing
   std::ofstream * m_outStream;
-  vsl_b_ostream * m_bstream;
+  boost::archive::text_oarchive * m_outArchive;
+
+  unsigned int m_version;
 
 }; // end class EventTransportFile
 
