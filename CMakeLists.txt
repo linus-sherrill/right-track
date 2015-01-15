@@ -16,6 +16,7 @@ set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINO
 find_package ( Boost REQUIRED )
 if(Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
+   link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
 find_package( VXL REQUIRED )
@@ -57,7 +58,7 @@ SET_TARGET_PROPERTIES( right_track PROPERTIES
 )
 
 target_link_libraries ( right_track
-                      vcl vpl vul vsl )
+                      vcl vpl vul vsl boost_system )
 
 #
 # Build test program
