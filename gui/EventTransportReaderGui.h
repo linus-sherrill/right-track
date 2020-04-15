@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010-2011 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010-2011, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -29,15 +29,15 @@ class EventTransportReaderGui
 {
 public:
   EventTransportReaderGui(Model * m);
-  virtual ~EventTransportReaderGui();
+  virtual ~EventTransportReaderGui() = default;
 
-  virtual int NewEvent(EventDefinition const& msg);
-  virtual int NewEvent(EventStart const& msg);
-  virtual int NewEvent(EventEnd const& msg);
-  virtual int NewEvent(EventText const& msg);
-  virtual int NewEvent(ContextDefinition const& msg);
-  virtual int NewEvent(ContextPush const& msg);
-  virtual int NewEvent(ContextPop const& msg);
+  int NewEvent(EventDefinition const& msg) override;
+  int NewEvent(EventStart const& msg) override;
+  int NewEvent(EventEnd const& msg) override;
+  int NewEvent(EventText const& msg) override;
+  int NewEvent(ContextDefinition const& msg) override;
+  int NewEvent(ContextPush const& msg) override;
+  int NewEvent(ContextPop const& msg) override;
 
 
 private:
@@ -50,12 +50,3 @@ private:
 } // end namespace
 
 #endif /* _RIGHT_TRACK_EVENT_TRANSPORT_READER_GUI_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

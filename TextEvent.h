@@ -27,27 +27,18 @@ public:
 
   virtual ~TextEvent();
 
-  virtual void Start(::RightTrack::EventData_t val = 0);
   virtual void Start(std::string const& val);
   virtual void Start(char const* val);
 
-  virtual EventType_t EventType() const;
+  EventType_t EventType() const override;
 
 
 private:
-  virtual void End(::RightTrack::EventData_t val = 0);
+  void Start(::RightTrack::EventData_t const& val) override;
+  void End(::RightTrack::EventData_t const& val) override;
 
 }; // end class TextEvent
 
 } // end namespace
 
 #endif /* _RIGHT_TRACK_TEXT_EVENT_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

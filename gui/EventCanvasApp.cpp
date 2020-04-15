@@ -13,7 +13,6 @@
 #include "DisplayableIterator.h"
 #include "TextEditDialogApp.h"
 
-#include <boost/foreach.hpp>
 
 
 
@@ -240,7 +239,7 @@ DrawEvents(wxDC& dc)
     y_coord += m_yIncrement;
     row_count--;
     event_it.Next();
-  } // end foreach
+  } // end
 
 }
 

@@ -33,7 +33,6 @@ BoundedEvent(std::string name, std::string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);
-
 }
 
 
@@ -43,7 +42,7 @@ BoundedEvent::
   // Terminate event if still running
   if (m_started)
   {
-    End();
+    Event::End();
     m_started = false;
   }
 }
@@ -55,7 +54,7 @@ BoundedEvent::
  *
  */
 void BoundedEvent::
-Start( ::RightTrack::EventData_t val )
+Start( ::RightTrack::EventData_t const& val )
 {
   // See if the event is still running
   if (m_started)
@@ -74,7 +73,7 @@ Start( ::RightTrack::EventData_t val )
  *
  */
 void BoundedEvent::
-End( ::RightTrack::EventData_t val )
+End( ::RightTrack::EventData_t const& val )
 {
   // Test for eventrunning
   if (m_started)
@@ -96,14 +95,4 @@ EventType() const
   return ::RightTrack::Internal::Event::ET_BOUNDED_EVENT;
 }
 
-
 } // end namespace
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

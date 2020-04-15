@@ -10,13 +10,13 @@
 #include <BoundedEvent.h>
 #include <DiscreteEvent.h>
 #include <EventContext.h>
-#include <EventTransportFile.h>
+#include <EventTransportProtoFile.h>
 #include <EventTransportDebug.h>
 
-#include <vul/vul_get_timestamp.h>
 #include <sstream>
-#include <vpl/vpl.h>
-
+#include <chrono>
+#include <sys/time.h>
+#include <unistd.h>
 
 namespace RightTrack {
 namespace Internal {
@@ -40,18 +40,20 @@ void EventManagerAtExitHandler()
  *
  *
  */
-EventManager::
-EventManager()
+EventManager
+::EventManager()
   : m_nextId(1),  // initial item number
     m_transport(0)
 {
 
   // Internal::EventTransportDebug * trans = new Internal::EventTransportDebug();
-  Internal::EventTransportFile * trans = new Internal::EventTransportFile();
+  Internal::EventTransportProtoFile * trans = new Internal::EventTransportProtoFile();
 
   // Create file name
   std::stringstream filename;
-  filename << "RightTrack_" << vpl_getpid() << ".rtrk";
+  filename << "RightTrack_"
+           << getpid()
+           << ".rtrk";
   m_filename = filename.str();
   trans->OpenFile(m_filename.c_str());
 
@@ -62,8 +64,8 @@ EventManager()
 }
 
 
-EventManager::
-~EventManager()
+EventManager
+::~EventManager()
 {
   delete m_transport;
   s_instance = 0;
@@ -75,14 +77,14 @@ EventManager::
  *
  *
  */
-EventManager * EventManager::
-Instance()
+EventManager * EventManager
+::Instance()
 {
-  static boost::mutex local_lock;
+  static std::mutex local_lock;
 
   if (0 == s_instance)
   {
-    boost::mutex::scoped_lock lock(local_lock);
+    std::lock_guard<std::mutex> lock(local_lock);
     if (0 == s_instance)
     {
       s_instance = new EventManager();
@@ -101,8 +103,8 @@ Instance()
  * output file name.  This may be better handled by a delegate object
  * that is created by the application (or use the default)
  */
-void EventManager::
-Configure(int argc, char * argv[])
+void EventManager
+::Configure(int argc, char * argv[])
 {
 
 /* Design discussion:
@@ -128,10 +130,10 @@ Things we have to configure:
  *
  *
  */
-ItemId_t EventManager::
-GetNextId()
+ItemId_t EventManager
+::GetNextId()
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   ItemId_t id = m_nextId++;
 
@@ -148,14 +150,15 @@ GetNextId()
  * processes use the same origin. This easier to deal with on a single
  * system, but this \e must work in a distributed environment.
  */
-EventTimestamp_t EventManager::
-CurrentTimestamp()
+EventTimestamp_t EventManager
+::CurrentTimestamp()
 {
-  int secs, msecs;
+  int secs, usecs;
 
-  vul_get_timestamp( secs, msecs);
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
 
-  EventTimestamp_t retval(secs, msecs * 1000);
+  EventTimestamp_t retval( tp.tv_sec, tp.tv_usec );
   return retval;
 }
 
@@ -165,8 +168,8 @@ CurrentTimestamp()
  *
  *
  */
-EventPid_t EventManager::
-GetPid()
+EventPid_t EventManager
+::GetPid()
 {
   return pthread_self();
   // return vpl_getpid();
@@ -178,8 +181,8 @@ GetPid()
  *
  *
  */
-std::string const & EventManager::
-GetFilename() const
+std::string const & EventManager
+::GetFilename() const
 {
   return m_filename;
 }
@@ -190,10 +193,10 @@ GetFilename() const
  *
  *
  */
-void EventManager::
-RegisterEvent(Event * ev)
+void EventManager
+::RegisterEvent(Event * ev)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   // create event definition
   EventDefinition msg;
@@ -215,10 +218,10 @@ RegisterEvent(Event * ev)
  *
  *
  */
-void EventManager::
-StartEvent (Event * ev, ::RightTrack::EventData_t val)
+void EventManager
+::StartEvent (Event* ev, EventData_t const& val)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   // create a start event message
   EventStart msg;
@@ -236,10 +239,10 @@ StartEvent (Event * ev, ::RightTrack::EventData_t val)
  *
  *
  */
-void EventManager::
-StartEvent (Event * ev, std::string const& val)
+void EventManager
+::StartEvent (Event * ev, std::string const& val)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   // create a start event message
   EventText msg;
@@ -257,10 +260,10 @@ StartEvent (Event * ev, std::string const& val)
  *
  *
  */
-void EventManager::
-EndEvent (Event * ev, ::RightTrack::EventData_t val)
+void EventManager
+::EndEvent (Event * ev, ::RightTrack::EventData_t const& val)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   // create  event message
   EventEnd msg;
@@ -273,10 +276,10 @@ EndEvent (Event * ev, ::RightTrack::EventData_t val)
 }
 
 
-void EventManager::
-RegisterContext (EventContext * ec)
+void EventManager
+::RegisterContext (EventContext * ec)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
 
   // create event definition
  ContextDefinition msg;
@@ -287,10 +290,10 @@ RegisterContext (EventContext * ec)
 }
 
 
-void EventManager::
-PushContext (EventContext * ec)
+void EventManager
+::PushContext (EventContext * ec)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
   ContextPush msg;
 
   msg.context_id = ec->ItemId();
@@ -300,10 +303,10 @@ PushContext (EventContext * ec)
 }
 
 
-void EventManager::
-PopContext (EventContext * ec)
+void EventManager
+::PopContext (EventContext * ec)
 {
-  boost::mutex::scoped_lock lock(m_lock);
+  std::lock_guard<std::mutex> lock(m_lock);
   ContextPop msg;
 
   msg.context_id = ec->ItemId();
@@ -315,12 +318,3 @@ PopContext (EventContext * ec)
 
 } // end namespace
 } // end namespace
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

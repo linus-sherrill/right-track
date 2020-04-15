@@ -7,7 +7,7 @@
 #ifndef _MAIN_FRAME_APP_H_
 #define _MAIN_FRAME_APP_H_
 
-#include <MainFrame.h>
+#include <RT_MainFrame.h>
 
 #include <Model.h>
 
@@ -24,7 +24,7 @@ class wxDC;
  *
  */
 class MainFrameApp
-  : public MainFrame
+  : public RT_MainFrame
 {
 public:
   MainFrameApp(wxWindow* parent,

@@ -1,8 +1,8 @@
 ---- To Do ----
 
 (1) Writing out the internal program state to be later read in and
-modified.  Need to maintain a 'data-set' name. when data is loaded,
-name is undefined.  We get name fro reloading a data-set. Maybe we
+modified.  Need to maintain a 'data-set' name. When data is loaded,
+name is undefined.  We get name from reloading a data-set. Maybe we
 need a different menu or we can tell from the file type loaded.
 
 Header
@@ -11,8 +11,10 @@ Header
         - date
 
 Model state.
-      - the model needs to be able to be written to a file and read back.
 
+      - the model needs to be able to be written to a file and read
+        back. Currently the model state is created from a protobuf
+        file. The model state should not use a protobuf format.
 
 Draw names in left side panel. Panel contents must match larger drawing pane.
 Use tree view to control hierarchy
@@ -27,6 +29,11 @@ Maybe allow sorting by event name.
 Allow loading multiple data sets into one viewer. Add menu item to
 clear all events. Add menu item to *merge events* into current set.
 This means that events can be merged into a restored data-set.
+
+Merged data sets should maintain a unique dataset-id so the times of
+the events can be shifted to account for differences in the original
+clock. This is important when aggregating files from a distributed
+system.
 
 Add an overview window/thumbnail that shows the whole event space with
 a gray outline of what is being viewed. For bonus points, allow view

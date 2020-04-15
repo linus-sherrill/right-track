@@ -1,9 +1,32 @@
-/*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
- * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
- * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+/*ckwg +29
+ * Copyright 2010, 2020 by Kitware, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 
 #include <Model.h>
 
@@ -12,10 +35,11 @@
 #include <wx/wx.h>
 #include <wx/app.h>
 
-#include <EventTransportFile.h>
+#include <EventTransportProtoFile.h>
 #include <EventTransportReaderGui.h>
 #include <EventTransportReaderDebug.h>
 
+// Support for singleton
 Model * Model::s_instance(0);
 
 
@@ -24,8 +48,8 @@ Model * Model::s_instance(0);
  *
  *
  */
-Model::
-Model(MainFrameApp * frame)
+Model
+::Model(MainFrameApp * frame)
   : m_parentFrame(frame)
 {
   s_instance = this;
@@ -33,8 +57,8 @@ Model(MainFrameApp * frame)
 }
 
 
-Model * Model::
-Instance()
+Model * Model
+::Instance()
 {
   return (s_instance);
 }
@@ -45,8 +69,8 @@ Instance()
  *
  *
  */
-void Model::
-Reset()
+void Model
+::Reset()
 {
   m_timingOffset = 1e300;
 
@@ -83,13 +107,13 @@ Reset()
  *
  *
  */
-int Model::
-ReadFromFile( const char * file )
+int Model
+::ReadFromFile( const char * file )
 {
   // instantiate our reader
   // EventTransportReaderDebug reader;
   EventTransportReaderGui reader (this);
-  EventTransportFile file_io;
+  EventTransportProtoFile file_io;
   int status(0);
 
   status = file_io.ReadEvents (file, reader);
@@ -100,7 +124,7 @@ ReadFromFile( const char * file )
 
   ScanEvents();
 
-  return (status);
+  return status;
 }
 
 
@@ -110,8 +134,8 @@ ReadFromFile( const char * file )
  * This method returns the length of time covered from the first event
  * to the last event.
  */
-double Model::
-EventTimeRange() const
+double Model
+::EventTimeRange() const
 {
   return  (m_maxTime - m_timingOffset);
 }
@@ -124,8 +148,8 @@ EventTimeRange() const
  *
  * This is the place to mess with the colouring of the event displays.
  */
-void Model::
-ScanEvents()
+void Model
+::ScanEvents()
 {
   wxPen start_marker_pen = wxPen ( m_startEventColor, 1, wxSOLID );
   wxBrush start_marker_brush = wxBrush ( m_startEventColor, wxSOLID );
@@ -276,8 +300,8 @@ ScanEvents()
  *
  *
  */
-void Model::
-SetCursorTimes (double t1, double t2)
+void Model
+::SetCursorTimes (double t1, double t2)
 {
   m_cursor_1_time = t1;
   m_cursor_2_time = t2;
@@ -287,8 +311,8 @@ SetCursorTimes (double t1, double t2)
 }
 
 
-void Model::
-GetCursorTimes (double& t1, double& t2)
+void Model
+::GetCursorTimes (double& t1, double& t2)
 {
   t1 = m_cursor_1_time;
   t2 = m_cursor_2_time;
@@ -296,8 +320,8 @@ GetCursorTimes (double& t1, double& t2)
 
 
 // ================================================================
-void Model::
-SetTimeBounds (double start, double end)
+void Model
+::SetTimeBounds (double start, double end)
 {
   m_viewTimeStart = start;
   m_viewTimeEnd = end;
@@ -305,16 +329,16 @@ SetTimeBounds (double start, double end)
   ModelUpdate(UPDATE_time_line | UPDATE_event_frame);
 }
 
-void Model::
-GetTimeBounds (double& start, double& end)
+void Model
+::GetTimeBounds (double& start, double& end)
 {
   start = m_viewTimeStart;
   end = m_viewTimeEnd;
 }
 
 // ================================================================
-void Model::
-SelectEvent (ItemId_t event)
+void Model
+::SelectEvent (ItemId_t event)
 {
   m_selectedEvent = event;
 
@@ -323,37 +347,37 @@ SelectEvent (ItemId_t event)
 }
 
 
-bool Model::
-IsEventSelected (ItemId_t event) const
+bool Model
+::IsEventSelected (ItemId_t event) const
 {
   return (m_selectedEvent == event);
 }
 
 
-ItemId_t Model::
-GetSelectedEvent() const
+ItemId_t Model
+::GetSelectedEvent() const
 {
   return m_selectedEvent;
 }
 
 
 // ================================================================
-void Model::
-SelectOccurrence (BaseOccurrence * oc)
+void Model
+::SelectOccurrence (BaseOccurrence * oc)
 {
   m_selectedOccurrence = oc;
 }
 
 
-bool Model::
-IsOccurrenceSelected(BaseOccurrence * oc) const
+bool Model
+::IsOccurrenceSelected(BaseOccurrence * oc) const
 {
   return (m_selectedOccurrence == oc);
 }
 
 
-BaseOccurrence * Model::
-GetSelectedOccurrence() const
+BaseOccurrence * Model
+::GetSelectedOccurrence() const
 {
   return m_selectedOccurrence;
 }
@@ -361,8 +385,8 @@ GetSelectedOccurrence() const
 
 
 // ================================================================
-int Model::
-EventCount() const
+int Model
+::EventCount() const
 {
   return this->m_eventMap.size();
 }
@@ -374,8 +398,8 @@ EventCount() const
  * Calculate the number of displayable events. Good for determining
  * number of displayable lines.
  */
-int Model::
-DisplayableEventCount() const
+int Model
+::DisplayableEventCount() const
 {
   int count(0);
   const size_t limit ( m_drawOrder.size() );
@@ -397,8 +421,8 @@ DisplayableEventCount() const
  *
  *
  */
-void Model::
-ModelUpdate(unsigned code)
+void Model
+::ModelUpdate(unsigned code)
 {
   ///@todo This needs to be done better. There are multiple clients
   // for the update notification. Create a subject/observer pattern?
@@ -411,8 +435,8 @@ ModelUpdate(unsigned code)
  *
  *
  */
-void Model::
-MoveSelectedEventTop()
+void Model
+::MoveSelectedEventTop()
 {
   ItemId_t item = GetSelectedEvent();
   if (item < 0)
@@ -462,8 +486,8 @@ MoveSelectedEventTop()
  *
  *
  */
-void Model::
-MoveSelectedEventUp()
+void Model
+::MoveSelectedEventUp()
 {
   ItemId_t item = GetSelectedEvent();
   if (item < 0)
@@ -499,8 +523,8 @@ MoveSelectedEventUp()
  *
  *
  */
-void Model::
-MoveSelectedEventDown()
+void Model
+::MoveSelectedEventDown()
 {
   ItemId_t item = GetSelectedEvent();
   if (item < 0)
@@ -536,8 +560,8 @@ MoveSelectedEventDown()
  *
  *
  */
-void Model::
-MoveSelectedEventBottom()
+void Model
+::MoveSelectedEventBottom()
 {
   ItemId_t item = GetSelectedEvent();
   if (item < 0)
@@ -587,8 +611,8 @@ MoveSelectedEventBottom()
  *
  *
  */
-void Model::
-SetEventFilter( bool v )
+void Model
+::SetEventFilter( bool v )
 {
   m_eventFilter = v;
 
@@ -615,8 +639,8 @@ SetEventFilter( bool v )
  * @retval true - display event
  * @retval false - do not display event
  */
-bool Model::
-IsEventDisplayable(ItemId_t event) const
+bool Model
+::IsEventDisplayable(ItemId_t event) const
 {
   if (m_eventFilter) // is filter enabled
   {
@@ -628,4 +652,3 @@ IsEventDisplayable(ItemId_t event) const
   // display by default
   return true;
 }
-

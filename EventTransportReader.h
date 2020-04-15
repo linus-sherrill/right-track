@@ -4,15 +4,13 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 #ifndef _RIGHT_TRACK_EVENT_TRANSPORT_READER_H_
 #define _RIGHT_TRACK_EVENT_TRANSPORT_READER_H_
 
 #include "EventRecords.h"
 
-
 namespace RightTrack {
-  namespace Internal {
+namespace Internal {
 
 // ----------------------------------------------------------------
 /** Event receiver base class.
@@ -36,20 +34,9 @@ public:
   virtual int NewEvent(ContextPush const& msg) = 0;
   virtual int NewEvent(ContextPop const& msg) = 0;
 
-
 }; // end class EventTransportReader
-
 
 } // end namespace
 } // end namespace
 
 #endif /* _RIGHT_TRACK_EVENT_TRANSPORT_READER_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

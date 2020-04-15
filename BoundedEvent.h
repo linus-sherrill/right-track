@@ -23,16 +23,18 @@ class BoundedEvent
 {
 public:
   BoundedEvent(std::string name,
-        std::string group = std::string(),
-        int color = -1);
+               std::string group = std::string(),
+               int color = -1);
 
   virtual ~BoundedEvent();
 
-  virtual void Start(::RightTrack::EventData_t val = 0);
-  virtual void End(::RightTrack::EventData_t val = 0);
+  using Event::Start;
+  using Event::End;
 
-  virtual EventType_t EventType() const;
+  void Start( ::RightTrack::EventData_t const& val ) override;
+  void End( ::RightTrack::EventData_t const& val ) override;
 
+  EventType_t EventType() const override;
 
 private:
   bool m_started;
@@ -42,12 +44,3 @@ private:
 } // end namesapce
 
 #endif /* _RIGHT_TRACK_BOUNDEDEVENT_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

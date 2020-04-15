@@ -130,12 +130,3 @@ struct ContextPop
 } // end name space
 
 #endif /* RIGHT_TRACK_EVENT_RECORDS_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

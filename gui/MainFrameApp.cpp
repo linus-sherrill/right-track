@@ -24,7 +24,7 @@
 
 
 // Define our custom event table
-BEGIN_EVENT_TABLE (MainFrameApp, MainFrame)
+BEGIN_EVENT_TABLE (MainFrameApp, RT_MainFrame)
 //    EVT_PAINT(                   MainFrameApp::OnPaint)
     EVT_IDLE (   MainFrameApp::OnIdle)
 END_EVENT_TABLE()
@@ -37,7 +37,7 @@ MainFrameApp(wxWindow* parent,
              const wxPoint& pos,
              const wxSize& size,
              long style)
-  : MainFrame (parent, id, title, pos, size, style)
+  : RT_MainFrame (parent, id, title, pos, size, style)
 {
   m_pendingUpdate = 0;
 }
@@ -672,5 +672,3 @@ SortPctActHandler(wxCommandEvent &event)
 {
   GetModel()->SortEvents < SortByPercentage > ();
 }
-
-

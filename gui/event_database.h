@@ -14,8 +14,7 @@
 
 #include <wx/wx.h>
 #include <vector>
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 
 using namespace ::RightTrack;
 using namespace ::RightTrack::Internal;
@@ -62,10 +61,10 @@ class DiscreteOccurrence;
 class BaseOccurrence
 {
 public:
-  typedef boost::shared_ptr < BaseOccurrence > handle_t;
-  typedef std::vector < handle_t >::iterator iterator_t;
-  typedef std::vector < handle_t >::const_iterator const_iterator_t;
-  typedef std::vector < handle_t >::reference occurrence_ref_t;
+  using  handle_t = std::shared_ptr < BaseOccurrence >;
+  using iterator_t = std::vector < handle_t >::iterator;
+  using const_iterator_t =  std::vector < handle_t >::const_iterator;
+  using occurrence_ref_t = std::vector < handle_t >::reference;
 
   wxString const& GetUserComment() const { return (m_userComment); }
   void SetUserComment(wxString const& v) { m_userComment = v; }
@@ -124,8 +123,8 @@ class DiscreteOccurrence
   : public BaseOccurrence
 {
 public:
-  virtual bool ContainsTime (double time, double delta) const;
-  virtual wxString GetInfo();
+  bool ContainsTime (double time, double delta) const override;
+  wxString GetInfo() override;
   virtual DiscreteOccurrence *  GetDiscreteOccurrence() { return this; }
 
   double m_eventTime; // in seconds
@@ -136,7 +135,6 @@ public:
 };
 
 
-
 // ----------------------------------------------------------------
 /** Base class for event definitions.
  *
@@ -145,10 +143,10 @@ public:
 class EventDef
 {
 public:
-  typedef boost::shared_ptr < EventDef > handle_t;
-  typedef std::vector < BaseOccurrence::handle_t >::iterator iterator_t;
-  typedef std::vector < BaseOccurrence::handle_t >::const_iterator const_iterator_t;
-  typedef std::vector < BaseOccurrence::handle_t >::reference occurrence_ref_t;
+  using handle_t = std::shared_ptr < EventDef >;
+  using iterator_t = std::vector < BaseOccurrence::handle_t >::iterator;
+  using const_iterator_t = std::vector < BaseOccurrence::handle_t >::const_iterator;
+  using occurrence_ref_t = std::vector < BaseOccurrence::handle_t >::reference;
 
   EventDef();
   virtual ~EventDef();
@@ -200,13 +198,13 @@ class BoundedEventDef
   : public EventDef
 {
 public:
-  BoundedEventDef() { }
-  virtual ~BoundedEventDef() { }
+  BoundedEventDef() = default;
+  virtual ~BoundedEventDef() = default;
 
-  virtual Event::EventType_t EventType() const { return Event::ET_BOUNDED_EVENT; }
-  virtual BoundedEventDef * GetBoundedEvent () { return this; }
-  virtual wxString GetEventInfo();
-  virtual size_t NumOccurrences() const { return m_list.size(); }
+  Event::EventType_t EventType() const override { return Event::ET_BOUNDED_EVENT; }
+  BoundedEventDef * GetBoundedEvent () override { return this; }
+  wxString GetEventInfo() override;
+  size_t NumOccurrences() const override { return m_list.size(); }
 
   BoundedEventStatistics m_stats; // calculated when data is loaded
 };
@@ -221,13 +219,13 @@ class DiscreteEventDef
   : public EventDef
 {
 public:
-  DiscreteEventDef() { }
-  virtual ~DiscreteEventDef() { }
+  DiscreteEventDef() = default;
+  virtual ~DiscreteEventDef() = default;
 
-  virtual Event::EventType_t EventType() const { return Event::ET_DISCRETE_EVENT; }
-  virtual DiscreteEventDef * GetDiscreteEvent () { return this; }
-  virtual wxString GetEventInfo();
-  virtual size_t NumOccurrences() const { return m_list.size(); }
+  Event::EventType_t EventType() const override { return Event::ET_DISCRETE_EVENT; }
+  DiscreteEventDef * GetDiscreteEvent () override{ return this; }
+  wxString GetEventInfo() override;
+  size_t NumOccurrences() const override{ return m_list.size(); }
 
   DiscreteEventStatistics m_stats;
 };
@@ -239,7 +237,7 @@ public:
 class ContextHistoryElement
 {
 public:
-  typedef boost::shared_ptr < ContextHistoryElement > handle_t;
+  using handle_t = std::shared_ptr < ContextHistoryElement >;
 
   double m_startTime;
   double m_endTime;
@@ -252,17 +250,7 @@ class ContextDef
 public:
   ContextDefinition ctxt_def;
 
-  // list of context history elements (by handle
+  // list of context history elements (by handle)
 };
 
-
 #endif /* _EVENT_DATABASE_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:
