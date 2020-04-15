@@ -4,16 +4,12 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 #include <EventTransportReaderDebug.h>
 
 #include <iostream>
 
-
-
 namespace RightTrack {
-  namespace Internal {
-
+namespace Internal {
 
 int EventTransportReaderDebug::
 NewEvent(EventDefinition const& msg)
@@ -30,34 +26,45 @@ NewEvent(EventDefinition const& msg)
   return (0);
 }
 
-
 int EventTransportReaderDebug::
 NewEvent(EventStart const& msg)
 {
   std::cout << "Event start: "
-           << "  id: " << msg.event_id
-           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
-           << "  pid: " << msg.event_pid
-           << "  data: " << msg.event_data
-           << std::endl;
+            << "  id: " << msg.event_id
+            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
+            << "  pid: " << msg.event_pid
+            << "  data count: " << msg.event_data.size() << std::endl
+            << "  data: ";
+
+  for ( auto const d : msg.event_data )
+  {
+    std::cout << d << " ";
+  }
+
+  std::cout << std::endl;
 
   return (0);
 }
-
 
 int EventTransportReaderDebug::
 NewEvent(EventEnd const& msg)
 {
   std::cout << "Event end: "
-           << "  id: " << msg.event_id
-           << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
-           << "  pid: " << msg.event_pid
-           << "  data: " << msg.event_data
-           << std::endl;
+            << "  id: " << msg.event_id
+            << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
+            << "  pid: " << msg.event_pid
+            << "  data count: " << msg.event_data.size() << std::endl
+            << "  data: ";
+
+  for ( auto d : msg.event_data )
+  {
+    std::cout << d << " ";
+  }
+
+  std::cout << std::endl;
 
   return (0);
 }
-
 
 int EventTransportReaderDebug::
 NewEvent(EventText const& msg)
@@ -72,7 +79,6 @@ NewEvent(EventText const& msg)
   return (0);
 }
 
-
 int EventTransportReaderDebug::
 NewEvent(ContextDefinition const& msg)
 {
@@ -84,7 +90,6 @@ NewEvent(ContextDefinition const& msg)
   return (0);
 }
 
-
 int EventTransportReaderDebug::
 NewEvent(ContextPush const& msg)
 {
@@ -94,7 +99,6 @@ NewEvent(ContextPush const& msg)
 
   return (0);
 }
-
 
 int EventTransportReaderDebug::
 NewEvent(ContextPop const& msg)
@@ -106,5 +110,5 @@ NewEvent(ContextPop const& msg)
   return (0);
 }
 
-  } // end namespace
+} // end namespace
 } // end namespace

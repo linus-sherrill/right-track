@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010-2018 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -10,16 +10,13 @@
 
 #include "RightTrackDefs.h"
 
-#include <boost/noncopyable.hpp>
 #include <string>
-
 
 namespace RightTrack {
 namespace Internal {
 
-  // partial types
-  class EventManager;
-
+// partial types
+class EventManager;
 
 // ----------------------------------------------------------------
 /** Base class for all Right Track classes.
@@ -27,7 +24,6 @@ namespace Internal {
  *
  */
 class RightTrackItem
-  : private boost::noncopyable
 {
 public:
   virtual ~RightTrackItem();
@@ -43,6 +39,9 @@ protected:
 
 
 private:
+  RightTrackItem(const RightTrackItem& ) = delete;
+  RightTrackItem& operator=( const RightTrackItem& ) = delete;
+
   Internal::EventManager* m_manager;
   ItemId_t m_itemId;
   std::string m_itemName;
@@ -53,12 +52,3 @@ private:
 } // end namespace
 
 #endif /* _RIGHT_TRACK_ITEM_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

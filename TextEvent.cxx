@@ -29,8 +29,8 @@ namespace RightTrack {
  * using the HTML color encoding scheme. You can use a set of
  * predefined color names or just encode them as a literal.
  */
-TextEvent::
-TextEvent(std::string name, std::string group, int color)
+TextEvent
+::TextEvent(std::string name, std::string group, int color)
   : Event(name, group, color)
 {
   Manager()->RegisterEvent(this);
@@ -44,38 +44,38 @@ TextEvent::
 }
 
 
-void TextEvent::
-Start(std::string const& val)
+void TextEvent
+::Start(std::string const& val)
 {
   Manager()->StartEvent( this, val );
 }
 
 
-void TextEvent::
-Start(char const* val)
+void TextEvent
+::Start(char const* val)
 {
   Manager()->StartEvent( this, std::string (val) );
 }
 
 
-void TextEvent::
-Start(::RightTrack::EventData_t val)
+void TextEvent
+::Start(::RightTrack::EventData_t const& val)
 {
   // should never be called
   // Raise an error
 }
 
 
-void TextEvent::
-End(::RightTrack::EventData_t val)
+void TextEvent
+::End(::RightTrack::EventData_t const& val)
 {
   // should never be called
   // Raise an error
 }
 
 
-Internal::Event::EventType_t TextEvent::
-EventType() const
+Internal::Event::EventType_t TextEvent
+::EventType() const
 {
   return ::RightTrack::Internal::Event::ET_TEXT_EVENT;
 }

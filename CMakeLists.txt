@@ -6,88 +6,110 @@
 
 project ( right_track )
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
 
 set(right_track_VERSION_MAJOR 0)
-set(right_track_VERSION_MINOR 4)
+set(right_track_VERSION_MINOR 5)
 set(right_track_VERSION_PATCH 0)
+
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")
 
-find_package ( Boost REQUIRED COMPONENTS thread system )
-if(Boost_FOUND)
-   include_directories(${Boost_INCLUDE_DIRS})
-endif()
+find_package( Protobuf REQUIRED )
 
-find_package( VXL REQUIRED )
-include(${VXL_CMAKE_DIR}/UseVXL.cmake)
+set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11" )
 
-include_directories( ${VXL_CORE_INCLUDE_DIR} )
+set( sources
+  BoundedEvent.cxx
+  ConvertProtobuf.cxx
+  DiscreteEvent.cxx
+  Event.cxx
+  EventContext.cxx
+  EventManager.cxx
+  EventTransportDebug.cxx
+  EventTransportProtoFile.cxx
+  EventTransportReaderDebug.cxx
+  RightTrackItem.cxx
+  TextEvent.cxx
+  )
+
+set( public_includes
+  BoundedEvent.h
+  DiscreteEvent.h
+  Event.h
+  EventContext.h
+  RightTrackDefs.h
+  RightTrackItem.h
+  ScopedContext.h
+  ScopedEvent.h
+  TextEvent.h
+  )
+
+set( private_includes
+  ConvertProtobuf.h
+  EventManager.h
+  EventRecords.h
+  EventTransport.h
+  EventTransportDebug.h
+  EventTransportProtoFile.cxx
+  EventTransportReader.h
+  EventTransportReaderDebug.h
+  )
+
 
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-
-set ( library_sources
-      BoundedEvent.h                    BoundedEvent.cxx
-      DiscreteEvent.h                   DiscreteEvent.cxx
-      TextEvent.h                       TextEvent.cxx
-      EventContext.h                    EventContext.cxx
-      Event.h                           Event.cxx
-      EventManager.h                    EventManager.cxx
-      EventRecords.h
-      EventTransportFile.h              EventTransportFile.cxx
-      EventTransportDebug.h             EventTransportDebug.cxx
-      EventTransport.h
-      EventTransportReader.h
-      EventTransportReaderDebug.h       EventTransportReaderDebug.cxx
-      RightTrackDefs.h
-      RightTrackItem.h                  RightTrackItem.cxx
-      ScopedContext.h
-      ScopedEvent.h )
 
 option(GUI_ENABLED "Enable the gui" ON)
 if (GUI_ENABLED)
     add_subdirectory (gui)
 endif()
 
-include_directories ( ${CMAKE_CURRENT_SOURCE_DIR} )
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_LIBRARY ( right_track ${library_sources} )
-SET_TARGET_PROPERTIES( right_track PROPERTIES
-  VERSION ${right_track_VERSION} SOVERSION ${right_track_VERSION}
+PROTOBUF_GENERATE_CPP( cpp_srcs cpp_hdrs
+  EventTransportProtobuf.proto )
+
+
+ADD_LIBRARY ( right_track
+  ${sources}
+  ${public_includes}
+  ${private_includes}
+  ${cpp_hdrs} ${cpp_srcs}
+  )
+
+SET_TARGET_PROPERTIES( right_track
+  PROPERTIES
+    VERSION ${right_track_VERSION}
+    SOVERSION ${right_track_VERSION}
 )
 
 target_link_libraries ( right_track
-                        vpl vul vsl
-                       )
+  PUBLIC   ${PROTOBUF_LIBRARIES}
+  )
 
-#
+###
 # Build test program
 #
 add_executable (test_right_track test_right_track.cxx)
 target_link_libraries (test_right_track
-                      right_track vpl vul vsl)
+                      right_track)
 
 
 add_executable (right_track_dump right_track_dump.cxx)
 target_link_libraries (right_track_dump
-                      right_track vpl vul vsl)
+                      right_track)
 
-#
+###
 # install commands
 #
-set ( install_includes
-    RightTrackDefs.h RightTrackItem.h
-    Event.h BoundedEvent.h DiscreteEvent.h TextEvent.h
-    EventContext.h
-    ScopedEvent.h ScopedContext.h
-)
-
 INSTALL ( TARGETS right_track_dump right_track
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
 )
 
-INSTALL ( FILES ${install_includes}
+INSTALL ( FILES ${public_includes}
         DESTINATION include/right_track
 )
 

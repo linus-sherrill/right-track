@@ -1,7 +1,31 @@
-/*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
- * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
- * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+/*ckwg +29
+ * Copyright 2010, 2020 by Kitware, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
+ *    to endorse or promote products derived from this software without specific
+ *    prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef _MODEL_H_
@@ -14,21 +38,18 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <algorithm>
 
 #include <wx/pen.h>
 #include <wx/brush.h>
 #include <wx/colordlg.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include "event_database.h"
-
 
 using namespace ::RightTrack;
 using namespace ::RightTrack::Internal;
 
 class MainFrameApp;
-
 
 // ================================================================
 // ----------------------------------------------------------------
@@ -41,15 +62,15 @@ class Model
 public:
   // -- TYPES --
   // Event data types
-  typedef std::map < ItemId_t, EventDef::handle_t > event_map_t;
-  typedef event_map_t::iterator event_iterator_t;
-  typedef event_map_t::const_iterator const_event_iterator_t;
+  using event_map_t = std::map < ItemId_t, EventDef::handle_t >;
+  using event_iterator_t = event_map_t::iterator;
+  using const_event_iterator_t = event_map_t::const_iterator;
 
   // Context data types
-  typedef std::map < ItemId_t, ContextDef > context_map_t;
-  typedef context_map_t::iterator context_iterator_t;
-  typedef std::vector < ContextHistoryElement > context_history_t;
-  typedef context_history_t::iterator pp_iterator_t;
+  using context_map_t = std::map < ItemId_t, ContextDef >;
+  using context_iterator_t = context_map_t::iterator;
+  using context_history_t = std::vector < ContextHistoryElement >;
+  using pp_iterator_t = context_history_t::iterator;
 
   enum { // bit mask
     // Low level update events
@@ -200,13 +221,3 @@ SortEvents ()
 }
 
 #endif /* _MODEL_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:
-

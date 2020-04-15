@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010-2018 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -11,9 +11,9 @@
 #include "BoundedEvent.h"
 
 namespace RightTrack {
-  namespace Internal {
+namespace Internal {
     class Event;
-  } // end namespace
+} // end namespace
 
 #if defined(_MSC_VER)
 #if _MSC_VER >= 1300
@@ -36,11 +36,11 @@ namespace RightTrack {
  * bounded event around a lexical scope.
  */
 class ScopedEvent
-  : boost::noncopyable
 {
 public:
   ScopedEvent ( ::RightTrack::Internal::Event & ev )
-    : m_event(ev) { this->Start(); }
+    : m_event(ev)
+  { this->Start(); }
 
   virtual ~ScopedEvent() { this->End(); }
 
@@ -49,6 +49,9 @@ public:
 
 
 private:
+  ScopedEvent( const ScopedEvent& ) = delete;
+  ScopedEvent& operator=( const ScopedEvent& ) = delete;
+
   void Start() { m_event.Start(); }
 
   ::RightTrack::Internal::Event & m_event;
@@ -82,12 +85,3 @@ private:
 #endif
 
 #endif /* _RIGHT_TRACK_SCOPED_EVENT_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

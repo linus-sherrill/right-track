@@ -4,7 +4,6 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 #include <EventTransportDebug.h>
 
 #include <RightTrackDefs.h>
@@ -35,7 +34,7 @@ EventTransportDebug::
 
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(EventDefinition & msg)
 {
@@ -51,7 +50,7 @@ Write(EventDefinition & msg)
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(EventStart & msg)
 {
@@ -59,13 +58,19 @@ Write(EventStart & msg)
                  << "  id: " << msg.event_id
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
-                 << "  data: " << msg.event_data
-                 << std::endl;
+                 << "  data: ";
+
+  for ( auto d : msg.event_data )
+  {
+    (*m_outStream) << d << " ";
+  }
+
+  (*m_outStream) << std::endl;
 
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(EventEnd & msg)
 {
@@ -73,13 +78,19 @@ Write(EventEnd & msg)
                  << "  id: " << msg.event_id
                  << "  time: " << msg.event_time.secs << "." << msg.event_time.usecs
                  << "  pid: " << msg.event_pid
-                 << "  data: " << msg.event_data
-                 << std::endl;
+                 << "  data: ";
+
+  for ( auto d : msg.event_data )
+  {
+    (*m_outStream) << d << ' ';
+  }
+
+  (*m_outStream) << std::endl;
 
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(EventText & msg)
 {
@@ -93,7 +104,7 @@ Write(EventText & msg)
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(ContextDefinition & msg)
 {
@@ -105,7 +116,7 @@ Write(ContextDefinition & msg)
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(ContextPush & msg)
 {
@@ -116,7 +127,7 @@ Write(ContextPush & msg)
   return (0);
 }
 
-
+// ----------------------------------------------------------------------------
 int EventTransportDebug::
 Write(ContextPop & msg)
 {
@@ -126,7 +137,6 @@ Write(ContextPop & msg)
 
   return (0);
 }
-
 
 } // end namespace
 } // end namespace

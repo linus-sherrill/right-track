@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010-2018 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -11,18 +11,14 @@
 #include "RightTrackDefs.h"
 
 #include <string>
-
-#include <boost/thread/mutex.hpp>
-#include <boost/noncopyable.hpp>
-
-
+#include <mutex>
 
 namespace RightTrack {
 
 // Partial types
 class EventContext;
 
-  namespace Internal {
+namespace Internal {
 
 // Partial types
 class Event;
@@ -36,7 +32,6 @@ class EventTransport;
  *
  */
 class EventManager
-  : private boost::noncopyable
 {
 public:
   static EventManager * Instance();
@@ -47,8 +42,8 @@ public:
   ItemId_t GetNextId();
   void RegisterEvent(Event * ev);
   void StartEvent (Event * ev, std::string const& val);
-  void StartEvent (Event * ev, ::RightTrack::EventData_t val);
-  void EndEvent (Event * ev, ::RightTrack::EventData_t val);
+  void StartEvent (Event * ev, ::RightTrack::EventData_t const& val);
+  void EndEvent (Event * ev, ::RightTrack::EventData_t const& val);
 
   void RegisterContext (EventContext * ec);
   void PushContext (EventContext * ec);
@@ -59,11 +54,14 @@ public:
 
 private:
   EventManager(); // CTOR
-  EventTimestamp_t CurrentTimestamp();
+  EventManager( EventManager const& ) = delete;
+  EventManager& operator=( EventManager const& ) = delete;
+
+   EventTimestamp_t CurrentTimestamp();
 
   EventPid_t GetPid();
 
-  boost::mutex m_lock;
+  std::mutex m_lock;
 
   std::string m_systemName;
   std::string m_filename;
@@ -81,12 +79,3 @@ private:
 } // end namespace
 
 #endif /* _RIGHT_TRACK_EVENT_MANAGER_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

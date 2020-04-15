@@ -29,7 +29,7 @@ class EventTransportReaderGui
 {
 public:
   EventTransportReaderGui(Model * m);
-  virtual ~EventTransportReaderGui();
+  virtual ~EventTransportReaderGui() = default;
 
   virtual int NewEvent(EventDefinition const& msg);
   virtual int NewEvent(EventStart const& msg);
@@ -50,12 +50,3 @@ private:
 } // end namespace
 
 #endif /* _RIGHT_TRACK_EVENT_TRANSPORT_READER_GUI_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

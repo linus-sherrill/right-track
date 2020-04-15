@@ -27,13 +27,11 @@ Event(std::string const& name, std::string group, int color)
 
 }
 
-
 Event::
 ~Event()
 {
 
 }
-
 
 // ----------------------------------------------------------------
 /** Get event group.
@@ -73,15 +71,36 @@ EventColor (unsigned char r, unsigned char g, unsigned char b)
   this->m_eventColor = ((((r << 8) | g) << 8) | b);
 }
 
+void Event::
+Start()
+{
+  ::RightTrack::EventData_t vect;
+  this->Start( vect );
+}
+
+
+void Event::
+End()
+{
+  ::RightTrack::EventData_t  vect;
+  this->End( vect );
+}
+
+void Event::
+Start( ::RightTrack::EventDatum_t val )
+{
+  ::RightTrack::EventData_t vect(1, val );
+  this->Start( vect );
+}
+
+
+void Event::
+End( ::RightTrack::EventDatum_t val )
+{
+  ::RightTrack::EventData_t vect(1, val );
+  this->End( vect );
+}
+
 
 } // end namespace
 } // end namespace
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

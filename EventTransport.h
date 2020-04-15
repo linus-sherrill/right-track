@@ -40,6 +40,19 @@ public:
   virtual int Write(ContextPush & msg) = 0;
   virtual int Write(ContextPop & msg) = 0;
 
+  /**
+   * @brief Read events from a stream.
+   *
+   * This method processes the input resource and passes the
+   * discovered events to the EventTransportReader. The transport
+   * reader object accepts new event objects and performs application
+   * specific operations, such as add the object to a data base.
+   *
+   * @param resource Name of resource. Typically a file.
+   * @param reader Reader object that collects objects as read
+   *
+   * @return 0 - for success
+   */
   virtual int ReadEvents(std::string const& resource,
                          EventTransportReader & reader) = 0;
 
@@ -50,12 +63,3 @@ public:
 } // end namespace
 
 #endif /* _RIGHT_TRACK_EVENT_TRANSPORT_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

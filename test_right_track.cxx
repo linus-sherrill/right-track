@@ -4,7 +4,6 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 #include "BoundedEvent.h"
 #include "DiscreteEvent.h"
 #include "TextEvent.h"
@@ -12,9 +11,10 @@
 #include "EventContext.h"
 
 #include <EventManager.h>
-#include <EventTransportFile.h>
+#include <EventTransportProtoFile.h>
 #include <EventTransportReaderDebug.h>
 
+#include <unistd.h>
 
 void foo()
 {
@@ -48,13 +48,3 @@ int main ()
   be.End();
 
 }
-
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

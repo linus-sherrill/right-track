@@ -96,8 +96,18 @@ GetInfo()
     result << wxString::Format(wxT("Duration: %f  (From: %f  To: %f)\n"), (m_endTime - m_startTime),
                                Model::Instance()->TimeOffset(m_startTime),
                                Model::Instance()->TimeOffset(m_endTime) );
-    result << wxString::Format(wxT("Start data: %f\n"), m_startData );
-    result << wxString::Format(wxT("End data: %f\n"), m_endData );
+    if ( ! m_startData.empty() )
+    {
+      // TODO need to handle multiple items
+      result << wxString::Format(wxT("Start data: %f\n"), m_startData[0] );
+    }
+
+    if ( ! m_endData.empty() )
+    {
+      // TODO need to handle multiple items
+      result << wxString::Format(wxT("End data: %f\n"), m_endData[0] );
+    }
+
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
     return result;
@@ -116,7 +126,12 @@ GetInfo()
 
     result << wxT("------\n");
     result << wxString::Format(wxT("Time: %f\n"), Model::Instance()->TimeOffset(m_eventTime) );
-    result << wxString::Format(wxT("Data: %f\n"), m_eventData );
+
+    if ( ! m_eventData.empty() )
+    {
+      // TODO need to handle multiple items
+      result << wxString::Format(wxT("Data: %f\n"), m_eventData[0] );
+    }
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 
     return result;

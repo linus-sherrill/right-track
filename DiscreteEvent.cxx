@@ -4,12 +4,10 @@
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
 
-
 #include <DiscreteEvent.h>
 
 #include <EventManager.h>
 #include <RightTrackDefs.h>
-
 
 namespace RightTrack {
 
@@ -45,14 +43,14 @@ DiscreteEvent::
 
 
 void DiscreteEvent::
-Start(::RightTrack::EventData_t val)
+Start( ::RightTrack::EventData_t const& val)
 {
   Manager()->StartEvent( this, val );
 }
 
 
 void DiscreteEvent::
-End(::RightTrack::EventData_t val)
+End( ::RightTrack::EventData_t const&)
 {
   // should never be called
   // Raise an error
