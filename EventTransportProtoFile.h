@@ -27,16 +27,15 @@ public:
   EventTransportProtoFile();
   virtual ~EventTransportProtoFile();
 
-  virtual int Write(EventDefinition & msg);
-  virtual int Write(EventStart & msg);
-  virtual int Write(EventEnd & msg);
-  virtual int Write(EventText & msg);
-  virtual int Write(ContextDefinition & msg);
-  virtual int Write(ContextPush & msg);
-  virtual int Write(ContextPop & msg);
+  int Write(EventDefinition & msg) override;
+  int Write(EventStart & msg) override;
+  int Write(EventText & msg) override;
+  int Write(ContextDefinition & msg) override;
+  int Write(ContextPush & msg) override;
+  int Write(ContextPop & msg) override;
 
-  virtual int ReadEvents(std::string const& resource,
-                         EventTransportReader & reader);
+ int ReadEvents(std::string const& resource,
+                         EventTransportReader & reader) override;
 
   bool OpenFile (std::string name);
 

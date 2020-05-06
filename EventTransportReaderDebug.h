@@ -27,13 +27,13 @@ public:
   EventTransportReaderDebug() { }
   virtual ~EventTransportReaderDebug() { }
 
-  virtual int NewEvent(EventDefinition const& msg);
-  virtual int NewEvent(EventStart const& msg);
-  virtual int NewEvent(EventEnd const& msg);
-  virtual int NewEvent(EventText const& msg);
-  virtual int NewEvent(ContextDefinition const& msg);
-  virtual int NewEvent(ContextPush const& msg);
-  virtual int NewEvent(ContextPop const& msg);
+  int NewEvent(EventDefinition const& msg) override;
+  int NewEvent(EventStart const& msg) override;
+  int NewEvent(EventEnd const& msg) override;
+  int NewEvent(EventText const& msg) override;
+  int NewEvent(ContextDefinition const& msg) override;
+  int NewEvent(ContextPush const& msg) override;
+  int NewEvent(ContextPop const& msg) override;
 
 }; // end class EventTransportReaderDebug
 

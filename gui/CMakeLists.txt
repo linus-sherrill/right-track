@@ -1,7 +1,12 @@
-FIND_PACKAGE ( wxWidgets REQUIRED net gl core base adv )
-INCLUDE ( ${wxWidgets_USE_FILE} )
+#ckwg +4
+# Copyright 2010, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
+# KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
+# Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065.
 
-SET (gui_sources
+find_package ( wxWidgets REQUIRED net gl core base adv )
+include ( ${wxWidgets_USE_FILE} )
+
+set (gui_sources
     gen_files/EventCanvas.h             gen_files/EventCanvas.cpp
     gen_files/EventTable.h              gen_files/EventTable.cpp
    #  gen_files/EventViewFrame.h          gen_files/EventViewFrame.cpp
@@ -23,17 +28,17 @@ SET (gui_sources
     event_database.h                    event_database.cpp
 )
 
-ADD_EXECUTABLE (right_track_gui  ${gui_sources} )
-SET_TARGET_PROPERTIES( right_track_gui PROPERTIES
+add_executable (right_track_gui  ${gui_sources} )
+set_target_properties( right_track_gui PROPERTIES
   VERSION ${right_track_VERSION}
 )
 add_definitions(-DRIGHT_TRACK_VERSION="${right_track_VERSION}")
 
-INCLUDE_DIRECTORIES ( . .. gen_files )
+include_directories ( . .. gen_files )
 
-TARGET_LINK_LIBRARIES ( right_track_gui ${wxWidgets_LIBRARIES} right_track )
+target_link_libraries ( right_track_gui ${wxWidgets_LIBRARIES} right_track )
 
-SET_TARGET_PROPERTIES (right_track_gui PROPERTIES
+set_target_properties (right_track_gui PROPERTIES
       COMPILE_DEFINITIONS    "${wxWidgets_DEFINITIONS};wxWidgets_DEFINITIONS_DEBUG"
       COMPILE_FLAGS          "${wxWidgets_CXX_FLAGS}"
 )
@@ -42,7 +47,7 @@ SET_TARGET_PROPERTIES (right_track_gui PROPERTIES
 #
 # install commands
 #
-INSTALL ( TARGETS right_track_gui
+install ( TARGETS right_track_gui
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
 )

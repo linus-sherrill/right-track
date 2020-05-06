@@ -1,12 +1,11 @@
 #ckwg +4
-# Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+# Copyright 2010, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
 # KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
-# Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
-
+# Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065.
 
 project ( right_track )
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.15)
 
 set(right_track_VERSION_MAJOR 0)
 set(right_track_VERSION_MINOR 5)
@@ -16,7 +15,7 @@ set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINO
 
 find_package( Protobuf REQUIRED )
 
-set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11" )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
 
 set( sources
   BoundedEvent.cxx
@@ -55,8 +54,7 @@ set( private_includes
   EventTransportReaderDebug.h
   )
 
-
-option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 option(GUI_ENABLED "Enable the gui" ON)
 if (GUI_ENABLED)
@@ -67,18 +65,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-PROTOBUF_GENERATE_CPP( cpp_srcs cpp_hdrs
+protobuf_generate_cpp( cpp_srcs cpp_hdrs
   EventTransportProtobuf.proto )
 
-
-ADD_LIBRARY ( right_track
+add_library ( right_track
   ${sources}
   ${public_includes}
   ${private_includes}
   ${cpp_hdrs} ${cpp_srcs}
   )
 
-SET_TARGET_PROPERTIES( right_track
+set_target_properties( right_track
   PROPERTIES
     VERSION ${right_track_VERSION}
     SOVERSION ${right_track_VERSION}
@@ -103,13 +100,13 @@ target_link_libraries (right_track_dump
 ###
 # install commands
 #
-INSTALL ( TARGETS right_track_dump right_track
+install ( TARGETS right_track_dump right_track
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
 )
 
-INSTALL ( FILES ${public_includes}
+install ( FILES ${public_includes}
         DESTINATION include/right_track
 )
 
