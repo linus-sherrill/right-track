@@ -46,7 +46,7 @@ Draw(wxClientDC& dc, wxRect view)
   }
 
   // Start with a red line
-  dc.SetPen( wxPen( wxColor( 250, 0, 0), 2, wxSOLID ) );
+  dc.SetPen( wxPen( wxColour( 250, 0, 0), 2, wxPENSTYLE_SOLID ) );
   dc.DrawLine( m_xCoord - view.GetLeft(), 0,
                m_xCoord - view.GetLeft(), view.GetBottom() );
 

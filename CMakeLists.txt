@@ -64,6 +64,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(cereal)
 
 protobuf_generate_cpp( cpp_srcs cpp_hdrs
   EventTransportProtobuf.proto )

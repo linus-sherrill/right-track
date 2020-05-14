@@ -28,7 +28,7 @@ class EventTransportReaderGui
   : public EventTransportReader
 {
 public:
-  EventTransportReaderGui(Model * m);
+  EventTransportReaderGui(Model * m, wxString const& originString);
   virtual ~EventTransportReaderGui() = default;
 
   int NewEvent(EventDefinition const& msg) override;
@@ -42,7 +42,8 @@ public:
 
 private:
   Model * m_model;
-
+  wxString m_originString;
+  
 }; // end class EventTransportReaderGui
 
 

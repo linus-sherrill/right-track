@@ -55,7 +55,7 @@ EventTableApp
 void EventTableApp
 ::InitGrid(DisplayableIterator& event_it)
 {
-  wxColor heading_colour = wxColor(255, 165, 0);
+  wxColour heading_colour = wxColour(255, 165, 0);
 
   m_dataSource = event_it;
 
@@ -177,6 +177,10 @@ void EventTableApp
         break;
       } // end case
 
+      case Event::ET_UNDEFINED_EVENT:
+      default:
+        break;
+        
     } // end switch
 
     row_count++;

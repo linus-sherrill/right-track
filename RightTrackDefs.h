@@ -14,7 +14,9 @@ namespace RightTrack {
 
 using EventDatum_t = double;
 using EventData_t = std::vector< EventDatum_t >;
-
+using ItemId_t = int32_t;
+using EventPid_t = uint32_t;
+  
 namespace Internal {
 
 struct EventTimestamp_t
@@ -25,9 +27,6 @@ struct EventTimestamp_t
   uint64_t secs;
   uint32_t usecs;
 };
-
-typedef int32_t ItemId_t;
-typedef uint32_t EventPid_t;
 
 } }
 

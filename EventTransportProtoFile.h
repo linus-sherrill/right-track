@@ -29,6 +29,7 @@ public:
 
   int Write(EventDefinition & msg) override;
   int Write(EventStart & msg) override;
+  int Write(EventEnd & msg) override;
   int Write(EventText & msg) override;
   int Write(ContextDefinition & msg) override;
   int Write(ContextPush & msg) override;

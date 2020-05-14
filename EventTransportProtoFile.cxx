@@ -67,7 +67,7 @@ WriteEvent( std::ofstream& str,
 {
   // Serialize the protobuf
   // Write data length
-  const uint32_t len( env.ByteSize() );
+  const uint32_t len( env.ByteSizeLong() );
 
   if ( ! s_write( str, &len, sizeof(len) ) )
   {
@@ -245,7 +245,6 @@ ReadEvents(const std::string& resource,
     char data_buffer[len];
     s_read( str, data_buffer, len );
 
-    // message.Parse_from_stream( str );
     std::string buffer( data_buffer, len );
     std::stringstream buffer_stream( buffer );
 

@@ -53,8 +53,8 @@ public:
   void InitGrid(DisplayableIterator & event_it);
 
 protected:
-    virtual void handle_done(wxCommandEvent &event); // wxGlade: <event_handler>
-    virtual void handle_save(wxCommandEvent &event); // wxGlade: <event_handler>
+    virtual void handle_done(wxCommandEvent &event); 
+    virtual void handle_save(wxCommandEvent &event); 
 
 private:
   DisplayableIterator m_dataSource;

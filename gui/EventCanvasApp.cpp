@@ -199,14 +199,14 @@ DrawEvents(wxDC& dc)
     {
       // Draw light background for this event at y_coord +/- 12 pixels
       //
-      dc.SetPen (wxPen (pm->m_selectColor, 1, wxSOLID) );
-      dc.SetBrush (wxBrush (pm->m_selectColor, wxSOLID) );
+      dc.SetPen (wxPen (pm->m_selectColor, 1, wxPENSTYLE_SOLID) );
+      dc.SetBrush (wxBrush (pm->m_selectColor, wxBRUSHSTYLE_SOLID) );
     }
     else
     {
       // Use default color
       wxColour col = dc.GetBackground().GetColour();
-      dc.SetPen (wxPen (col, 1, wxSOLID) );
+      dc.SetPen (wxPen (col, 1, wxPENSTYLE_SOLID) );
       dc.SetBrush (dc.GetBackground() );
     }
     dc.DrawRectangle ( view.x, y_coord - 12, view.GetWidth(), 24);
@@ -264,7 +264,7 @@ DrawBoundedEvent(wxDC & dc, BoundedEventDef * eh, int y_coord)
 
   // draw event name
   // Should render in g_EventNames panel
-  wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
+  wxFont fnt(7, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
   dc.SetFont(fnt);
   dc.DrawText(eh->EventName(), view.x + 2, y_coord);
 
@@ -360,7 +360,7 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
   dc.DrawLine (view.x, y_coord, view.x + view.GetWidth(), y_coord);
 
   // draw event name
-  wxFont fnt(7, wxFONTFAMILY_SWISS, wxNORMAL, wxNORMAL);
+  wxFont fnt(7, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
   dc.SetFont (fnt);
   dc.DrawText( eh->EventName(), 2, y_coord);
 
@@ -445,8 +445,8 @@ DrawDiscreteEvent(wxDC & dc, DiscreteEventDef * eh, int y_coord)
 void EventCanvasApp::
 DrawCommentAnnotation(wxDC & dc, int x, int y)
 {
-  wxPen pen = wxPen ( GetModel()->m_commentMarkerColor, 1, wxSOLID );
-  wxBrush brush = wxBrush ( GetModel()->m_commentMarkerColor, wxSOLID );
+  wxPen pen = wxPen ( GetModel()->m_commentMarkerColor, 1, wxPENSTYLE_SOLID );
+  wxBrush brush = wxBrush ( GetModel()->m_commentMarkerColor, wxBRUSHSTYLE_SOLID );
 
   dc.SetPen( pen );
   dc.SetBrush (brush );
@@ -841,7 +841,7 @@ OnPopupClick(wxCommandEvent& event)
         {
           // store in event
           //+ maybe background colour?
-          loc->event->m_eventBaselinePen = wxPen(col, 1, wxSOLID);
+          loc->event->m_eventBaselinePen = wxPen(col, 1, wxPENSTYLE_SOLID);
         }
         else // color occurence
         {
@@ -849,13 +849,13 @@ OnPopupClick(wxCommandEvent& event)
           if (loc->occurrence->GetBoundedOccurrence() != 0)
           {
             BoundedOccurrence* bop = loc->occurrence->GetBoundedOccurrence();
-            bop->m_eventDurationPen = wxPen(col, 2, wxSOLID);
+            bop->m_eventDurationPen = wxPen(col, 2, wxPENSTYLE_SOLID);
           }
           else
           {
             DiscreteOccurrence* dop = loc->occurrence->GetDiscreteOccurrence();
-            dop->m_eventMarkerPen = wxPen(col, 1, wxSOLID);
-            dop->m_eventMarkerBrush = wxBrush(col, wxSOLID);
+            dop->m_eventMarkerPen = wxPen(col, 1, wxPENSTYLE_SOLID);
+            dop->m_eventMarkerBrush = wxBrush(col, wxBRUSHSTYLE_SOLID);
           }
         }
 

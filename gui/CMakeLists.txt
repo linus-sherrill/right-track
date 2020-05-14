@@ -34,7 +34,7 @@ set_target_properties( right_track_gui PROPERTIES
 )
 add_definitions(-DRIGHT_TRACK_VERSION="${right_track_VERSION}")
 
-include_directories ( . .. gen_files )
+include_directories ( . .. gen_files ../cereal/include )
 
 target_link_libraries ( right_track_gui ${wxWidgets_LIBRARIES} right_track )
 

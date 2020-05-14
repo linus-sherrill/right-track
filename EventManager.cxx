@@ -171,7 +171,7 @@ EventTimestamp_t EventManager
 EventPid_t EventManager
 ::GetPid()
 {
-  return pthread_self();
+  return reinterpret_cast<uint64_t>(pthread_self());
   // return vpl_getpid();
 }
 

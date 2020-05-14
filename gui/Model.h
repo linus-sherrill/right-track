@@ -55,7 +55,7 @@ class MainFrameApp;
 // ----------------------------------------------------------------
 /** Model part of MVC
  *
- *
+ * The model 
  */
 class Model
 {
@@ -108,6 +108,10 @@ public:
 
   // -- MANIPULATORS --
   int ReadFromFile( const char * file);
+  int LoadFromFile( const char * file);
+  int SaveToFile(); // use existing file name
+  int SaveAsToFile( const char* file );
+  
   void ModelUpdate(unsigned code);
 
   void MoveSelectedEventTop();
@@ -128,6 +132,26 @@ public:
     bool display_enable;
   };
 
+  template<class Archive>
+  void serialize(Archive & archive)
+  {
+    archive(m_drawOrder, m_eventMap,
+            m_contextMap, m_contextHistory,
+            m_defaultBaselineColor,
+            m_defaultLineColor,
+            m_defaultEventColor,
+            m_startEventColor, m_endEventColor,
+            m_selectColor, m_commentMarkerColor,
+            m_timingOffset,
+            m_maxTime, m_maxItemNumber,
+            m_cursor_1_time, m_cursor_2_time,
+            m_viewTimeStart, m_viewTimeEnd,
+
+            m_modelAnnotation,
+            m_eventFilter);
+  }
+
+  
   std::vector < ItemId_t > m_drawOrder;
   event_map_t m_eventMap; // list of events
 
@@ -199,8 +223,9 @@ private:
   bool m_eventFilter;
 
   // name where the model was stored.
-  wxString m_modelFileName;
+  std::string m_modelFileName;
 
+  // Singleton support
   static Model * s_instance;
 };
 

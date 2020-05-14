@@ -33,8 +33,9 @@
 
 
 EventTransportReaderGui
-::EventTransportReaderGui(Model * m)
-  : m_model(m)
+::EventTransportReaderGui(Model * m, wxString const & origin_name)
+  : m_model(m),
+  m_originString(origin_name)
 { }
 
 
@@ -63,13 +64,20 @@ int EventTransportReaderGui
     // display message;
     wxMessageBox( wxT("Internal error - unexpected event type"),
                   wxT("Error"), wxICON_ERROR | wxOK);
+      return (1);
   } // end switch
 
   def->m_eventName = wxString (msg.event_name.c_str(), wxConvUTF8);
   def->m_groupName = wxString (msg.event_group.c_str(), wxConvUTF8);
   def->m_time = (double) msg.event_time.secs + (msg.event_time.usecs / 1e6); // convert usec to float seconds
   def->m_eventId = msg.event_id;
-  def->m_color = msg.event_color;
+  
+  int r = (msg.event_color >> 16) & 0xff;
+  int g = (msg.event_color >>  8) & 0xff;
+  int b = (msg.event_color >>  0) & 0xff;
+  def->m_color = wxColour( r, g, b );
+  
+  def->m_originName = m_originString;
 
   m_model->m_drawOrder.push_back(def->m_eventId);
   m_model->m_eventMap[def->m_eventId] = EventDef::handle_t(def);
@@ -186,7 +194,7 @@ int EventTransportReaderGui
 ::NewEvent(ContextDefinition const& msg)
 {
   ContextDef ev;
-  ev.ctxt_def = msg;
+  ev.m_ctxtDef = msg;
 
   // TBD
   return (0);

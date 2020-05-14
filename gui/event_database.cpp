@@ -8,18 +8,7 @@
 
 #include "Model.h"
 
-
-
-EventDef::
-EventDef()
-{ }
-
-
-EventDef::
-~EventDef()
- { }
-
-
+// -----------------------------------------------------
 BoundedEventDef * EventDef::
 GetBoundedEvent ()
 {
@@ -104,8 +93,12 @@ GetInfo()
 
     if ( ! m_endData.empty() )
     {
-      // TODO need to handle multiple items
       result << wxString::Format(wxT("End data: %f\n"), m_endData[0] );
+      
+      for ( unsigned i = 1; i < m_endData.size(); ++i)
+      {
+        result << wxString::Format(wxT(", %f"), m_endData[i]);
+      }
     }
 
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
@@ -129,8 +122,12 @@ GetInfo()
 
     if ( ! m_eventData.empty() )
     {
-      // TODO need to handle multiple items
       result << wxString::Format(wxT("Data: %f\n"), m_eventData[0] );
+      
+      for ( unsigned i = 1; i < m_eventData.size(); ++i)
+      {
+        result << wxString::Format(wxT(", %f"), m_eventData[i]);
+      }
     }
     result << wxString::Format(wxT("Pid: %d\n"), m_eventPid );
 

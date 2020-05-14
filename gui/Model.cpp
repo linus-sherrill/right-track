@@ -39,8 +39,15 @@
 #include <EventTransportReaderGui.h>
 #include <EventTransportReaderDebug.h>
 
+#include <cereal/cereal.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/portable_binary.hpp>
+
+#include <cstdio>
+
+
 // Support for singleton
-Model * Model::s_instance(0);
+Model * Model::s_instance( nullptr );
 
 
 // ----------------------------------------------------------------
@@ -78,16 +85,16 @@ void Model
   m_eventMap.clear();
 
   // These default colors are arbitrary
-  m_defaultBaselineColor = wxColor ( 120, 120, 120 );
-  m_defaultLineColor = wxColor ( 128, 128, 128 ); // gray
-  m_defaultEventColor = wxColor ( 35, 19, 238 );
+  m_defaultBaselineColor = wxColour ( 120, 120, 120 );
+  m_defaultLineColor = wxColour ( 128, 128, 128 ); // gray
+  m_defaultEventColor = wxColour ( 35, 19, 238 );
 
-  m_startEventColor = wxColor ( 10, 167, 6 ); // green
-  m_endEventColor = wxColor ( 229, 22, 22 ); // red
+  m_startEventColor = wxColour ( 10, 167, 6 ); // green
+  m_endEventColor = wxColour ( 229, 22, 22 ); // red
 
-  m_selectColor = wxColor (222, 207, 15);
+  m_selectColor = wxColour (222, 207, 15);
 
-  m_commentMarkerColor = wxColor (166, 98, 203);
+  m_commentMarkerColor = wxColour (166, 98, 203);
 
   m_selectedEvent = -1;
   m_selectedOccurrence = 0;
@@ -105,14 +112,16 @@ void Model
 // ----------------------------------------------------------------
 /** Read events from file.
  *
- *
+ * This method reads a raw event file and merges it into the
+ * current data base.
  */
 int Model
 ::ReadFromFile( const char * file )
 {
   // instantiate our reader
   // EventTransportReaderDebug reader;
-  EventTransportReaderGui reader (this);
+  wxString fileName(file);
+  EventTransportReaderGui reader (this, fileName);
   EventTransportProtoFile file_io;
   int status(0);
 
@@ -129,6 +138,98 @@ int Model
 
 
 // ----------------------------------------------------------------
+/** Load events database from file.
+ *
+ * This method loads a saved (serialized) data base into this model.
+ * It replaces any exsiting model data.
+ */
+int Model
+:: LoadFromFile( const char * file)
+{
+  //+ validate the file ends in ".rtm"
+  std::ifstream input( file, std::ios::binary );
+  if (!input)
+  {
+    //+ todo present error dialog - file did not open
+    return 1;
+  }
+  
+  try {
+    ::cereal::BinaryInputArchive input_ar( input );
+    input_ar( *this );
+  }
+  catch (std::exception& ex)
+  {
+    //+ display error dialog
+    return 1;
+  }
+  return 0;
+}
+
+
+// ----------------------------------------------------------------
+/** Save events database from file.
+ *
+ * This method saves the current model to the same file name
+ *  it was loaded from.
+ */
+int Model
+::SaveToFile()
+{
+  std::string out_filename( m_modelFileName );
+  
+  //+ file name ends in ".rtm" or add that to it.
+  // string backwards until first '.' - that is the file extension
+  auto pos = m_modelFileName.find_last_of(".");
+  if ( pos != std::string::npos)
+  {
+    // string off the filename portion
+    out_filename = m_modelFileName.substr(0, pos-1);
+  }
+  m_modelFileName = out_filename + ".rtmdl";
+  std::string temp_file = m_modelFileName + ".temp";
+  
+  // Write serialized model to temp file
+  std::ofstream ostr( temp_file, std::ios::binary );
+  if ( ! ostr )
+  {
+      //+ display error dialog
+    return 1;
+  }
+  
+  try {
+    ::cereal::BinaryOutputArchive archive( ostr );
+    archive( *this );
+  }
+  catch( std::exception& ex)
+  {
+    ostr.close();
+    //+ display error dialog - write failed
+    return 1;
+  }
+  ostr.close();
+  
+  // Delete m_modelFileName
+  if( remove( m_modelFileName.c_str()) )
+  {
+    // Error deleting the file
+    //+ display error dialog
+    return 1;
+  }
+  
+  // rename out_filename -> model_file
+  if( rename(temp_file.c_str(), m_modelFileName.c_str()) )
+  {
+    // Error renaming the file
+    //+ display error dialog
+    return 1;
+  }
+  
+  return 0;
+}
+
+
+ // ----------------------------------------------------------------
 /** Get timespan of all events.
  *
  * This method returns the length of time covered from the first event
@@ -151,11 +252,11 @@ double Model
 void Model
 ::ScanEvents()
 {
-  wxPen start_marker_pen = wxPen ( m_startEventColor, 1, wxSOLID );
-  wxBrush start_marker_brush = wxBrush ( m_startEventColor, wxSOLID );
+  wxPen start_marker_pen = wxPen ( m_startEventColor, 1, wxPENSTYLE_SOLID );
+  wxBrush start_marker_brush = wxBrush ( m_startEventColor, wxBRUSHSTYLE_SOLID );
 
-  wxPen end_marker_pen = wxPen ( m_endEventColor, 1, wxSOLID );
-  wxBrush end_marker_brush = wxBrush ( m_endEventColor, wxSOLID );
+  wxPen end_marker_pen = wxPen ( m_endEventColor, 1, wxPENSTYLE_SOLID );
+  wxBrush end_marker_brush = wxBrush ( m_endEventColor, wxBRUSHSTYLE_SOLID );
 
 
   event_iterator_t ix;
@@ -174,7 +275,7 @@ void Model
     }
 
     // Setup general colors
-    eh->m_eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxSOLID );
+    eh->m_eventBaselinePen = wxPen ( m_defaultBaselineColor, 1, wxPENSTYLE_SOLID );
 
     wxPen event_duration_pen;
     wxPen event_marker_pen;
@@ -183,19 +284,13 @@ void Model
     if (eh->m_color == -1)
     {
       // Use default colors
-      event_duration_pen = wxPen ( m_defaultEventColor, 2, wxSOLID );
-      event_marker_pen   = wxPen ( m_defaultEventColor, 1, wxSOLID );
+      event_duration_pen = wxPen ( m_defaultEventColor, 2, wxPENSTYLE_SOLID );
+      event_marker_pen   = wxPen ( m_defaultEventColor, 1, wxPENSTYLE_SOLID );
     }
     else
     {
-      int r = (eh->m_color >> 16) & 0xff;
-      int g = (eh->m_color >>  8) & 0xff;
-      int b = (eh->m_color >>  0) & 0xff;
-
-      wxColour def_color ( r, g, b );
-
-      event_duration_pen = wxPen ( def_color, 2, wxSOLID );
-      event_marker_pen   = wxPen ( def_color, 1, wxSOLID );
+      event_duration_pen = wxPen ( eh->m_color, 2, wxPENSTYLE_SOLID );
+      event_marker_pen   = wxPen ( eh->m_color, 1, wxPENSTYLE_SOLID );
     }
 
     // do specific processing by event type.
