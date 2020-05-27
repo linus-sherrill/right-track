@@ -81,7 +81,6 @@ public:
  */
   ItemId_t CurrentItemId();
 
-
 protected:
   // returns the next displayable, even if it is the current one
   void FindDisplayable();
@@ -92,14 +91,4 @@ private:
   Model * m_model;
 };
 
-
 #endif /* _DISPLAYABLEITERATOR_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

@@ -13,7 +13,7 @@ set (gui_sources
     gen_files/RT_MainFrame.h               gen_files/RT_MainFrame.cpp
     gen_files/TextEditDialog.h          gen_files/TextEditDialog.cpp
 
-    EventTransportReaderGui.h           EventTransportReaderGui.cxx
+    EventTransportReaderGui.h           EventTransportReaderGui.cpp
     main.cpp
     MainFrameApp.h                      MainFrameApp.cpp
     TextEditDialogApp.h                 TextEditDialogApp.cpp
@@ -22,10 +22,14 @@ set (gui_sources
 
     EventCanvasApp.h                    EventCanvasApp.cpp
     TimeLineCursor.h                    TimeLineCursor.cpp
-    DisplayableIterator.h               DisplayableIterator.cxx
+    DisplayableIterator.h               DisplayableIterator.cpp
     EventTableApp.h                     EventTableApp.cpp
 
     event_database.h                    event_database.cpp
+    Serialize.h
+    Observer.h                          Observer.cpp
+    Subject.h                           Subject.cpp
+    SubjectObserver.h
 )
 
 add_executable (right_track_gui  ${gui_sources} )

@@ -29,9 +29,12 @@ IMPLEMENT_APP(RightTrackApp)
 bool RightTrackApp::OnInit()
 {
   wxInitAllImageHandlers();
+
+  // The model sets itself up as a singleton.
+  new Model (); // instantiate the global model
+
   MainFrameApp* frame_1 = new MainFrameApp(NULL, wxID_ANY, wxEmptyString);
 
-  new Model (frame_1); // instantiate the global model
 
   SetTopWindow(frame_1);
   frame_1->Show();

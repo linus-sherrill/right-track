@@ -7,103 +7,107 @@
 #ifndef _MAIN_FRAME_APP_H_
 #define _MAIN_FRAME_APP_H_
 
-#include <RT_MainFrame.h>
-
 #include <Model.h>
-
+#include <Observer.h>
+#include <RT_MainFrame.h>
 
 //
 // Partial types
 //
 class wxDC;
 
-
 // ----------------------------------------------------------------
+
 /** Application main frame.
  *
  *
  */
 class MainFrameApp
-  : public RT_MainFrame
+  : public RT_MainFrame, public Observer
 {
 public:
-  MainFrameApp(wxWindow* parent,
-               int id,
-               const wxString& title,
-               const wxPoint& pos = wxDefaultPosition,
-               const wxSize& size = wxDefaultSize,
-               long style = wxDEFAULT_FRAME_STYLE);
+  MainFrameApp( wxWindow* parent,
+                int id,
+                const wxString& title,
+                const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
+                long style = wxDEFAULT_FRAME_STYLE );
 
-  virtual ~MainFrameApp();
+  virtual ~MainFrameApp() = default;
 
-  Model * GetModel() const { return Model::Instance(); }
-  void DrawNames ();
+  Model*  GetModel() const { return Model::Instance(); }
+  void InitializeEventTree();
 
-  void ModelUpdate(unsigned code);
-
+  int Update( Subject& subj, Subject::NotifyType_t type ) override;
 
 protected:
-  void DoModelUpdate(unsigned code);
+  void DoModelUpdate();
   void UpdateEventInfo();
   void UpdateTimeline();
   void UpdateCursorTimes();
 
+  bool FileSave();
+  bool FileSaveAs();
+
   // Event handlers
-  void OnPaint(wxPaintEvent& event);
-  void OnIdle(wxIdleEvent& evt);
+  void OnPaint( wxPaintEvent& event );
+  void OnIdle( wxIdleEvent& evt );
 
+  void FileOpenHandler( wxCommandEvent& event );
+  void MergeEventsHandler( wxCommandEvent& event );
+  void SaveHandler( wxCommandEvent& event );
+  void SaveAsHandler( wxCommandEvent& event );
+  void QuitHandler( wxCommandEvent& event );
+  void AboutHandler( wxCommandEvent& event );
 
-  virtual void FileOpenHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void ColorPickerHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void QuitHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void AboutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void ZoomInHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void ZoomOutHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void ZoomFillHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void CursorMenuHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void ResetCursorHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void RefreshHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void EventDataHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void EditDataSetAnnotationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  void ColorPickerHandler( wxCommandEvent& event );
+  void ZoomInHandler( wxCommandEvent& event );
+  void ZoomOutHandler( wxCommandEvent& event );
+  void ZoomFillHandler( wxCommandEvent& event );
+  void CursorMenuHandler( wxCommandEvent& event );
+  void ResetCursorHandler( wxCommandEvent& event );
+  void RefreshHandler( wxCommandEvent& event );
+  void EventDataHandler( wxCommandEvent& event );
+  void EditDataSetAnnotationHandler( wxCommandEvent& event );
 
-  virtual void handle_move_top(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void handle_move_up(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void handle_move_down(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void handle_move_bottom(wxCommandEvent &event); // wxGlade: <event_handler>
+  void handle_move_top( wxCommandEvent& event );
+  void handle_move_up( wxCommandEvent& event );
+  void handle_move_down( wxCommandEvent& event );
+  void handle_move_bottom( wxCommandEvent& event );
 
-  virtual void handle_filter_events(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void handle_enter_timeline(wxCommandEvent &event); // wxGlade: <event_handler>
+  void handle_filter_events( wxCommandEvent& event );
+  void handle_enter_timeline( wxCommandEvent& event );
 
-  virtual void Curs1Set(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void Curs1Down(wxSpinEvent &event); // wxGlade: <event_handler>
-  virtual void Curs1Up(wxSpinEvent &event); // wxGlade: <event_handler>
-  virtual void Curs2Set(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void Curs2Down(wxSpinEvent &event); // wxGlade: <event_handler>
-  virtual void Curs2Up(wxSpinEvent &event); // wxGlade: <event_handler>
+  void Curs1Set( wxCommandEvent& event );
+  void Curs1Down( wxSpinEvent& event );
+  void Curs1Up( wxSpinEvent& event );
+  void Curs2Set( wxCommandEvent& event );
+  void Curs2Down( wxSpinEvent& event );
+  void Curs2Up( wxSpinEvent& event );
 
-  virtual void SortEventNameHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void SortNumOccurHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void SortAvgHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void SortMaxDurationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void SortMinDurationHandler(wxCommandEvent &event); // wxGlade: <event_handler>
-  virtual void SortPctActHandler(wxCommandEvent &event); // wxGlade: <event_handler>
+  void SortEventNameHandler( wxCommandEvent& event );
+  void SortNumOccurHandler( wxCommandEvent& event );
+  void SortAvgHandler( wxCommandEvent& event );
+  void SortMaxDurationHandler( wxCommandEvent& event );
+  void SortMinDurationHandler( wxCommandEvent& event );
+  void SortPctActHandler( wxCommandEvent& event );
 
   DECLARE_EVENT_TABLE();
 
-
 private:
-  unsigned m_pendingUpdate;
-
+  std::set< Subject::NotifyType_t > m_pendingUpdates;
 }; // end class MainFrameApp
 
+/**
+ * This class represents the context data that is associated with the tree view
+ * of the event names.
+ */
+class AppTreeData
+  : public wxTreeItemData
+{
+public:
+  // Event ID associated with this tree node
+  ItemId_t m_itemId;
+};
 
 #endif /* _MAIN_FRAME_APP_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

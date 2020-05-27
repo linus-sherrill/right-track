@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Model.h>
+#include "Model.h"
 
 #include <MainFrameApp.h>
 
@@ -42,13 +42,37 @@
 #include <cereal/cereal.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/portable_binary.hpp>
+#include <cereal/archives/json.hpp>
 
 #include <cstdio>
+#include <stdexcept>
+#include <sstream>
+
+/**
+ * TODO
+ *
+ * Error reporting is sloppy. We can not interact with the window manager
+ * and return codes are so 80's. Throwing an exception with descriptive text
+ * seems like the best approach. Which eception?  std::runtime_error?
+ * custom application exception?
+ */
 
 
 // Support for singleton
 Model * Model::s_instance( nullptr );
 
+const Subject::NotifyType_t Model::UPDATE_cursor_info {Subject::NotifyType(1)};
+const Subject::NotifyType_t Model::UPDATE_event_info  {Subject::NotifyType(2)};
+const Subject::NotifyType_t Model::UPDATE_time_line   {Subject::NotifyType(3)};
+const Subject::NotifyType_t Model::UPDATE_event_frame {Subject::NotifyType(4)};
+
+#if 1 // testing
+  using ModelOutputArchive = ::cereal::JSONOutputArchive;
+  using ModelInputArchive  = ::cereal::JSONInputArchive;
+#else
+  using ModelOutputArchive = ::cereal::BinaryOutputArchive;
+  using ModelInputArchive  = ::cereal::BinaryInputArchive;
+#endif
 
 // ----------------------------------------------------------------
 /** Constructor.
@@ -56,8 +80,7 @@ Model * Model::s_instance( nullptr );
  *
  */
 Model
-::Model(MainFrameApp * frame)
-  : m_parentFrame(frame)
+::Model()
 {
   s_instance = this;
   Reset();
@@ -100,12 +123,15 @@ void Model
   m_selectedOccurrence = 0;
 
   m_maxTime = 0;
-  m_eventFilter = 0;
+  
+  m_eventFilter = false;
+  m_modelDirty = false;
 
   m_viewTimeStart = 0;
   m_viewTimeEnd = 0;
 
   m_modelAnnotation.clear();
+  m_modelFileName.clear();
 }
 
 
@@ -115,7 +141,7 @@ void Model
  * This method reads a raw event file and merges it into the
  * current data base.
  */
-int Model
+void Model
 ::ReadFromFile( const char * file )
 {
   // instantiate our reader
@@ -128,12 +154,11 @@ int Model
   status = file_io.ReadEvents (file, reader);
   if (status != 0)
   {
-    return status;
+    throw std::runtime_error( "Error reading raw events file");
   }
 
+  m_modelDirty = true;
   ScanEvents();
-
-  return status;
 }
 
 
@@ -143,27 +168,20 @@ int Model
  * This method loads a saved (serialized) data base into this model.
  * It replaces any exsiting model data.
  */
-int Model
-:: LoadFromFile( const char * file)
+void Model
+::LoadDataBaseFile( const char * file)
 {
-  //+ validate the file ends in ".rtm"
+  //+ validate the file ends in ".rtmdl"
   std::ifstream input( file, std::ios::binary );
   if (!input)
   {
-    //+ todo present error dialog - file did not open
-    return 1;
+    std::stringstream sstr;
+    sstr << "Could not open file \"" << file << "\"";
+    throw std::runtime_error( sstr.str());
   }
   
-  try {
-    ::cereal::BinaryInputArchive input_ar( input );
-    input_ar( *this );
-  }
-  catch (std::exception& ex)
-  {
-    //+ display error dialog
-    return 1;
-  }
-  return 0;
+  ModelInputArchive input_ar( input );
+  input_ar( *this ); // may throw
 }
 
 
@@ -173,12 +191,12 @@ int Model
  * This method saves the current model to the same file name
  *  it was loaded from.
  */
-int Model
+void Model
 ::SaveToFile()
 {
   std::string out_filename( m_modelFileName );
-  
-  //+ file name ends in ".rtm" or add that to it.
+
+  //+ file name ends in ".rtmdl" or add that to it.
   // string backwards until first '.' - that is the file extension
   auto pos = m_modelFileName.find_last_of(".");
   if ( pos != std::string::npos)
@@ -193,43 +211,65 @@ int Model
   std::ofstream ostr( temp_file, std::ios::binary );
   if ( ! ostr )
   {
-      //+ display error dialog
-    return 1;
+    std::stringstream sstr;
+    sstr << "Could not open file \"" << temp_file << "\"";
+    throw std::runtime_error( sstr.str());
   }
   
-  try {
-    ::cereal::BinaryOutputArchive archive( ostr );
-    archive( *this );
-  }
-  catch( std::exception& ex)
-  {
-    ostr.close();
-    //+ display error dialog - write failed
-    return 1;
-  }
+  ModelOutputArchive archive( ostr ); // may throw
+  archive( *this );
+
   ostr.close();
   
   // Delete m_modelFileName
   if( remove( m_modelFileName.c_str()) )
   {
     // Error deleting the file
-    //+ display error dialog
-    return 1;
+    std::stringstream sstr;
+    sstr << "Could not delete file during save \"" << m_modelFileName << "\"";
+    throw std::runtime_error( sstr.str());
   }
   
   // rename out_filename -> model_file
   if( rename(temp_file.c_str(), m_modelFileName.c_str()) )
   {
     // Error renaming the file
-    //+ display error dialog
-    return 1;
+    std::stringstream sstr;
+    sstr << "Could not rename file during save. "
+        << "From \"" << temp_file << " to " << m_modelFileName;
+    throw std::runtime_error( sstr.str());
   }
-  
-  return 0;
+
+  m_modelDirty = false;
 }
 
+// ----------------------------------------------------------------
+/** Save events database from file.
+ *
+ * This method saves the current model to a new file name.
+ * The file should have the ".rtmd" extsnsion.
+ */
+void Model
+::SaveAsToFile( const char* file)
+{
+  // Write serialized model to temp file
+  std::ofstream ostr( file, std::ios::binary );
+  if ( ! ostr )
+  {
+    std::stringstream sstr;
+    sstr << "Could not open file \"" << file << "\"";
+    throw std::runtime_error( sstr.str());
+  }
 
- // ----------------------------------------------------------------
+  ModelOutputArchive archive( ostr ); // may throw
+  archive( *this );
+  ostr.close();
+
+  m_modelFileName = file;
+  m_modelDirty = false;
+}
+
+// ----------------------------------------------------------------
 /** Get timespan of all events.
  *
  * This method returns the length of time covered from the first event
@@ -383,9 +423,7 @@ void Model
       wxMessageBox( wxT("Internal error - unexpected event type"),
                     wxT("Error"), wxICON_ERROR | wxOK);
       break;
-
     } // end switch
-
   } // end for
 }
 
@@ -402,7 +440,9 @@ void Model
   m_cursor_2_time = t2;
 
   // redraw cursor info fields and event frame
-  ModelUpdate(UPDATE_cursor_info);
+  Notify(UPDATE_cursor_info);
+
+  m_modelDirty = true;
 }
 
 
@@ -421,7 +461,10 @@ void Model
   m_viewTimeStart = start;
   m_viewTimeEnd = end;
 
-  ModelUpdate(UPDATE_time_line | UPDATE_event_frame);
+  Notify(UPDATE_time_line);
+  Notify(UPDATE_event_frame);
+
+  m_modelDirty = true;
 }
 
 void Model
@@ -438,7 +481,10 @@ void Model
   m_selectedEvent = event;
 
   // update event info pane, update event frame to get new highlight
-  ModelUpdate(UPDATE_event_info | UPDATE_event_frame);
+  Notify(UPDATE_event_info);
+  Notify(UPDATE_event_frame);
+
+  m_modelDirty = true;
 }
 
 
@@ -461,6 +507,8 @@ void Model
 ::SelectOccurrence (BaseOccurrence * oc)
 {
   m_selectedOccurrence = oc;
+
+  m_modelDirty = true;
 }
 
 
@@ -510,21 +558,6 @@ int Model
   return count;
 }
 
-
-// ----------------------------------------------------------------
-/** Send message to windows when something changed.
- *
- *
- */
-void Model
-::ModelUpdate(unsigned code)
-{
-  ///@todo This needs to be done better. There are multiple clients
-  // for the update notification. Create a subject/observer pattern?
-  m_parentFrame->ModelUpdate(code);
-}
-
-
 // ----------------------------------------------------------------
 /** Move selected event to top of list.
  *
@@ -572,7 +605,9 @@ void Model
   m_drawOrder[0] = item;
 
   // Need to redraw all events
-  ModelUpdate(UPDATE_event_frame);
+  Notify(UPDATE_event_frame);
+
+  m_modelDirty = true;
 }
 
 
@@ -605,11 +640,13 @@ void Model
       m_drawOrder[i-1] = temp;
 
       // Need to redraw events
-      ModelUpdate(UPDATE_event_frame);
+      Notify(UPDATE_event_frame);
 
       break;
     }
   } // end for
+
+  m_modelDirty = true;
 }
 
 
@@ -642,11 +679,13 @@ void Model
       m_drawOrder[i+1] = temp;
 
       // Need to redraw events
-      ModelUpdate(UPDATE_event_frame);
+      Notify(UPDATE_event_frame);
 
       break;
     }
   } // end for
+
+  m_modelDirty = true;
 }
 
 
@@ -697,7 +736,9 @@ void Model
   m_drawOrder[limit] = item;
 
   // Need to redraw events
-  ModelUpdate(UPDATE_event_frame);
+  Notify(UPDATE_event_frame);
+
+  m_modelDirty = true;
 }
 
 
@@ -712,7 +753,7 @@ void Model
   m_eventFilter = v;
 
   // Need to redraw events
-  ModelUpdate(UPDATE_event_frame);
+  Notify(UPDATE_event_frame);
 }
 
 
@@ -746,4 +787,14 @@ bool Model
 
   // display by default
   return true;
+}
+
+// ----------------------------------------------------------------
+/**
+ * Report if model is dirty.
+ */
+bool Model
+::ModelNeedsSave() const
+{
+  return m_modelDirty;
 }

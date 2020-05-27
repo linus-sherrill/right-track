@@ -34,6 +34,7 @@
 #include <BoundedEvent.h>
 #include <DiscreteEvent.h>
 #include <EventRecords.h>
+#include <Subject.h>
 
 #include <map>
 #include <list>
@@ -58,6 +59,7 @@ class MainFrameApp;
  * The model 
  */
 class Model
+  : public Subject
 {
 public:
   // -- TYPES --
@@ -72,16 +74,13 @@ public:
   using context_history_t = std::vector < ContextHistoryElement >;
   using pp_iterator_t = context_history_t::iterator;
 
-  enum { // bit mask
-    // Low level update events
-    UPDATE_event_info  = 0x001,
-    UPDATE_time_line   = 0x002,
-    UPDATE_event_frame = 0x004,
-    UPDATE_cursor_info = 0x008,
-  };
+  static const Subject::NotifyType_t UPDATE_cursor_info; // Cursor locations have changed
+  static const Subject::NotifyType_t UPDATE_event_info; // event info sidebar (for selected event)
+  static const Subject::NotifyType_t UPDATE_time_line; // Updates display of start and end time of view
+  static const Subject::NotifyType_t UPDATE_event_frame; // redraw event frame
 
   // -- CONSTRUCTORS --
-  Model(MainFrameApp * frame);  // CTOR
+  Model();  // CTOR
   void Reset();
   static Model * Instance();
 
@@ -107,12 +106,11 @@ public:
   wxString& DataSetAnnotation() { return m_modelAnnotation; }
 
   // -- MANIPULATORS --
-  int ReadFromFile( const char * file);
-  int LoadFromFile( const char * file);
-  int SaveToFile(); // use existing file name
-  int SaveAsToFile( const char* file );
+  void ReadFromFile( const char * file); // read new events
+  void LoadDataBaseFile( const char * file);
+  void SaveToFile(); // use existing file name
+  void SaveAsToFile( const char* file );
   
-  void ModelUpdate(unsigned code);
 
   void MoveSelectedEventTop();
   void MoveSelectedEventUp();
@@ -135,20 +133,20 @@ public:
   template<class Archive>
   void serialize(Archive & archive)
   {
-    archive(m_drawOrder, m_eventMap,
-            m_contextMap, m_contextHistory,
-            m_defaultBaselineColor,
-            m_defaultLineColor,
-            m_defaultEventColor,
-            m_startEventColor, m_endEventColor,
-            m_selectColor, m_commentMarkerColor,
-            m_timingOffset,
-            m_maxTime, m_maxItemNumber,
-            m_cursor_1_time, m_cursor_2_time,
-            m_viewTimeStart, m_viewTimeEnd,
+    archive(CEREAL_NVP(m_drawOrder), CEREAL_NVP(m_eventMap),
+            CEREAL_NVP(m_contextMap), CEREAL_NVP(m_contextHistory),
+            CEREAL_NVP(m_defaultBaselineColor),
+            CEREAL_NVP(m_defaultLineColor),
+            CEREAL_NVP(m_defaultEventColor),
+            CEREAL_NVP(m_startEventColor), CEREAL_NVP(m_endEventColor),
+            CEREAL_NVP(m_selectColor), CEREAL_NVP(m_commentMarkerColor),
+            CEREAL_NVP(m_timingOffset),
+            CEREAL_NVP(m_maxTime), CEREAL_NVP(m_maxItemNumber),
+            CEREAL_NVP(m_cursor_1_time), CEREAL_NVP(m_cursor_2_time),
+            CEREAL_NVP(m_viewTimeStart), CEREAL_NVP(m_viewTimeEnd),
 
-            m_modelAnnotation,
-            m_eventFilter);
+            CEREAL_NVP(m_modelAnnotation),
+            CEREAL_NVP(m_eventFilter));
   }
 
   
@@ -181,8 +179,12 @@ public:
 
   void SetEventFilter( bool v );
   bool IsEventDisplayable(ItemId_t event) const;
+  
+  // This method returns true if the model has been
+  // modified since the last save.
+  bool ModelNeedsSave() const;
 
-
+  
   // Colors to use
   wxColour m_defaultBaselineColor;
   wxColour m_defaultLineColor;
@@ -194,10 +196,12 @@ public:
 
   wxColourData m_persistentColourData;
 
+  // Name where the model was loaded from or stored.
+  std::string m_modelFileName;
+  
 private:
   void ScanEvents();
 
-  MainFrameApp * m_parentFrame;
   double m_timingOffset; // time of first event
   double m_maxTime;
 
@@ -212,6 +216,7 @@ private:
 
   wxString m_modelAnnotation;
 
+  // ---- non persistent state ----
   // Event click info
   BoundedEventStatistics m_evc_stats;
   double m_evc_data;
@@ -221,12 +226,14 @@ private:
   BaseOccurrence * m_selectedOccurrence;
 
   bool m_eventFilter;
-
-  // name where the model was stored.
-  std::string m_modelFileName;
-
+  bool m_modelDirty;
+  
   // Singleton support
   static Model * s_instance;
+  
+  // Make non-copyable
+  Model( const Model& ) = delete;
+  Model& operator=( const Model& ) = delete;
 };
 
 
@@ -242,7 +249,7 @@ SortEvents ()
   std::sort (m_drawOrder.begin(), m_drawOrder.end(), SORT());
 
   // Need to redraw events
-  ModelUpdate(UPDATE_event_frame);
+  Notify(UPDATE_event_frame);
 }
 
 #endif /* _MODEL_H_ */
