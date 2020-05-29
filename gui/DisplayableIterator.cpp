@@ -10,7 +10,6 @@ using namespace ::RightTrack;
 using namespace ::RightTrack::Internal;
 
 // ----------------------------------------------------------------
-
 /** Constructor.
  *
  * Create a new iterator that points to the first displayable event.
@@ -24,7 +23,6 @@ DisplayableIterator
 }
 
 // ----------------------------------------------------------------
-
 /** Is current iterator position valid.
  *
  *
@@ -37,7 +35,6 @@ DisplayableIterator
 }
 
 // ----------------------------------------------------------------
-
 /** Start/restart iterator from beginning.
  *
  * This method returns the iterator to the first displayable event.
@@ -51,7 +48,6 @@ DisplayableIterator
 }
 
 // ----------------------------------------------------------------
-
 /** Go to next displayable event.
  *
  * This method moves the iterator to the next displayable event, if
@@ -75,7 +71,6 @@ DisplayableIterator
 }
 
 // ----------------------------------------------------------------
-
 /** Get current event.
  *
  * This method returns the current displayable event.
@@ -93,7 +88,6 @@ DisplayableIterator
 }
 
 // ----------------------------------------------------------------
-
 /** Get current event id.
  *
  * This method returns event id of the current event.
@@ -110,6 +104,7 @@ DisplayableIterator
   return *m_currentIndex;
 }
 
+// ----------------------------------------------------------------
 // returns the next displayable, even if it is the current one
 void
 DisplayableIterator

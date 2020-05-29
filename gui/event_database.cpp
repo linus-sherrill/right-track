@@ -1,7 +1,7 @@
 /*ckwg +5
  * Copyright 2011, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
- * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ * Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065.
  */
 
 #include "event_database.h"
@@ -13,16 +13,22 @@ BoundedEventDef*
 EventDef
 ::GetBoundedEvent()
 {
-  return 0;
+  return nullptr;
 }
 
 DiscreteEventDef*
 EventDef
 ::GetDiscreteEvent()
 {
-  return 0;
+  return nullptr;
 }
 
+ContextDef*
+EventDef
+::GetContextEvent()
+{
+  return nullptr;
+}
 
 // ----------------------------------------------------------------
 /** Create event info string.
@@ -42,7 +48,7 @@ BoundedEventDef
   result << wxString::Format( wxT( "Avg dir: %f\n" ), m_stats.m_avgDuration );
   result << wxString::Format( wxT( "Std: %f\n" ), m_stats.m_stdDuration );
   result << wxString::Format( wxT( "Active%%: %f\n" ), m_stats.m_activePct );
-// + add group name if there is one?
+//+ add group name if there is one?
 
   return result;
 }
@@ -88,8 +94,12 @@ BoundedOccurrence
                               Model::Instance()->TimeOffset( m_endTime ) );
   if ( !m_startData.empty() )
   {
-    // TODO need to handle multiple items
     result << wxString::Format( wxT( "Start data: %f\n" ), m_startData[ 0 ] );
+
+    for ( unsigned i = 1; i < m_startData.size(); ++i )
+    {
+      result << wxString::Format( wxT( ", %f" ), m_startData[ i ] );
+    }
   }
 
   if ( !m_endData.empty() )
@@ -143,10 +153,42 @@ DiscreteEventDef
   wxString result;
 
   result << wxString::Format( wxT( "Name: %s\n" ), EventName().c_str() );
-  result << wxString::Format( wxT( "Event Count: %d\n" ), m_list.size() );
+  result << wxString::Format( wxT( "Event Count: %d\n" ), static_cast<int>(m_list.size()) );
 
   return result;
 }
+
+// ================================================================
+wxString
+ContextDef
+::GetEventInfo()
+{
+  wxString result;
+
+  result << wxString::Format( wxT( "Name: %s\n" ), EventName().c_str() );
+  result << wxString::Format( wxT( "Event Count: %d\n" ), static_cast<int>(m_list.size()) );
+
+  return result;
+}
+
+wxString
+ContextHistoryElement
+::GetInfo()
+{
+  wxString result;
+
+  result << wxT( "------\n" );
+  result << wxString::Format( wxT("Duration: %f  (From: %f  To: %f)\n" ),
+                             ( m_endTime - m_startTime ),
+                             Model::Instance()->TimeOffset( m_startTime ),
+                             Model::Instance()->TimeOffset( m_endTime ) );
+
+  result << wxString::Format( wxT( "Pid: %d\n" ), m_eventPid );
+
+  return result;
+}
+
+
 
 // ================================================================
 bool
@@ -161,4 +203,11 @@ DiscreteOccurrence
 ::ContainsTime( double time, double delta ) const
 {
   return ( m_eventTime >= time - delta ) && ( m_eventTime <= time + delta );
+}
+
+bool
+ContextHistoryElement
+::ContainsTime( double time, double delta ) const
+{
+  return ( time >= m_startTime ) && ( time <= m_endTime );
 }

@@ -6,29 +6,6 @@
 
 #include "TimeLineCursor.h"
 
-
-// ----------------------------------------------------------------
-/**
- *
- *
- */
-TimeLineCursor::
-TimeLineCursor()
-  : m_xCoord(0),
-    m_enabled(false)
-
-{
-
-}
-
-
-TimeLineCursor::
-~TimeLineCursor()
-{
-
-}
-
-
 // ----------------------------------------------------------------
 /** Draw cursor in DC.
  *
@@ -51,9 +28,10 @@ Draw(wxClientDC& dc, wxRect view)
                m_xCoord - view.GetLeft(), view.GetBottom() );
 
   // draw grab rect.
-//  dc.DrawRectangle( m_xCoord-2, view.GetBottom(), 5, -5 );
+  dc.DrawRectangle( m_xCoord - view.GetLeft() -2, // to center box on line
+                    view.GetBottom(),
+                    5, -5 );
 }
-
 
 // ----------------------------------------------------------------
 /** Move cursor to new location.
@@ -64,12 +42,10 @@ void TimeLineCursor::
 Move (int x_coord)
 {
   m_xCoord = x_coord;
-  std::cout << "cursor set to " << x_coord << "\n"; //+ TEMP
   // It would be nice to redraw cursor here, but we don't have enough
   // info.
-
+  //+ Could publish redraw cursor notification event
 }
-
 
 // ----------------------------------------------------------------
 /** Test for mouse click on cursor.
@@ -102,8 +78,4 @@ IsSelected ( wxPoint click_point)
   }
 
   return false;
-
 }
-
-
-

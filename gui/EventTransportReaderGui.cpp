@@ -38,7 +38,6 @@ EventTransportReaderGui
 {}
 
 // ----------------------------------------------------------------
-
 /**
  *
  *
@@ -47,17 +46,17 @@ int
 EventTransportReaderGui
 ::NewEvent( EventDefinition const& msg )
 {
-  EventDef* def;
+  EventDef::handle_t def;
 
   switch ( msg.event_type )
   {
     case Event::ET_TEXT_EVENT:
     case Event::ET_DISCRETE_EVENT:
-      def = new DiscreteEventDef();
+      def = std::make_shared<DiscreteEventDef>();
       break;
 
     case Event::ET_BOUNDED_EVENT:
-      def = new BoundedEventDef();
+      def = std::make_shared<BoundedEventDef>();
       break;
 
     default:
@@ -82,13 +81,12 @@ EventTransportReaderGui
   def->m_originName = m_originString;
 
   m_model->m_drawOrder.push_back( def->m_eventId );
-  m_model->m_eventMap[ def->m_eventId ] = EventDef::handle_t( def );
+  m_model->m_eventMap[ def->m_eventId ] = def;
 
   return ( 0 );
 }
 
 // ----------------------------------------------------------------
-
 /**
  *
  *
@@ -133,7 +131,6 @@ EventTransportReaderGui
 }
 
 // ----------------------------------------------------------------
-
 /** Handle text event.
  *
  * Currently this is hacked in as a discrete event with the user
@@ -145,7 +142,6 @@ EventTransportReaderGui
 {
   Model::event_iterator_t ix;
   ix = m_model->m_eventMap.find( msg.event_id );
-
   if ( ix == m_model->m_eventMap.end() )
   {
     return ( 1 ); // event not found
@@ -166,7 +162,6 @@ EventTransportReaderGui
 }
 
 // ----------------------------------------------------------------
-
 /**
  *
  *
@@ -199,7 +194,6 @@ EventTransportReaderGui
 }
 
 // ----------------------------------------------------------------
-
 /**
  *
  *
@@ -208,15 +202,18 @@ int
 EventTransportReaderGui
 ::NewEvent( ContextDefinition const& msg )
 {
-  ContextDef ev;
-  ev.m_ctxtDef = msg;
+  EventDef::handle_t def;
+  def = std::make_shared<ContextDef>();
+  def->m_eventName = wxString( msg.context_name.c_str(), wxConvUTF8 );
+  def->m_eventId = msg.context_id;
 
-  // TBD
+  m_model->m_drawOrder.push_back( def->m_eventId );
+  m_model->m_eventMap[ def->m_eventId ] = def;
+
   return ( 0 );
 }
 
 // ----------------------------------------------------------------
-
 /**
  *
  *
@@ -225,11 +222,21 @@ int
 EventTransportReaderGui
 ::NewEvent( ContextPush const& msg )
 {
-  ContextHistoryElement ev;
-  
+  ContextHistoryElement* ev = new ContextHistoryElement();
+
+  Model::event_iterator_t ix;
+  ix = m_model->m_eventMap.find( msg.context_id );
+  if ( ix == m_model->m_eventMap.end() )
+  {
+    return ( 1 ); // event not found
+  }
+
   // Convert usec to float seconds
-  ev.m_startTime = (double) msg.event_time.secs + ( msg.event_time.usecs / 1e6 );
-  // TBD
+  ev->m_startTime = (double) msg.event_time.secs + ( msg.event_time.usecs / 1e6 );
+
+  auto event = ix->second->GetContextEvent();
+  event->m_list.push_back( BaseOccurrence::handle_t( ev ) );
+  event->m_eventStack.push( ev );
 
   return ( 0 );
 }
@@ -244,11 +251,39 @@ int
 EventTransportReaderGui
 ::NewEvent( ContextPop const& msg )
 {
-  ContextHistoryElement ev;
-  
+  Model::event_iterator_t ix;
+  ix = m_model->m_eventMap.find( msg.context_id );
+  if ( ix == m_model->m_eventMap.end() )
+  {
+    std::cout << "Error in pop for ContextID " << msg.context_id
+    << ". Context is not registered.\n";
+    return 1 ; // event not found
+  }
+
+  // Check the event stack is not empty
+  auto event = ix->second->GetContextEvent();
+
+  if ( event->m_eventStack.empty() )
+  {
+    // This is not a fatal error in that we don't want to invalidate
+    // the whole set of events just due to one problem.
+    std::cout << "Error in pop for context \"" << event->m_eventName
+    << "\". Received a pop and context stack is empty.\n";
+    return 1;
+  }
+
+  // The element at the top of the stack matches this pop.
+  ContextHistoryElement* evo = event->m_eventStack.top();
+
+  // Update that element with ending info. If end time is not zero, then
+  // there has already been a pop for this context.
+  assert( evo->m_endTime == 0 );
+
   // Convert usec to float seconds
-  ev.m_endTime = (double) msg.event_time.secs + ( msg.event_time.usecs / 1e6 );
-  // TBD
+  evo->m_endTime = (double) msg.event_time.secs + ( msg.event_time.usecs / 1e6 );
+
+  // remove this element since it has been matched.
+  event->m_eventStack.pop();
 
   return ( 0 );
 }

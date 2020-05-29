@@ -69,6 +69,9 @@ EVT_MENU( SortMaxDuration_id, MainFrameApp::SortMaxDurationHandler )
 EVT_MENU( SortMinDuration_id, MainFrameApp::SortMinDurationHandler )
 EVT_MENU( SortPctAct_id, MainFrameApp::SortPctActHandler )
 
+// Event tree handlers
+EVT_TREE_ITEM_ACTIVATED(wxID_ANY, MainFrameApp::TreeItemActivatedHandler)
+
 END_EVENT_TABLE()
 
 // -------------------------------------------------------------------------------
@@ -83,7 +86,54 @@ MainFrameApp
 {
   // Attach ourselves as an observer of the model
   Observe( *GetModel() );
+
+  // Pass our address to the EventCanvas
+  g_EventFrame->SetMainView( this );
 }
+
+
+// ================================================================
+void MainFrameApp
+::SetTimeBounds (double start, double end)
+{
+  m_viewTimeStart = start;
+  m_viewTimeEnd = end;
+
+  UpdateTimeline();
+  Update( Model::UPDATE_event_frame );
+}
+
+void MainFrameApp
+::GetTimeBounds (double& start, double& end)
+{
+  start = m_viewTimeStart;
+  end = m_viewTimeEnd;
+}
+
+// ----------------------------------------------------------------
+/** Get/set cursor times
+ *
+ *
+ */
+void MainFrameApp
+::SetCursorTimes (double t1, double t2)
+{
+  m_cursor_1_time = t1;
+  m_cursor_2_time = t2;
+
+  // redraw cursor info fields and event frame
+  UpdateCursorTimes(); // update time display areas
+  g_EventFrame->ResetCursorToModel(); // move lines to new location
+  Update( Model::UPDATE_event_frame );
+}
+
+void MainFrameApp
+::GetCursorTimes (double& t1, double& t2)
+{
+  t1 = m_cursor_1_time;
+  t2 = m_cursor_2_time;
+}
+
 
 // ----------------------------------------------------------------
 /** Idle time processing
@@ -136,7 +186,7 @@ MainFrameApp
 
   InitializeEventTree();
   g_EventFrame->ResetView();
-  g_EventFrame->DrawNow();
+  Update( Model::UPDATE_event_frame );
 }
 
 // ----------------------------------------------------------------
@@ -145,10 +195,10 @@ void
 MainFrameApp
 ::FileOpenHandler( wxCommandEvent& event )
 {
-  wxFileDialog dialog( this, wxT( "Open event database file" ),
+  wxFileDialog dialog( this, wxT( "Open existing session file" ),
                        wxEmptyString, // default directory
                        wxEmptyString, // default file name
-                       wxT( "RightTrack files (*.rtmdl)|*.rtmdk" ) );
+                       wxT( "RightTrack files (*.rtmdl)|*.rtmdk|All files(*)|*" ) );
 
   if ( dialog.ShowModal() != wxID_OK )
   {
@@ -156,9 +206,6 @@ MainFrameApp
   }
 
   wxString path = dialog.GetPath();
-
-  // Reset model
-  GetModel()->Reset();
 
   try
   {
@@ -172,11 +219,12 @@ MainFrameApp
     // display message;
     wxMessageBox( wxString( msg.str() ),
                   wxT( "Error" ), wxICON_ERROR | wxOK );
+    return;
   }
 
   InitializeEventTree();
   g_EventFrame->ResetView();
-  g_EventFrame->DrawNow();
+  Update( Model::UPDATE_event_frame );
 }
 
 // ----------------------------------------------------------------
@@ -203,6 +251,11 @@ bool
 MainFrameApp
 ::FileSave()
 {
+  //@TODO The top level save should also save the views not just the model.
+  // This would requrie writing the state of this object to the archive.
+  // Maybe the model could write out all observers after it writes its state?
+  //
+
   try
   {
     GetModel()->SaveToFile();
@@ -409,9 +462,9 @@ MainFrameApp
     // yes -> Save
     // no -> Don't save
 
-    wxMessageDialog dialog( this, wxString( msg.str().c_str() ),
-                            "Your changes will be lost if you don't save them.", //
-                                                                                 // caption
+    wxMessageDialog dialog( this,
+                            "Your changes will be lost if you don't save them.",
+                            wxString( msg.str().c_str() ),
                             ( wxYES_NO | wxCANCEL | wxICON_EXCLAMATION ) );
 
     //                            Yes        NO        Cancel
@@ -481,15 +534,15 @@ MainFrameApp
   info.SetWebSite( wxT( "http://www.kitware.com" ) );
 
   // Sets the icon which will be displayed in About box.
-// +  info.SetIcon( wxICON(wxICON_AAA) );
+//+  info.SetIcon( wxICON(wxICON_AAA) );
 
   // Sets application license string. Only wxGTK port has native way of
   // displaying application license. All other ports will use generic way for
   // this purpose.
-  info.SetLicence( wxT(
-                     "Copyright 2011-2020 by Kitware, Inc. All Rights Reserved. Please refer to\n"
-                     "KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,\n"
-                     "Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065." ) );
+  info.SetLicence(
+    wxT( "Copyright 2011-2020 by Kitware, Inc. All Rights Reserved. Please refer to\n"
+         "KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,\n"
+         "Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065." ) );
 
   info.SetCopyright( wxT( "(C) 2011-2020 Kitware Inc." ) );
   // At last, we can display about box
@@ -511,6 +564,14 @@ MainFrameApp
   m_pendingUpdates.insert( type );
 }
 
+int
+MainFrameApp
+::Update( Subject::NotifyType_t type )
+{
+  // Add code to set to be consumed by DoModelUpdate
+  m_pendingUpdates.insert( type );
+}
+
 // This is called from the idle loop to apply all pending updates.
 void
 MainFrameApp
@@ -525,7 +586,7 @@ MainFrameApp
     g_EventFrame->ResetCursorToModel(); // move lines to new location
 
     // This is a cheap way of getting the frame updated.
-    m_pendingUpdates.insert( Model::UPDATE_event_frame );
+    Update( Model::UPDATE_event_frame );
   }
 
   if ( m_pendingUpdates.count( Model::UPDATE_event_info ) > 0 )
@@ -540,7 +601,7 @@ MainFrameApp
 
   if ( m_pendingUpdates.count( Model::UPDATE_event_frame ) > 0 )
   {
-    g_EventFrame->DrawNow(); // update whole frame
+    g_EventFrame->Refresh(); // update whole frame
   }
 
   // erase all updates
@@ -592,7 +653,7 @@ MainFrameApp
 
     if ( !temp.empty() ) // collect comment if any
     {
-      comments += wxT( "Occurrence:\n" ) + temp;
+      comments += wxT( "Comment:\n" ) + temp;
     }
   }
 
@@ -612,8 +673,10 @@ MainFrameApp
 ::UpdateTimeline()
 {
   // Get start and end time - fill in the bounds fields
+  //+ Time bounds are property of the view
+
   double start, end;
-  GetModel()->GetTimeBounds( start, end );
+  GetTimeBounds( start, end );
 
   this->g_StartTime->SetValue( wxString::Format( wxT( "%1.3f sec" ), start ) );
   this->g_EndTime->SetValue( wxString::Format( wxT( "%1.3f sec" ), end ) );
@@ -630,7 +693,7 @@ MainFrameApp
 {
   double c1, c2;
 
-  GetModel()->GetCursorTimes( c1, c2 );
+  GetCursorTimes( c1, c2 );
 
   this->g_Curs1Time->SetValue( wxString::Format( wxT( "%1.3f" ), c1 ) );
   this->g_Curs2Time->SetValue( wxString::Format( wxT( "%1.3f" ), c2 ) );
@@ -645,11 +708,11 @@ MainFrameApp
   // update cursor position
   wxString val = this->g_Curs1Time->GetValue();
   double c1, c2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
+  GetCursorTimes( c1, c2 );
   val.ToDouble( &c1 );
-  pm->SetCursorTimes( c1, c2 );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 void
@@ -660,12 +723,12 @@ MainFrameApp
   // update model
   double c1, c2;
   double b1, b2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
-  pm->GetTimeBounds( b1, b2 );
+  GetCursorTimes( c1, c2 );
+  GetTimeBounds( b1, b2 );
   c1 -= ( b2 - b1 ) / 100.0;
-  pm->SetCursorTimes( c1, c2 );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 void
@@ -676,13 +739,12 @@ MainFrameApp
   // update model
   double c1, c2;
   double b1, b2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
-  pm->GetTimeBounds( b1, b2 );
+  GetCursorTimes( c1, c2 );
+  GetTimeBounds( b1, b2 );
   c1 += ( b2 - b1 ) / 100.0;
-
-  pm->SetCursorTimes( c1, c2 );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 void
@@ -693,11 +755,11 @@ MainFrameApp
   // update cursor position
   wxString val = this->g_Curs2Time->GetValue();
   double c1, c2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
+  GetCursorTimes( c1, c2 );
   val.ToDouble( &c2 );
-  pm->SetCursorTimes( c1, c2 );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 void
@@ -708,12 +770,12 @@ MainFrameApp
   // update model
   double c1, c2;
   double b1, b2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
-  pm->GetTimeBounds( b1, b2 );
+  GetCursorTimes( c1, c2 );
+  GetTimeBounds( b1, b2 );
   c2 -= ( b2 - b1 ) / 100.0;
-  pm->SetCursorTimes( c1, c2 );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 void
@@ -724,55 +786,12 @@ MainFrameApp
   // update model
   double c1, c2;
   double b1, b2;
-  Model* pm = GetModel();
 
-  pm->GetCursorTimes( c1, c2 );
-  pm->GetTimeBounds( b1, b2 );
+  GetCursorTimes( c1, c2 );
+  GetTimeBounds( b1, b2 );
   c2 += ( b2 - b1 ) / 100.0;
-  pm->SetCursorTimes( c1, c2 );
-}
-
-// ----------------------------------------------------------------
-/** Draw event names in the correct panel.
- *
- * This should only ned to be done once for a specific model.
- * Updated if events are added.
- */
-void
-MainFrameApp
-::InitializeEventTree()
-{
-  g_EventList->DeleteAllItems();
-
-  wxTreeItemId root_id = g_EventList->AddRoot( wxT( "Events" ) );
-
-  //
-  // The goal for this tree ctrl is to allow drag to reorder tracks, and
-  // the ability to make groups (or display groups as defined in the
-  // input data). Also the ability to hide events that are of no
-  // interest.
-  //
-  // This tree view would be the main control for determining draw order and
-  // visibility. So this control will need to be persistent WRT the VIEW.
-  //
-
-  // loop over draw order and add event name to the tree
-  DisplayableIterator dit;
-  wxTreeItemId node = root_id;
-
-  do
-  {
-    // If not valid, we have gone off the end of the list
-    if ( !dit.IsCurrentValid() ) { break; }
-
-    auto the_event = dit.CurrentEvent();
-    auto event_name = the_event->EventName();
-    AppTreeData* node_data = new AppTreeData; //+ not sure who manages this storage
-    node_data->m_itemId = the_event->GetEventId();
-
-    // Append name to current node
-    g_EventList->AppendItem( node, event_name, -1, -1, node_data );
-  }  while ( dit.Next() );
+  SetCursorTimes( c1, c2 );
+  Update( Model::UPDATE_event_frame );
 }
 
 // ----------------------------------------------------------------
@@ -873,4 +892,107 @@ MainFrameApp
 ::SortPctActHandler( wxCommandEvent& event )
 {
   GetModel()->SortEvents< SortByPercentage >();
+}
+
+// =========================================================
+// Event tree support methods
+// ----------------------------------------------------------------
+/** Draw event names in the correct panel.
+ *
+ * This should only ned to be done once for a specific model.
+ * Updated if events are added.
+ */
+void
+MainFrameApp
+::InitializeEventTree()
+{
+  g_EventList->DeleteAllItems();
+  
+  wxTreeItemId root_id = g_EventList->AddRoot( wxT( "Events" ) );
+  
+  //
+  // The goal for this tree ctrl is to allow drag to reorder tracks, and
+  // the ability to make groups (or display groups as defined in the
+  // input data). Also the ability to hide events that are of no
+  // interest.
+  //
+  // This tree view would be the main control for determining draw order and
+  // visibility. So this control will need to be persistent WRT the VIEW.
+  //
+  
+  // loop over draw order and add event name to the tree
+  DisplayableIterator dit;
+  wxTreeItemId node = root_id;
+  
+  do
+  {
+    // If not valid, we have gone off the end of the list
+    if ( !dit.IsCurrentValid() ) { break; }
+    
+    auto the_event = dit.CurrentEvent();
+    auto event_name = the_event->EventName();
+    AppTreeData* node_data = new AppTreeData; //+ not sure who manages this storage
+    node_data->m_itemId = the_event->GetEventId();
+    
+    // Append name to current node
+    g_EventList->AppendItem( node, event_name, -1, -1, node_data );
+  }  while ( dit.Next() );
+}
+
+// ------------------------------------------------------------------
+/**
+ * Initialize tree based on event groups.
+ *
+ * This method created the tree view based on the event groups.
+ *
+ * TBD Groups can be specified hierarchically as 'a.b.c' and need to
+ * be parsed here so the real tree can be built.
+ */
+void
+MainFrameApp
+::InitializeEventTreeByGroup()
+{
+  std::map< wxString, wxTreeItemId > group_map;
+
+  g_EventList->DeleteAllItems();
+
+  wxTreeItemId root_id = g_EventList->AddRoot( wxT( "Events" ) );
+
+  for ( auto const& ev : GetModel()->m_eventMap )
+  {
+    auto event = ev.second;
+    auto group_name = event->EventGroup();
+    auto event_name = event->EventName();
+    auto node_id = root_id;
+
+    if ( ! group_name.empty() )
+    {
+      // Does group exist
+      if ( group_map.count( group_name ) == 0)
+      {
+        // create new group entry
+        node_id = g_EventList->AppendItem( root_id, group_name );
+        group_map[ group_name ] = node_id;
+      }
+      else
+      {
+        node_id = group_map[ group_name ];
+      }
+    }
+
+    AppTreeData* node_data = new AppTreeData; //+ not sure who manages this storage
+    node_data->m_itemId = event->GetEventId();
+
+    g_EventList->AppendItem( node_id, event_name, -1, -1, node_data );
+  } // end for
+}
+
+
+// ------------------------------------------------------------------
+void
+MainFrameApp
+::TreeItemActivatedHandler(wxTreeEvent &event)
+{
+  // This should select the event in the time-line window
+  //+ TBD
 }

@@ -1,16 +1,17 @@
 /*ckwg +5
  * Copyright 2010, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
- * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ * Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065.
  */
 
 #include "EventCanvasApp.h"
 
-#include <wx/dcclient.h>
-
 #include "DisplayableIterator.h"
+#include "MainFrameApp.h"
 #include "Model.h"
 #include "TextEditDialogApp.h"
+
+#include <wx/dcclient.h>
 
 // Define our custom event table
 BEGIN_EVENT_TABLE( EventCanvasApp, wxScrolledWindow )
@@ -23,7 +24,6 @@ EVT_RIGHT_DOWN( EventCanvasApp::OnMouseRightClick )
 END_EVENT_TABLE()
 
 // ----------------------------------------------------------------
-
 /** Constructor.
  *
  *
@@ -38,19 +38,12 @@ EventCanvasApp
     m_pixelsPerSecond( 0 ),
     m_defaultPixelsPerSecond( 0 )
 {
-  m_yIncrement = 25;
 
   m_cursor_1.Move( 25 );
   m_cursor_2.Move( 150 );
 }
 
-EventCanvasApp::
-~EventCanvasApp()
-{
-}
-
 // ----------------------------------------------------------------
-
 /** Reset view parameters.
  *
  * This method resets all view parameters. We are called when new data
@@ -63,18 +56,15 @@ EventCanvasApp
   m_pixelsPerSecond = 0;
   SetDefaultScaling();
 
-  m_yIncrement = 25;
-
   m_cursor_1.Move( 25 );
   m_cursor_2.Move( 150 );
 
   double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
   double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
-  GetModel()->SetCursorTimes( ct_1, ct_2 ); // causes update request
+  MainView()->SetCursorTimes( ct_1, ct_2 ); // causes update request
 }
 
 // ----------------------------------------------------------------
-
 /** Reset cursor based on model data.
  *
  *
@@ -85,9 +75,10 @@ EventCanvasApp
 {
   double ct_1;
   double ct_2;
-  GetModel()->GetCursorTimes( ct_1, ct_2 );
+  MainView()->GetCursorTimes( ct_1, ct_2 );
 
-  std::cout << "Time from model: " << ct_1 << ", " << ct_2 << // TEMP
+  //+ DEBUG
+  std::cout << "Time from model: " << ct_1 << ", " << ct_2 << //+ TEMP
     "  Pixels per sec: " << m_pixelsPerSecond << "\n";
 
   int x_coord = ct_1  * m_pixelsPerSecond + 15;
@@ -98,7 +89,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Reset cursors to be in the display window.
  *
  *
@@ -117,11 +107,10 @@ EventCanvasApp
 
   double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
   double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
-  GetModel()->SetCursorTimes( ct_1, ct_2 );
+  MainView()->SetCursorTimes( ct_1, ct_2 );
 }
 
 // ----------------------------------------------------------------
-
 /** Draw on demand - now!!
  *
  *
@@ -130,6 +119,8 @@ void
 EventCanvasApp
 ::DrawNow()
 {
+  //+ TODO Does not erase background This may be replaced by Refresh()
+  // If this method does not redraw all things correctly see above.
   wxClientDC dc( this );
   DoPrepareDC( dc );
   DrawEvents( dc );
@@ -137,7 +128,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Handle OnDraw event.
  *
  *
@@ -154,7 +144,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Draw all events in listed order.
  *
  * Draw all events into content area. The drawing area origin has been
@@ -168,22 +157,31 @@ EventCanvasApp
 
   SetDefaultScaling();
 
-  SetVirtualSize( CalculateVirtualSize() );
+  SetVirtualSize( CalculateCanvasSize() );
 
-  wxRect view = GetCurrentView(); // current view in virtual coords
-  pm->SetTimeBounds( XcoordToSeconds( view.GetLeft() ), XcoordToSeconds( view.GetRight() ) );
+  wxRect view = GetCurrentView(); // current view in canvas coords
 
-  int start_idx = view.GetTop() / m_yIncrement;
-  int end_idx = view.GetBottom() / m_yIncrement;
+  // Set the start and end time display fields
+  MainView()->SetTimeBounds( XcoordToSeconds( view.GetLeft() ),
+                            XcoordToSeconds( view.GetRight() ) );
+
+  // Determine the starting and ending indices for events
+  // that are visible in this view. We are doing this as an
+  // optimization so we don't (re)draw events that are not
+  // currently visible.
+  int start_idx = view.GetTop() / s_yIncrement;
+  int end_idx = view.GetBottom() / s_yIncrement;
 
   // backup one row to make sure thare are no partial row rendering.
   if ( start_idx > 0 ) { start_idx--; }
 
   // rows on screen we need to draw
+  // Add one more row/event so that if there is a partial event at the
+  // bottom, it is also drawn.
   int row_count = end_idx - start_idx + 1;
 
   // row number to draw this event on
-  int y_coord = ( start_idx + 1 ) * m_yIncrement;
+  int y_coord = ( start_idx + 1 ) * s_yIncrement;
 
   DisplayableIterator event_it;
   // scan through list of events to find the start_idx'th DISPLAYABLE
@@ -191,6 +189,7 @@ EventCanvasApp
   event_it.Next( start_idx );
 
   // for each event in their drawing order
+  // Valid checks for incrementing past end.
   while ( event_it.IsCurrentValid() && ( row_count >= 0 ) )
   {
     ItemId_t ev_id = event_it.CurrentItemId();
@@ -199,7 +198,7 @@ EventCanvasApp
     if ( pm->IsEventSelected( ev_id ) )
     {
       // Draw light background for this event at y_coord +/- 12 pixels
-      //
+      // to indicate that this event is selected.
       dc.SetPen( wxPen( pm->m_selectColor, 1, wxPENSTYLE_SOLID ) );
       dc.SetBrush( wxBrush( pm->m_selectColor, wxBRUSHSTYLE_SOLID ) );
     }
@@ -210,10 +209,13 @@ EventCanvasApp
       dc.SetPen( wxPen( col, 1, wxPENSTYLE_SOLID ) );
       dc.SetBrush( dc.GetBackground() );
     }
+
+    // draw background using previous settings (x, y, w, h)
     dc.DrawRectangle( view.x, y_coord - 12, view.GetWidth(), 24 );
 
     EventDef::handle_t eh = event_it.CurrentEvent();
 
+    // Draw the event detail based on event type
     switch ( eh->EventType() )
     {
       case Event::ET_BOUNDED_EVENT:
@@ -238,14 +240,13 @@ EventCanvasApp
     } // end switch
 
     // Increment to next drawing line, row, event, ...
-    y_coord += m_yIncrement;
+    y_coord += s_yIncrement;
     row_count--;
     event_it.Next();
   } // end
 }
 
 // ----------------------------------------------------------------
-
 /** Draw bounded events.
  *
  * Draw a single bounded event history at specified Y location.
@@ -265,7 +266,7 @@ EventCanvasApp
   dc.DrawLine( view.x, y_coord, view.x + view.GetWidth(), y_coord );
 
   // draw event name
-  // + Should render in g_EventList panel
+  //+ TODO Should render in g_EventList panel
   wxFont fnt( 7, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
   dc.SetFont( fnt );
   dc.DrawText( eh->EventName(), view.x + 2, y_coord );
@@ -345,7 +346,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Draw discrete events.
  *
  *
@@ -432,7 +432,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Draw comment annotation.
  *
  * This method draws a graphical annotation indicating there is a
@@ -455,10 +454,11 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Enable display of cursors.
  *
+ * This method enables/diables the cursor display
  *
+ * @param enab - true to enable cursors, false to disable.
  */
 void
 EventCanvasApp
@@ -473,7 +473,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Draw cursor.
  *
  * This method draws the cursor at the specified location.
@@ -494,7 +493,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Normalize cursors.
  *
  * This method normalizes the cursors so that cursor 1 is always less
@@ -516,7 +514,6 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Handle mouse left down events
  *
  *
@@ -529,12 +526,9 @@ EventCanvasApp
   // Model * p_model = GetModel();
 
   // Need to convert Content area coords to virtual coords
-  int ppuX, ppuY, startX, startY;
-  GetScrollPixelsPerUnit( &ppuX, &ppuY );
-  GetViewStart( &startX, &startY );
-  pt.x += startX * ppuX;
-  pt.y += startY * ppuY;
+  pt = ConvertViewToCanvas(pt);
 
+  // Cursor index
   m_cursorDrag = 0;
 
   if ( m_cursor_1.IsSelected( pt ) )
@@ -546,11 +540,13 @@ EventCanvasApp
     m_cursorDrag = 2;
   }
 
+  std::cout << "Left mouse down at x: " << pt.x << "  Y: " << pt.y
+  << "  Cursor select: " << m_cursorDrag << std::endl;
+
   return;
 }
 
 // ----------------------------------------------------------------
-
 /** Handle mouse left button up
  *
  *
@@ -563,17 +559,15 @@ EventCanvasApp
   Model* p_model = GetModel();
 
   // Need to convert Content area coords to virtual coords
-  int ppuX, ppuY, startX, startY;
-  GetScrollPixelsPerUnit( &ppuX, &ppuY );
-  GetViewStart( &startX, &startY );
-  pt.x += startX * ppuX;
-  pt.y += startY * ppuY;
+  pt = ConvertViewToCanvas(pt);
 
   std::cout << "Mouse left up event at [" <<
     pt.x << ", " << pt.y << "]\n";
 
   if ( m_cursorDrag > 0 )
   {
+    //+ TODO Don't need this because redraw and maintenence is handled by mouse motion
+     /*
     if ( m_cursorDrag == 1 )
     {
       m_cursor_1.Move( pt.x );
@@ -589,28 +583,28 @@ EventCanvasApp
     double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
     GetModel()->SetCursorTimes( ct_1, ct_2 );
 
-    m_cursorDrag = 0; // release drag object
-
     Refresh();
+     */
+
+    m_cursorDrag = 0; // release drag object
     return;
   }
 
   // Determine the click location - event and occurrence
-  ClickLocation cl = DetermineClickLocation( pt );
+  SelectedEvent cl = DetermineClickLocation( pt );
 
-  if ( cl.event != 0 )
+  if ( cl.cl_event != 0 )
   {
-    p_model->SelectEvent( cl.event->GetEventId() );
+    p_model->SelectEvent( cl.cl_event->GetEventId() );
 
-    if ( cl.occurrence != 0 )
+    if ( cl.cl_occurrence != 0 )
     {
-      p_model->SelectOccurrence( cl.occurrence );
+      p_model->SelectOccurrence( cl.cl_occurrence );
     }
   }
 }
 
 // ----------------------------------------------------------------
-
 /** Handle mouse motion events
  *
  *
@@ -619,33 +613,54 @@ void
 EventCanvasApp
 ::OnMouseMotionEvent( wxMouseEvent& event )
 {
-  // wxPoint pt (event.GetPosition() );
-  // Model * p_model = GetModel();
+  wxPoint pt (event.GetPosition() );
 
   // Test to see if we are moving an event.
   if ( m_cursorDrag > 0 )
   {
-    // + TBD draw cursor being dragged
+    if ( m_cursorDrag == 1 )
+    {
+      m_cursor_1.Move( pt.x );
+    }
+    else
+    {
+      m_cursor_2.Move( pt.x );
+    }
+
+    // Draw cursor
+    NormalizeCursors();
+
+    double ct_1 = XcoordToSeconds( m_cursor_1.GetLocation() );
+    double ct_2 = XcoordToSeconds( m_cursor_2.GetLocation() );
+    MainView()->SetCursorTimes( ct_1, ct_2 );
+
+    Refresh();
   }
 }
 
 // ----------------------------------------------------------------
-
 /** determine click location.
  *
+ * This method reports the click location based on a point on the
+ * canvas.
  *
+ * @param canvas_pt - coordinate on the canvas
  */
-ClickLocation
+SelectedEvent
 EventCanvasApp
-::DetermineClickLocation( wxPoint pt )
+::DetermineClickLocation( wxPoint canvas_pt )
 {
-  ClickLocation ret_loc;
+  SelectedEvent ret_loc;
+
+  ret_loc.cl_rawClick = canvas_pt;
 
   // determine which event by looking at Y coord
-  int row_idx = ( (int) ( ( (float) pt.y / m_yIncrement ) + 0.5 ) - 1 );
+  // Rounded to the nearest row.
+  int row_idx = (int) ( ( (float) canvas_pt.y / s_yIncrement ) + 0.5 ) - 1;
+  if ( row_idx < 0 ) { row_idx = 0; }
 
   // determine offset time by looking at X coord
-  double ots = XcoordToSeconds( pt.x );
+  double ots = XcoordToSeconds( canvas_pt.x );
 
   // Need to skip elements that are not currently displayed
   DisplayableIterator event_it;
@@ -653,33 +668,37 @@ EventCanvasApp
   event_it.Next( row_idx );
   if ( event_it.IsCurrentValid() )
   {
-    // + DEBUG
-    std::cout << "row idx: " << row_idx <<
+    //+ DEBUG
+    std::cout << "Click y: " << canvas_pt.y <<
+      "  row idx: " << row_idx <<
       "  offset time: " << ots <<
       "  item id: " << event_it.CurrentItemId() <<
       "  pixels per second: " << m_pixelsPerSecond <<
-      "  time offset: " <<  GetModel()->TimeOffset() <<
+      "  time offset: " <<  GetModel()->FirstEventTime() <<
       std::endl;
 
     EventDef* eh = event_it.CurrentEvent().get();
-    ret_loc.event = eh;
+    ret_loc.cl_event = eh;
 
-    double ctime = ots + GetModel()->TimeOffset();
+    double ctime = ots + GetModel()->FirstEventTime();
     double delta = 5.0 / m_pixelsPerSecond; // 5 pixels left and right
+
     BaseOccurrence* bop = eh->FindByTime( ctime, delta );
-    ret_loc.occurrence = bop;  // ok if null is returned by FindByTime()
+    ret_loc.cl_occurrence = bop;  // ok if null is returned by FindByTime()
   } // end is valid event
 
   return ret_loc;
 }
 
 // ----------------------------------------------------------------
-
 /** Set default scaling.
  *
  * Default scaling is usually calcualted once after the temporal range
  * of all events is determined. The default scaling, also the minimum
  * x-zoom, is also determined.
+ *
+ * The default scaling will need to be recalculated after this object is
+ * created since there may not be any model data at that time.
  *
  * The default scaling may need to be recalculated of the window is
  * resized.
@@ -702,60 +721,74 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
 /** Calculate virtual canvas size.
  *
- * This method calculates the required virtual size needed to handle
+ * This method calculates the required virtual canvas size needed to handle
  * the current set of events at the current zoom level.
  */
 wxSize
 EventCanvasApp
-::CalculateVirtualSize()
+::CalculateCanvasSize()
 {
   wxSize v_sz;
 
   v_sz.x = GetModel()->EventTimeRange() * m_pixelsPerSecond;
-  v_sz.y = ( GetModel()->DisplayableEventCount() + 2 ) * m_yIncrement;
+  v_sz.y = ( GetModel()->DisplayableEventCount() + 2 ) * s_yIncrement;
 
   return v_sz;
 }
 
 // ----------------------------------------------------------------
-
+// The following Xcoord conversions might be only relevant to
+// updating the X axis time line. For converting start of view
+// to a time and then resetting the view to the selected time.
+//
+// The fact that these do not look at the scroll position indicates
+// to me that they are looking at the phsical view not the logocal
+// view.
+// ----------------------------------------------------------------
 /** Convert seconds to draw coordinates.
  *
+ * This method converts a time to an X coordinate on the canvas.
  *
+ * @param ts - time in seconds
+ * @return pixel coordinate on canvas
  */
 int
 EventCanvasApp
 ::SecondsToXcoord( double ts ) const
 {
-  // Add margin of 15 to conversion;
-  int x_coord( ( ts - GetModel()->TimeOffset() ) * m_pixelsPerSecond + 15 );
+  int x_coord( ( ts - GetModel()->FirstEventTime() ) * m_pixelsPerSecond );
 
   return x_coord;
 }
 
 // ----------------------------------------------------------------
-
 /** Convert X coordinate to seconds.
  *
+ * This method converts the X coordinate on the canvas to a time
+ * value from the first event.
  *
+ * @param xcoord - X coordinate on canvas
  */
 double
 EventCanvasApp
 ::XcoordToSeconds( int xcoord ) const
 {
-  double sec = (double) ( xcoord - 15 ) / m_pixelsPerSecond;
+  double adj_coord = xcoord; //+ TBD not needed
+  if ( adj_coord < 0) { return 0; }
+
+  //+ Shouldn't this adjust for the scroll location?
+  double sec = adj_coord / m_pixelsPerSecond;
   if ( sec < 0 ) { sec = 0; }
+
   return sec;
 }
 
 // ----------------------------------------------------------------
-
 /** Zoom X scaling
  *
- *
+ * This method sets the X zoom scale factor.
  */
 void
 EventCanvasApp
@@ -764,8 +797,7 @@ EventCanvasApp
   if ( factor < 0 )
   {
     // zoom to fit window.
-    m_pixelsPerSecond = 0;
-    SetDefaultScaling();
+    m_pixelsPerSecond = m_defaultPixelsPerSecond;
   }
   else
   {
@@ -785,8 +817,7 @@ EventCanvasApp
 }
 
 // ----------------------------------------------------------------
-
-/** Get coordinates of current view.
+/** Get coordinates of current view of the canvas.
  *
  * This method returns the virtual coordinates and size of the current
  * view of the Event Canvas based on scroller settings.
@@ -808,17 +839,102 @@ EventCanvasApp
   return wxRect( origin, sz );
 }
 
+// ----------------------------------------------------------------
+/**
+ * Convert View coords to Canvas coords
+ *
+ * This method converts the supplied point (usually a click point)
+ * from view coordinates (what is being displayed) to the coordinate
+ * on the larger drawing canvas.
+ *
+ * @param pt - the coordinate to convert
+ * @return converted point coordinate
+ */
+wxPoint
+EventCanvasApp
+::ConvertViewToCanvas( wxPoint pt)
+{
+  int ppuX, ppuY, startX, startY;
+
+  GetScrollPixelsPerUnit( &ppuX, &ppuY );
+  GetViewStart( &startX, &startY );
+  pt.x += startX * ppuX;
+  pt.y += startY * ppuY;
+
+  return pt;
+}
+
+// =================================================================
 // Menu event codes
 enum
 {
-  ID_ECM_COLOR_EVENT = 210001,
+  ID_ECM_COLOR_EVENT = 210001, //+ This menu code whould be a symbol
   ID_ECM_COLOR_OCCURRENCE,
   ID_ECM_EVENT_ANNOTATION,
   ID_ECM_OCCURRENCE_ANNOTATION,
 };
 
 // ----------------------------------------------------------------
+/** Handle right mouse click.
+ *
+ * We need to create a pop-up menu and display at the selected
+ * location.
+ */
+void
+EventCanvasApp
+::OnMouseRightClick( wxMouseEvent& event )
+{
+  wxPoint pt( event.GetPosition() );
 
+  // Need to convert Content area coords to world coords
+  pt = ConvertViewToCanvas( pt );
+
+  SelectedEvent loc = DetermineClickLocation( pt );
+  void* data = reinterpret_cast< void* >( &loc );
+
+  // If clicked on occurrence, display one menu
+  // If clicked on whole event, display another menu
+
+  if ( loc.cl_occurrence != 0 )
+  {
+    // Clicked on an occurrence
+    wxMenu mnu;
+
+    // client data could be occurrence clicked on
+    mnu.SetClientData( data );
+
+    // create new menu
+    // Set color of this occurrence
+    // Edit annotation of this occurrence
+    mnu.Append( ID_ECM_COLOR_OCCURRENCE,  wxT( "Set color" ) );
+    mnu.Append( ID_ECM_OCCURRENCE_ANNOTATION,   wxT( "Edit annotation" ) );
+    mnu.Connect( wxEVT_COMMAND_MENU_SELECTED,
+                ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this );
+    PopupMenu( &mnu );
+  }
+  else if ( loc.cl_event != 0 )
+  {
+    // clicked on an event
+    wxMenu mnu;
+
+    // client data could be occurrence clicked on
+    mnu.SetClientData( data );
+
+    // create new menu
+    // Set color of event
+    // Edit annotation of event
+    mnu.Append( ID_ECM_COLOR_EVENT,  wxT( "Set color" ) );
+    mnu.Append( ID_ECM_EVENT_ANNOTATION,   wxT( "Edit annotation" ) );
+    //+ edit group name?
+    mnu.Connect( wxEVT_COMMAND_MENU_SELECTED,
+                ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this );
+    PopupMenu( &mnu );
+  }
+
+  // else no action if not in a event area
+}
+
+// ----------------------------------------------------------------
 /** Popup menu click handler.
  *
  *
@@ -829,7 +945,7 @@ EventCanvasApp
 {
   // fix data type for client data
   void* data = static_cast< wxMenu* >( event.GetEventObject() )->GetClientData();
-  ClickLocation* loc = static_cast< ClickLocation* >( data );
+  SelectedEvent* loc = static_cast< SelectedEvent* >( data );
   wxString comment_string;
 
   // handle menu code
@@ -851,20 +967,20 @@ EventCanvasApp
         if ( event.GetId() == ID_ECM_COLOR_EVENT )
         {
           // store in event
-          // + maybe background colour?
-          loc->event->m_eventBaselinePen = wxPen( col, 1, wxPENSTYLE_SOLID );
+          //+ maybe background colour?
+          loc->cl_event->m_eventBaselinePen = wxPen( col, 1, wxPENSTYLE_SOLID );
         }
         else // color occurence
         {
           // store in event
-          if ( loc->occurrence->GetBoundedOccurrence() != 0 )
+          if ( loc->cl_occurrence->GetBoundedOccurrence() != 0 )
           {
-            BoundedOccurrence* bop = loc->occurrence->GetBoundedOccurrence();
+            BoundedOccurrence* bop = loc->cl_occurrence->GetBoundedOccurrence();
             bop->m_eventDurationPen = wxPen( col, 2, wxPENSTYLE_SOLID );
           }
           else
           {
-            DiscreteOccurrence* dop = loc->occurrence->GetDiscreteOccurrence();
+            DiscreteOccurrence* dop = loc->cl_occurrence->GetDiscreteOccurrence();
             dop->m_eventMarkerPen = wxPen( col, 1, wxPENSTYLE_SOLID );
             dop->m_eventMarkerBrush = wxBrush( col, wxBRUSHSTYLE_SOLID );
           }
@@ -876,15 +992,15 @@ EventCanvasApp
     case ID_ECM_EVENT_ANNOTATION:
     case ID_ECM_OCCURRENCE_ANNOTATION:
     {
-      wxString title = loc->event->EventName();
+      wxString title = loc->cl_event->EventName();
 
       if ( event.GetId() == ID_ECM_EVENT_ANNOTATION )
       {
-        comment_string = loc->event->GetUserComment();
+        comment_string = loc->cl_event->GetUserComment();
       }
       else
       {
-        comment_string = loc->occurrence->GetUserComment();
+        comment_string = loc->cl_occurrence->GetUserComment();
       }
 
       TextEditDialogApp dialog( this, -1, title );
@@ -894,78 +1010,14 @@ EventCanvasApp
       {
         if ( event.GetId() == ID_ECM_EVENT_ANNOTATION )
         {
-          loc->event->SetUserComment( dialog.GetText() );
+          loc->cl_event->SetUserComment( dialog.GetText() );
         }
         else
         {
-          loc->occurrence->SetUserComment( dialog.GetText() );
+          loc->cl_occurrence->SetUserComment( dialog.GetText() );
         }
       }
       break;
     }
   } // switch
 } /* OnPopupClick */
-
-// ----------------------------------------------------------------
-
-/** Handle right mouse click.
- *
- *
- */
-void
-EventCanvasApp
-::OnMouseRightClick( wxMouseEvent& event )
-{
-  wxPoint pt( event.GetPosition() );
-
-  // Need to convert Content area coords to world coords
-  int ppuX, ppuY, startX, startY;
-  GetScrollPixelsPerUnit( &ppuX, &ppuY );
-  GetViewStart( &startX, &startY );
-  pt.x += startX * ppuX;
-  pt.y += startY * ppuY;
-
-  ClickLocation loc = DetermineClickLocation( pt );
-  void* data = reinterpret_cast< void* >( &loc );
-
-  // If clicked on occurrence, display one menu
-  // Ic clicked on whole event, display another menu
-
-  if ( loc.occurrence != 0 )
-  {
-    // Clicked on an occurrence
-    wxMenu mnu;
-
-    // client data could be occurrence clicked on
-    mnu.SetClientData( data );
-
-    // create new menu
-    // Set color of this occurrence
-    // Edit annotation of this occurrence
-    mnu.Append( ID_ECM_COLOR_OCCURRENCE,  wxT( "Set color" ) );
-    mnu.Append( ID_ECM_OCCURRENCE_ANNOTATION,   wxT( "Edit annotation" ) );
-    mnu.Connect( wxEVT_COMMAND_MENU_SELECTED,
-                 ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this );
-    PopupMenu( &mnu );
-  }
-  else if ( loc.event != 0 )
-  {
-    // clicked on an event
-    wxMenu mnu;
-
-    // client data could be occurrence clicked on
-    mnu.SetClientData( data );
-
-    // create new menu
-    // Set color of event
-    // Edit annotation of event
-    mnu.Append( ID_ECM_COLOR_EVENT,  wxT( "Set color" ) );
-    mnu.Append( ID_ECM_EVENT_ANNOTATION,   wxT( "Edit annotation" ) );
-    // + edit group name?
-    mnu.Connect( wxEVT_COMMAND_MENU_SELECTED,
-                 ( wxObjectEventFunction ) & EventCanvasApp::OnPopupClick, NULL, this );
-    PopupMenu( &mnu );
-  }
-
-  // else no action if not in a event area
-}

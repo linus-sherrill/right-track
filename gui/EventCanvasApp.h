@@ -1,7 +1,7 @@
 /*ckwg +5
  * Copyright 2010, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
- * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
+ * Kitware, Inc., 1712 Route 9, Clifton Park, NY 12065.
  */
 
 #ifndef _EVENT_CANVAS_APP_H_
@@ -14,7 +14,6 @@
 #include <TimeLineCursor.h>
 
 class MainFrameApp;
-
 struct EventHistory_t;
 
 using namespace RightTrack;
@@ -28,13 +27,22 @@ using namespace RightTrack::Internal;
  * event and occurrence can be null if the mouser's aim is not so
  * good.
  */
-struct ClickLocation
+struct SelectedEvent
 {
-  EventDef* event;
-  BaseOccurrence* occurrence;
+  // Raw click location
+  wxPoint cl_rawClick;
+
+  // Pointer to event clicked on or zero if none.
+  EventDef* cl_event;
+
+  // Pointer to event occurrence clicked on or zero if none.
+  BaseOccurrence* cl_occurrence;
 
   // CTOR
-  ClickLocation() : event( 0 ), occurrence( 0 ) {}
+  SelectedEvent()
+  : cl_event( 0 )
+  , cl_occurrence( 0 )
+  {}
 };
 
 // ----------------------------------------------------------------
@@ -44,7 +52,6 @@ struct ClickLocation
  *
  */
 class EventCanvasApp
-//   : public EventCanvas // Does not provide any value as a base class
   : public wxScrolledWindow
 {
 public:
@@ -53,7 +60,8 @@ public:
                   const wxPoint& pos = wxDefaultPosition,
                   const wxSize& size = wxDefaultSize,
                   long style = wxDEFAULT_FRAME_STYLE );
-  virtual ~EventCanvasApp();
+
+  virtual ~EventCanvasApp() = default;
 
   void DrawNow();
   void XZoom( float factor );
@@ -62,9 +70,14 @@ public:
   void SetDefaultScaling();
   void ResetView();
   wxRect GetCurrentView();
+  wxPoint ConvertViewToCanvas( wxPoint pt );
+
   void EnableCursors( bool enab );
   void ResetCursorToModel();
   void ResetCursors();
+
+  void SetMainView( MainFrameApp* main) { m_mainView = main; }
+  MainFrameApp* MainView() { return m_mainView; }
 
 protected:
   Model* GetModel() const { return Model::Instance(); }
@@ -77,37 +90,41 @@ protected:
   void DrawCommentAnnotation( wxDC& dc, int x, int y );
 
   // display management
-  wxSize CalculateVirtualSize();
+  wxSize CalculateCanvasSize();
   int SecondsToXcoord( double ts ) const;
   double XcoordToSeconds( int xcoord ) const;
 
-  // Event handlers / overrides
-  virtual void OnMouseLeftUpEvent( wxMouseEvent& event );
-  virtual void OnMouseLeftDownEvent( wxMouseEvent& event );
-  virtual void OnMouseMotionEvent( wxMouseEvent& event );
-  virtual void OnMouseRightClick( wxMouseEvent& evt );
+  // Event handlers
+  void OnMouseLeftUpEvent( wxMouseEvent& event );
+  void OnMouseLeftDownEvent( wxMouseEvent& event );
+  void OnMouseMotionEvent( wxMouseEvent& event );
+  void OnMouseRightClick( wxMouseEvent& evt );
+  
+  void OnPopupClick( wxCommandEvent& evt );
+  
+  void OnDraw( wxDC& dc ) override;
 
-  virtual void OnPopupClick( wxCommandEvent& evt );
-
-  virtual void OnDraw( wxDC& dc );
-
-  ClickLocation DetermineClickLocation( wxPoint pt );
+  SelectedEvent DetermineClickLocation( wxPoint pt );
 
   DECLARE_EVENT_TABLE();
 
 private:
-  MainFrameApp* m_parent;
+  MainFrameApp* m_mainView;
 
   double m_pixelsPerSecond; // X scaling factor for zoom
   double m_defaultPixelsPerSecond; // X scaling factor for zoom
-
-  int m_yIncrement;
 
   // Cursor handling fields
   TimeLineCursor m_cursor_1;
   TimeLineCursor m_cursor_2;
 
+  // This indicates which cursor is being dragged with 0 meaning
+  // neither one is selected or being dragged.
   int m_cursorDrag;
+
+  // This constant sets the pixel height of an event display on the canvas.
+  static constexpr int s_yIncrement {25};
+
 }; // end class EventCanvasApp
 
 #endif /* _EVENTCANVAS_H_ */

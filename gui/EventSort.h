@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2011 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2011, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -8,8 +8,6 @@
 #define _RIGHT_TRACK_EVENT_SORT_H_
 
 #include "Model.h"
-
-
 
 // ----------------------------------------------------------------
 /** Base class for all event sorters.
@@ -20,13 +18,12 @@ class EventSort
 {
 public:
   EventSort();
-  virtual ~EventSort();
+  virtual ~EventSort() = default;
 
   virtual bool operator() (ItemId_t const& a, ItemId_t const& b);
 
   void Ascending() { m_ascending = true; }
   void Descending() { m_ascending = false; }
-
 
 protected:
   Model * GetModel() const { return Model::Instance(); }
@@ -99,16 +96,4 @@ SORT_BOUNDED_BY(Percentage,  m_stats.m_activePct);
 
 #undef SORT_BOUNDED_BY
 
-
 #endif /* _RIGHT_TRACK_EVENT_SORT_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:
-
-

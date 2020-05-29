@@ -22,8 +22,8 @@
 class TimeLineCursor
 {
 public:
-  TimeLineCursor();
-  virtual ~TimeLineCursor();
+  TimeLineCursor() = default;
+  virtual ~TimeLineCursor() = default;
 
   void Enable(bool v = true) { m_enabled = v; }
   void Draw(wxClientDC& dc, wxRect view);
@@ -32,19 +32,9 @@ public:
 
   bool IsSelected ( wxPoint pt); // point in client coords (not virt coords)
 
-
 private:
-  int m_xCoord; // x coordinate of cursor
-  bool m_enabled;
+  int m_xCoord {0}; // x coordinate of cursor
+  bool m_enabled {false};
 }; // end class TimeLineCursor
 
 #endif /* _TIMELINECURSOR_H_ */
-
-// Local Variables:
-// mode: c++
-// fill-column: 70
-// c-tab-width: 2
-// c-basic-offset: 2
-// c-basic-indent: 2
-// c-indent-tabs-mode: nil
-// end:

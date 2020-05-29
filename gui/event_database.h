@@ -44,6 +44,8 @@ class BoundedEventDef;
 class DiscreteEventDef;
 class BoundedOccurrence;
 class DiscreteOccurrence;
+class ContextHistoryElement;
+class ContextDef;
 
 // ----------------------------------------------------------------
 
@@ -92,29 +94,27 @@ public:
   virtual wxString GetInfo() = 0;
   virtual bool ContainsTime( double time, double delta ) const = 0;
 
-  virtual BoundedOccurrence*  GetBoundedOccurrence() { return 0; }
-  virtual DiscreteOccurrence*  GetDiscreteOccurrence() { return 0; }
+  //+ this approach to polymorphism does not scale well
+  virtual BoundedOccurrence*  GetBoundedOccurrence() { return nullptr; }
+  virtual DiscreteOccurrence* GetDiscreteOccurrence() { return nullptr; }
+  virtual ContextHistoryElement*  GetContextOccurrence() { return nullptr; }
 
   template < class Archive >
   void
   serialize( Archive& archive )
   {
     archive( CEREAL_NVP( m_eventPid ),
-             CEREAL_NVP( m_selected ),
              CEREAL_NVP( m_userComment ) );
   }
 
   // -- memeber data --
   EventPid_t m_eventPid;
 
-  bool m_selected; // set if the occurrence is selected
-
 protected:
   wxString m_userComment;
 };
 
 // ----------------------------------------------------------------
-
 /** Bounded event occurence.
  *
  *
@@ -140,11 +140,14 @@ public:
              CEREAL_NVP( m_endMarkerBrush ) );
   }
 
+  // Final validation is to have the m_endTime set indicating
+  // that the bounded event was closed properly.
+
   // -- memeber data --
-  double m_startTime; // in seconds
+  double m_startTime {0}; // in seconds
   EventData_t m_startData;
 
-  double m_endTime; // in seconds
+  double m_endTime {0}; // in seconds
   EventData_t m_endData;
 
   wxPen m_startMarkerPen;
@@ -157,7 +160,6 @@ public:
 };
 
 // ----------------------------------------------------------------
-
 /** Discrete event occurrence.
  *
  *
@@ -181,7 +183,7 @@ public:
   }
 
   // -- memeber data --
-  double m_eventTime; // in seconds
+  double m_eventTime {0}; // in seconds
   EventData_t m_eventData;
 
   wxPen m_eventMarkerPen; // discrete event
@@ -189,7 +191,6 @@ public:
 };
 
 // ----------------------------------------------------------------
-
 /** Base class for event definitions.
  *
  * There is one of these objects for each unique event. Each
@@ -206,18 +207,20 @@ public:
   EventDef() = default;
   virtual ~EventDef() = default;
 
-  /** Returns event type ET_BOUNDED_EVENT, ET_DISCRETE_EVENT
+  /** Returns event type ET_BOUNDED_EVENT, ET_DISCRETE_EVENT, ET_CONTEXT
    */
   virtual Event::EventType_t EventType() const = 0;
 
   wxString const& EventName() const { return m_eventName; }
   wxString const& EventGroup() const { return m_groupName; }
 
+  //+ this approach at polymorphism is not scalable
   virtual BoundedEventDef* GetBoundedEvent();
   virtual DiscreteEventDef* GetDiscreteEvent();
+  virtual ContextDef* GetContextEvent();
 
   virtual wxString GetEventInfo() = 0;
-  virtual size_t NumOccurrences() const = 0;
+  size_t NumOccurrences() const { return m_list.size(); };
 
   BaseOccurrence* FindByTime( double time, double delta );
 
@@ -272,7 +275,6 @@ protected:
 };
 
 // ----------------------------------------------------------------
-
 /** Event definition for bounded events.
  *
  *
@@ -288,8 +290,6 @@ public:
   BoundedEventDef* GetBoundedEvent() override { return this; }
   wxString GetEventInfo() override;
 
-  size_t NumOccurrences() const override { return m_list.size(); }
-
   template < class Archive >
   void
   serialize( Archive& archive )
@@ -304,7 +304,6 @@ public:
 };
 
 // ----------------------------------------------------------------
-
 /** Event definition for discrete events.
  *
  *
@@ -319,8 +318,6 @@ public:
   Event::EventType_t EventType() const override { return Event::ET_DISCRETE_EVENT; }
   DiscreteEventDef* GetDiscreteEvent() override { return this; }
   wxString GetEventInfo() override;
-
-  size_t NumOccurrences() const override { return m_list.size(); }
 
   template < class Archive >
   void
@@ -339,8 +336,14 @@ public:
 // Context data type
 //
 class ContextHistoryElement
+: public BaseOccurrence
 {
 public:
+  bool ContainsTime( double time, double delta ) const override;
+  wxString GetInfo() override;
+
+  ContextHistoryElement* GetContextOccurrence() override { return this; }
+
   template < class Archive >
   void
   serialize( Archive& archive )
@@ -349,27 +352,41 @@ public:
              CEREAL_NVP( m_endTime ) );
   }
 
-  double m_startTime;
-  double m_endTime;
+  // Final validateion is to have the m_endTime set which
+  // means that the context has been popped
+
+  // Context bounds
+  double m_startTime {0};
+  double m_endTime {0};
 };
 
 // ----------------------------------------------------------------
 class ContextDef
+: public EventDef
 {
 public:
+  Event::EventType_t EventType() const override { return Event::ET_CONTEXT; }
+  ContextDef* GetContextEvent() override { return this; }
+  wxString GetEventInfo() override;
+
   template < class Archive >
   void
   serialize( Archive& archive )
   {
-    archive( cereal::make_nvp( "context_name", m_ctxtDef.context_name ),
-             cereal::make_nvp( "context_id", m_ctxtDef.context_id ) );
+    archive( cereal::base_class< EventDef >( this ) );
   }
 
-  ContextDefinition m_ctxtDef;
-
-  // list of context history elements (by handle)
+  // Context stack.
+  // This is used to keep track of and match the pushes and pops
+  // of the context.
+  // ContextPush adds element to stack and sets start_time
+  // ContextPop updates the end time on the top element and then pops it.
+  // Final validation is to have this stack empty after all events
+  // have been read.
+  std::stack< ContextHistoryElement* > m_eventStack;
 };
 
+// ----------------------------------------------------------------
 CEREAL_REGISTER_TYPE( BoundedEventDef );
 CEREAL_REGISTER_TYPE( DiscreteEventDef );
 CEREAL_REGISTER_TYPE( BoundedOccurrence );

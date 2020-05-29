@@ -1,5 +1,5 @@
 /*ckwg +5
- * Copyright 2010 by Kitware, Inc. All Rights Reserved. Please refer to
+ * Copyright 2010, 2020 by Kitware, Inc. All Rights Reserved. Please refer to
  * KITWARE_LICENSE.TXT for licensing information, or contact General Counsel,
  * Kitware, Inc., 28 Corporate Drive, Clifton Park, NY 12065.
  */
@@ -35,10 +35,21 @@ public:
 
   virtual ~MainFrameApp() = default;
 
+  
   Model*  GetModel() const { return Model::Instance(); }
   void InitializeEventTree();
+  void InitializeEventTreeByGroup();
 
   int Update( Subject& subj, Subject::NotifyType_t type ) override;
+  int Update( Subject::NotifyType_t type );
+
+  // x-axis timeline bounds
+  void SetTimeBounds (double start, double end);
+  void GetTimeBounds (double& start, double& end);
+
+  // cursor time bounds
+  void SetCursorTimes (double t1, double t2);
+  void GetCursorTimes (double& t1, double& t2);
 
 protected:
   void DoModelUpdate();
@@ -92,10 +103,23 @@ protected:
   void SortMinDurationHandler( wxCommandEvent& event );
   void SortPctActHandler( wxCommandEvent& event );
 
+  // Event tree window handlers
+  void TreeItemActivatedHandler( wxTreeEvent &event );
+
   DECLARE_EVENT_TABLE();
 
 private:
   std::set< Subject::NotifyType_t > m_pendingUpdates;
+
+  // X axis viewing bounds
+  double m_viewTimeStart {0};
+  double m_viewTimeEnd {0};
+
+  // X locations fo the cursors
+  double m_cursor_1_time {0};
+  double m_cursor_2_time {0};
+
+
 }; // end class MainFrameApp
 
 /**

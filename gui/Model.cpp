@@ -102,7 +102,7 @@ Model * Model
 void Model
 ::Reset()
 {
-  m_timingOffset = 1e300;
+  m_firstEventTime = 1e300;
 
   m_drawOrder.clear();
   m_eventMap.clear();
@@ -126,9 +126,6 @@ void Model
   
   m_eventFilter = false;
   m_modelDirty = false;
-
-  m_viewTimeStart = 0;
-  m_viewTimeEnd = 0;
 
   m_modelAnnotation.clear();
   m_modelFileName.clear();
@@ -172,14 +169,16 @@ void Model
 ::LoadDataBaseFile( const char * file)
 {
   //+ validate the file ends in ".rtmdl"
-  std::ifstream input( file, std::ios::binary );
+  std::ifstream input( file , std::ios::binary );
   if (!input)
   {
     std::stringstream sstr;
     sstr << "Could not open file \"" << file << "\"";
     throw std::runtime_error( sstr.str());
   }
-  
+  // Reset model
+  Reset();
+
   ModelInputArchive input_ar( input );
   input_ar( *this ); // may throw
 }
@@ -202,7 +201,7 @@ void Model
   if ( pos != std::string::npos)
   {
     // string off the filename portion
-    out_filename = m_modelFileName.substr(0, pos-1);
+    out_filename = m_modelFileName.substr(0, pos);
   }
   m_modelFileName = out_filename + ".rtmdl";
   std::string temp_file = m_modelFileName + ".temp";
@@ -278,7 +277,7 @@ void Model
 double Model
 ::EventTimeRange() const
 {
-  return  (m_maxTime - m_timingOffset);
+  return  (m_maxTime - m_firstEventTime);
 }
 
 
@@ -309,9 +308,9 @@ void Model
     // look for minimum time to use as our base time offset
     // Since the events must be defined before they are used, all we have to do
     // is to look at the eh->m_time
-    if (eh->m_time < m_timingOffset)
+    if (eh->m_time < m_firstEventTime)
     {
-      m_timingOffset = eh->m_time;
+      m_firstEventTime = eh->m_time;
     }
 
     // Setup general colors
@@ -425,53 +424,6 @@ void Model
       break;
     } // end switch
   } // end for
-}
-
-
-// ----------------------------------------------------------------
-/** Get/set cursor times
- *
- *
- */
-void Model
-::SetCursorTimes (double t1, double t2)
-{
-  m_cursor_1_time = t1;
-  m_cursor_2_time = t2;
-
-  // redraw cursor info fields and event frame
-  Notify(UPDATE_cursor_info);
-
-  m_modelDirty = true;
-}
-
-
-void Model
-::GetCursorTimes (double& t1, double& t2)
-{
-  t1 = m_cursor_1_time;
-  t2 = m_cursor_2_time;
-}
-
-
-// ================================================================
-void Model
-::SetTimeBounds (double start, double end)
-{
-  m_viewTimeStart = start;
-  m_viewTimeEnd = end;
-
-  Notify(UPDATE_time_line);
-  Notify(UPDATE_event_frame);
-
-  m_modelDirty = true;
-}
-
-void Model
-::GetTimeBounds (double& start, double& end)
-{
-  start = m_viewTimeStart;
-  end = m_viewTimeEnd;
 }
 
 // ================================================================
@@ -703,7 +655,7 @@ void Model
     return; // no selected event
   }
 
-  size_t index(0);
+  int index{-1};
 
   // Scan the drawing order vector
 
@@ -721,7 +673,7 @@ void Model
 
   // On exit, index -> selected elements location in draw order,
   // of zero, indicating not found.
-  if (0 == index)
+  if (-1 == index)
   {
     return; // item not found - not expected
   }
@@ -741,7 +693,6 @@ void Model
   m_modelDirty = true;
 }
 
-
 // ----------------------------------------------------------------
 /** Set filter mode.
  *
@@ -756,6 +707,20 @@ void Model
   Notify(UPDATE_event_frame);
 }
 
+// ----------------------------------------------------------------
+/** Enable all events.
+ *
+ * This method enables all events to be displayed.
+ * The list of events is scanned and the enabled flag is set.
+ */
+void Model
+::EnableAllEvents()
+{
+  for ( auto event : m_eventMap )
+  {
+    event.second->m_enabled = true;
+  }
+}
 
 // ----------------------------------------------------------------
 /** Is event filtered out.
@@ -796,5 +761,11 @@ bool Model
 bool Model
 ::ModelNeedsSave() const
 {
+  // If the model is empty, then no need to save
+  if (m_eventMap.empty())
+  {
+    return false; // no need to save empty model
+  }
+  
   return m_modelDirty;
 }

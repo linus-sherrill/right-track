@@ -8,7 +8,7 @@ project ( right_track )
 cmake_minimum_required(VERSION 3.15)
 
 set(right_track_VERSION_MAJOR 0)
-set(right_track_VERSION_MINOR 5)
+set(right_track_VERSION_MINOR 6)
 set(right_track_VERSION_PATCH 0)
 
 set(right_track_VERSION "${right_track_VERSION_MAJOR}.${right_track_VERSION_MINOR}.${right_track_VERSION_PATCH}")

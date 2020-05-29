@@ -91,11 +91,11 @@ public:
    * time in the data set which is used as the start time for the
    * display.
    */
-  double TimeOffset() const { return m_timingOffset; }
+  double FirstEventTime() const { return m_firstEventTime; }
 
   /** Convert global time of offset time.
    */
-  double TimeOffset(double time) const { return time - m_timingOffset; }
+  double TimeOffset(double time) const { return time - m_firstEventTime; }
 
   /**  Number of events in data base.
    */
@@ -110,7 +110,6 @@ public:
   void LoadDataBaseFile( const char * file);
   void SaveToFile(); // use existing file name
   void SaveAsToFile( const char* file );
-  
 
   void MoveSelectedEventTop();
   void MoveSelectedEventUp();
@@ -140,17 +139,17 @@ public:
             CEREAL_NVP(m_defaultEventColor),
             CEREAL_NVP(m_startEventColor), CEREAL_NVP(m_endEventColor),
             CEREAL_NVP(m_selectColor), CEREAL_NVP(m_commentMarkerColor),
-            CEREAL_NVP(m_timingOffset),
+            CEREAL_NVP(m_firstEventTime),
             CEREAL_NVP(m_maxTime), CEREAL_NVP(m_maxItemNumber),
-            CEREAL_NVP(m_cursor_1_time), CEREAL_NVP(m_cursor_2_time),
-            CEREAL_NVP(m_viewTimeStart), CEREAL_NVP(m_viewTimeEnd),
 
             CEREAL_NVP(m_modelAnnotation),
             CEREAL_NVP(m_eventFilter));
   }
 
-  
+  // On screen draw order fo the events
   std::vector < ItemId_t > m_drawOrder;
+
+  // Map of all events
   event_map_t m_eventMap; // list of events
 
   EventDef::handle_t GetEventHistory( ItemId_t ev) { return m_eventMap[ev]; }
@@ -158,14 +157,6 @@ public:
   // Context data areas
   context_map_t m_contextMap;
   std::vector < ContextHistoryElement > m_contextHistory;
-
-  // cursor time bounds
-  void SetCursorTimes (double t1, double t2);
-  void GetCursorTimes (double& t1, double& t2);
-
-  // x-axis timeline bounds
-  void SetTimeBounds (double start, double end);
-  void GetTimeBounds (double& start, double& end);
 
   // Event selection
   void SelectEvent (ItemId_t event);
@@ -179,12 +170,12 @@ public:
 
   void SetEventFilter( bool v );
   bool IsEventDisplayable(ItemId_t event) const;
-  
+  void EnableAllEvents();
+
   // This method returns true if the model has been
   // modified since the last save.
   bool ModelNeedsSave() const;
 
-  
   // Colors to use
   wxColour m_defaultBaselineColor;
   wxColour m_defaultLineColor;
@@ -201,18 +192,13 @@ public:
   
 private:
   void ScanEvents();
+  void SetupEventGroups();
 
-  double m_timingOffset; // time of first event
-  double m_maxTime;
+  double m_firstEventTime; // time of first event
+  double m_maxTime; // time of last event
 
   // Last item number in data base. Used for appending items.
   ItemId_t m_maxItemNumber;
-
-  double m_cursor_1_time;
-  double m_cursor_2_time;
-
-  double m_viewTimeStart;
-  double m_viewTimeEnd;
 
   wxString m_modelAnnotation;
 
@@ -225,12 +211,17 @@ private:
   ItemId_t m_selectedEvent;
   BaseOccurrence * m_selectedOccurrence;
 
+  // This is set if filtering of empty events has been selected.
+  // The filter could be more involved, but later.
   bool m_eventFilter;
+
+  // This is set if the loaded model has been modified and
+  // needs to be saved.
   bool m_modelDirty;
-  
+
   // Singleton support
   static Model * s_instance;
-  
+
   // Make non-copyable
   Model( const Model& ) = delete;
   Model& operator=( const Model& ) = delete;
